@@ -1,65 +1,111 @@
-# 项目上下文
+# 项目概览
 
-### 版本技术栈
+个人综合服务门户 — 基于 Next.js 16 + Supabase 构建的全栈应用，支持多用户注册登录、笔记管理、作品展示、综合资源库、个人简介四大核心模块。
 
-- **Framework**: Next.js 16 (App Router)
-- **Core**: React 19
-- **Language**: TypeScript 5
-- **UI 组件**: shadcn/ui (基于 Radix UI)
-- **Styling**: Tailwind CSS 4
+## 技术栈
+
+| 维度 | 选择 |
+|------|------|
+| 框架 | Next.js 16 (App Router) |
+| 核心 | React 19 |
+| 语言 | TypeScript 5 |
+| UI | shadcn/ui + Tailwind CSS 4 |
+| 数据库 | Supabase PostgreSQL (Drizzle ORM) |
+| 认证 | Supabase Auth |
+| 文件存储 | Supabase Storage |
+| 包管理 | pnpm |
 
 ## 目录结构
 
 ```
-├── public/                 # 静态资源
-├── scripts/                # 构建与启动脚本
-│   ├── build.sh            # 构建脚本
-│   ├── dev.sh              # 开发环境启动脚本
-│   ├── prepare.sh          # 预处理脚本
-│   └── start.sh            # 生产环境启动脚本
-├── src/
-│   ├── app/                # 页面路由与布局
-│   ├── components/ui/      # Shadcn UI 组件库
-│   ├── hooks/              # 自定义 Hooks
-│   ├── lib/                # 工具库
-│   │   └── utils.ts        # 通用工具函数 (cn)
-│   └── server.ts           # 自定义服务端入口
-├── next.config.ts          # Next.js 配置
-├── package.json            # 项目依赖管理
-└── tsconfig.json           # TypeScript 配置
+src/
+  app/                  # 页面路由
+    api/                # API Routes
+      auth/             # 认证相关 (login, register, logout, me)
+      notes/            # 笔记 CRUD
+      works/            # 作品 CRUD
+      resources/        # 资源 CRUD
+      upload/           # 文件上传
+      download/         # 文件下载签名URL
+      profile/          # 个人资料更新
+    login/              # 登录页
+    register/           # 注册页
+    notes/              # 笔记列表/详情/编辑
+    works/              # 作品展示/详情
+    resources/          # 资源库
+    profile/            # 个人简介
+    page.tsx            # 首页
+    layout.tsx          # 根布局 (含导航栏)
+  components/
+    ui/                 # shadcn/ui 组件库
+    navbar.tsx          # 顶部导航栏
+  hooks/
+    use-auth.tsx        # 认证状态管理 (React Context)
+  lib/
+    utils.ts            # cn 等工具函数
+    supabase.ts         # Supabase 客户端
+    storage.ts          # 文件存储操作
+  storage/database/
+    shared/schema.ts    # Drizzle 表定义
+    shared/relations.ts # 表关系定义
+    supabase-client.ts  # DB 客户端 (Drizzle)
 ```
 
-- 项目文件（如 app 目录、pages 目录、components 等）默认初始化到 `src/` 目录下。
+## 数据库表
 
-## 包管理规范
+- `profiles` — 用户资料（id, email, name, role, bio, skills, avatar_url, contact_email, github_url, website_url, linkedin_url, created_at, updated_at）
+- `notes` — 笔记（id, title, content, category, tags, is_public, author_id, created_at, updated_at）
+- `works` — 作品（id, title, description, cover_image_url, category, tech_stack, external_link, is_public, created_at, updated_at）
+- `resources` — 资源（id, name, description, file_url, file_key, file_type, file_size, category, docker_pull_cmd, download_count, is_public, created_at, updated_at）
 
-**仅允许使用 pnpm** 作为包管理器，**严禁使用 npm 或 yarn**。
-**常用命令**：
-- 安装依赖：`pnpm add <package>`
-- 安装开发依赖：`pnpm add -D <package>`
-- 安装所有依赖：`pnpm install`
-- 移除依赖：`pnpm remove <package>`
+## 环境变量
 
-## 开发规范
+通过 `.env.local` 配置（自动从 coze_workload_identity 获取）：
+- `COZE_SUPABASE_URL`
+- `COZE_SUPABASE_ANON_KEY`
+- `COZE_SUPABASE_SERVICE_ROLE_KEY`
+- `COZE_BUCKET_NAME`
 
-### 编码规范
+## 认证流程
 
-- 默认按 TypeScript `strict` 心智写代码；优先复用当前作用域已声明的变量、函数、类型和导入，禁止引用未声明标识符或拼错变量名。
-- 禁止隐式 `any` 和 `as any`；函数参数、返回值、解构项、事件对象、`catch` 错误在使用前应有明确类型或先完成类型收窄，并清理未使用的变量和导入。
+1. 注册 → `/api/auth/register` → Supabase Auth 创建用户 → 触发器自动创建 profile
+2. 登录 → `/api/auth/register` 返回 access_token → 前端存入 cookie
+3. 状态管理 → `use-auth.tsx` 通过 `/api/auth/me` 获取当前用户
+4. 登出 → 清除 cookie
 
-### next.config 配置规范
+## 权限设计
 
-- 配置的路径不要写死绝对路径，必须使用 path.resolve(__dirname, ...)、import.meta.dirname 或 process.cwd() 动态拼接。
+- 服务端 API 使用 `supabaseAdmin` (service_role_key) 绕过 RLS
+- 前端操作按钮按 `useAuth().isAdmin` 条件渲染
+- 数据库 RLS 策略：公开内容所有人可读，登录用户可操作自己的数据
 
-### Hydration 问题防范
+## 关键文件与函数
 
-1. 严禁在 JSX 渲染逻辑中直接使用 typeof window、Date.now()、Math.random() 等动态数据。**必须使用 'use client' 并配合 useEffect + useState 确保动态内容仅在客户端挂载后渲染**；同时严禁非法 HTML 嵌套（如 <p> 嵌套 <div>）。
-2. **禁止使用 head 标签**，优先使用 metadata，详见文档：https://nextjs.org/docs/app/api-reference/functions/generate-metadata
-   1. 三方 CSS、字体等资源可在 `globals.css` 中顶部通过 `@import` 引入或使用 next/font
-   2. preload, preconnect, dns-prefetch 通过 ReactDOM 的 preload、preconnect、dns-prefetch 方法引入
-   3. json-ld 可阅读 https://nextjs.org/docs/app/guides/json-ld
+| 功能 | 文件 | 函数/组件 |
+|------|------|----------|
+| 登录 | `src/app/api/auth/login/route.ts` | POST handler |
+| 注册 | `src/app/api/auth/register/route.ts` | POST handler |
+| 获取当前用户 | `src/app/api/auth/me/route.ts` | GET handler |
+| 认证状态 | `src/hooks/use-auth.tsx` | AuthProvider, useAuth |
+| 导航栏 | `src/components/navbar.tsx` | Navbar (Client Component) |
+| 文件上传 | `src/app/api/upload/route.ts` | POST handler |
+| 文件下载 | `src/app/api/download/route.ts` | GET handler |
+| Supabase 客户端 | `src/lib/supabase.ts` | supabaseAdmin, supabaseAnon |
+| Storage 操作 | `src/lib/storage.ts` | uploadFile, getSignedDownloadUrl |
 
-## UI 设计与组件规范 (UI & Styling Standards)
+## 开发命令
 
-- 模板默认预装核心组件库 `shadcn/ui`，位于`src/components/ui/`目录下
-- Next.js 项目**必须默认**采用 shadcn/ui 组件、风格和规范，**除非用户指定用其他的组件和规范。**
+```bash
+pnpm dev          # 启动开发服务器 (端口 5000)
+pnpm build        # 构建生产版本
+pnpm start        # 启动生产服务器
+pnpm lint         # ESLint 检查
+pnpm ts-check     # TypeScript 类型检查
+```
+
+## 常见问题
+
+1. **use-auth.tsx 必须是 .tsx 扩展名**：该文件包含 JSX 语法（`<AuthContext.Provider>`），不能命名为 `.ts`
+2. **环境变量读取**：Supabase 和 Storage 的环境变量通过 `coze_workload_identity` 自动注入，写入 `.env.local`
+3. **外键关系**：`notes.author_id` 外键关联 `auth.users(id)`，`profiles.id` 也关联 `auth.users(id)`
+4. **JOIN 查询限制**：Supabase 的自动 JOIN (`select("*, profiles(...)")`) 需要正确的外键关系，否则改用手动关联
