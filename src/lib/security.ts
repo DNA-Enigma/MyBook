@@ -24,14 +24,9 @@ export function validatePassword(password: string): {
     return { valid: false, message: "密码需包含特殊字符" };
   }
 
-  // 检查常见弱密码
-  const weakPasswords = [
-    "123456", "password", "12345678", "qwerty", "123456789",
-    "letmein", "1234567", "football", "iloveyou", "admin",
-    "welcome", "monkey", "login", "abc123", "111111",
-    "123123", "password123", "1234", "baseball", "qwertyuiop"
-  ];
-  if (weakPasswords.includes(password.toLowerCase())) {
+  // 检查常见弱密码（子串匹配，更严格）
+  const weakPattern = /(?:123456|password|qwerty|letmein|iloveyou|admin|welcome|monkey|login|abc123|111111|123123|baseball|football|12345678|123456789|1234567|1234|qwertyuiop)/i;
+  if (weakPattern.test(password)) {
     return { valid: false, message: "密码过于常见，请使用更复杂的密码" };
   }
 

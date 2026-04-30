@@ -19,15 +19,27 @@ export async function GET(
       return NextResponse.json({ error: "无效的笔记ID" }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data: note, error: noteError } = await supabaseAdmin
       .from("notes")
-      .select("*, profiles(name, avatar_url)")
+      .select("*")
       .eq("id", id)
       .maybeSingle();
 
-    if (error) throw error;
-    if (!data) return NextResponse.json({ error: "笔记不存在" }, { status: 404 });
-    return NextResponse.json({ note: data });
+    if (noteError) throw noteError;
+    if (!note) return NextResponse.json({ error: "笔记不存在" }, { status: 404 });
+
+    // 手动查询作者信息（Supabase 自动 JOIN 需要直接外键）
+    let author = null;
+    if (note.author_id) {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("name, avatar_url")
+        .eq("id", note.author_id)
+        .maybeSingle();
+      author = profile;
+    }
+
+    return NextResponse.json({ note: { ...note, profiles: author } });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "查询失败" },
