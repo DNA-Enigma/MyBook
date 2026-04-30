@@ -36,7 +36,8 @@ export default function NoteEditPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.note) {
-          if (d.note.author_id !== user?.id) {
+          const isAdmin = user?.role === "admin";
+          if (d.note.author_id !== user?.id && !isAdmin) {
             setForbidden(true);
             setLoading(false);
             return;

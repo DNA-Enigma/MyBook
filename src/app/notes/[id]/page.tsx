@@ -53,7 +53,8 @@ export default function NoteDetailPage() {
     }
   };
 
-  const isAuthor = user && note && user.id === note.author_id;
+  const isAdmin = user?.role === "admin";
+  const canEdit = user && note && (isAdmin || user.id === note.author_id);
 
   if (loading) {
     return (
@@ -121,7 +122,7 @@ export default function NoteDetailPage() {
         )}
       </div>
 
-      {isAuthor && (
+      {canEdit && (
         <div className="mt-4 flex gap-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/notes/edit?id=${note.id}`}>
