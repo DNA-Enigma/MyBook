@@ -57,7 +57,7 @@ export default function NoteEditPage() {
       <div className="mx-auto max-w-3xl px-6 py-20 text-center">
         <h1 className="font-serif text-2xl font-bold text-destructive">无权编辑</h1>
         <p className="mt-2 text-muted-foreground">您没有权限编辑这篇笔记</p>
-        <Button asChild className="mt-6">
+        <Button variant="outline" asChild className="mt-6">
           <Link href="/notes">返回笔记列表</Link>
         </Button>
       </div>
