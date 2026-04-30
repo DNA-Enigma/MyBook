@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 字体 -->
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #111111;
+      --color-primary_container:    #E8E4DC;
+      --color-on-primary:           #FFFFFF;
+      /* === 背景 / 表面 === */
+      --color-background:                 #F4F1EA;
+      --color-surface-container-lowest:   #EFEBE2;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #E8E4DC;
+      --color-surface-container-high:     #D8D1C4;
+      --color-surface-container-highest:  #CFC8BA;
+      /* === 文字 === */
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      /* === 功能色 === */
+      --color-success:  #22c55e;
+      --color-error:    #ef4444;
+      --color-warning:  #f59e0b;
+      /* === 边框 === */
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #D8D1C4;
+      /* === 圆角 === */
+      --radius-sm:   0.25rem;
+      --radius-md:   0.375rem;
+      --radius-lg:   0.5rem;
+      --radius-xl:   0.75rem;
+      --radius-2xl:  1rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.10);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      /* === 字体 === */
+      --font-sans: "Noto Sans SC", "Noto Serif SC", system-ui, sans-serif;
+      --font-serif: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans min-h-screen">
+
+  <!-- @nav:start -->
+  <header class="bg-surface sticky top-0 z-40 border-b border-outline/20">
+    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
+      <div class="flex items-center gap-2">
+        <i data-lucide="hexagon" class="text-primary w-5 h-5"></i>
+        <span class="font-serif font-bold text-lg tracking-tight">个人门户</span>
+      </div>
+      <nav class="flex items-center gap-1">
+        <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">首页</a>
+        <a href="notes.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">笔记</a>
+        <a href="works.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 rounded-md transition-colors" aria-current="page">作品</a>
+        <a href="resources.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">资源库</a>
+        <a href="profile.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">关于我</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="login.html" class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">登录</a>
+        <a href="register.html" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity">注册</a>
+      </div>
+    </div>
+  </header>
+  <!-- @nav:end -->
+
+  <main class="max-w-7xl mx-auto w-full pb-20">
+    <!-- @main-content:start -->
+
+    <!-- 作品-封面大图区 -->
+    <div class="w-full">
+      <img id="work-cover" 
+           src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&auto=format&fit=crop&q=80" 
+           alt="数据分析仪表盘界面设计展示" 
+           data-category="商业科技" 
+           class="w-full h-[45vh] md:h-[55vh] object-cover">
+    </div>
+
+    <!-- 正文区域：杂志化排版 -->
+    <div class="max-w-4xl mx-auto px-6">
+
+      <!-- 作品-信息区 -->
+      <div class="pt-12 pb-8 border-b border-outline-variant/20">
+        <!-- 分类标签 -->
+        <span class="inline-flex items-center px-3 py-1 rounded-sm text-xs font-medium bg-primary/10 text-primary tracking-wide uppercase">
+          网页设计
+        </span>
+
+        <!-- 作品标题 -->
+        <h1 class="font-serif text-4xl md:text-5xl font-bold text-on-surface mt-5 leading-tight">
+          Aura 设计系统
+        </h1>
+
+        <!-- 作品副标题/简介 -->
+        <p class="text-base text-on-surface-variant mt-4 leading-relaxed">
+          为现代 SaaS 产品打造的综合性设计系统，涵盖色彩规范、组件库与交互模式。
+        </p>
+
+        <!-- 技术栈标签列表 -->
+        <div class="flex flex-wrap gap-2 mt-6">
+          <!-- 技术栈-React -->
+          <span class="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">
+            React
+          </span>
+          <!-- 技术栈-TypeScript -->
+          <span class="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">
+            TypeScript
+          </span>
+          <!-- 技术栈-Tailwind CSS -->
+          <span class="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">
+            Tailwind CSS
+          </span>
+          <!-- 技术栈-Figma -->
+          <span class="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">
+            Figma
+          </span>
+          <!-- 技术栈-Storybook -->
+          <span class="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">
+            Storybook
+          </span>
+          <!-- 技术栈-Radix UI -->
+          <span class="inline-flex items-center px-2.5 py-1 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">
+            Radix UI
+          </span>
+        </div>
+      </div>
+
+      <!-- 作品-描述区 -->
+      <div class="py-10 space-y-6">
+        <p class="text-base leading-[1.8] text-on-surface">
+          Aura 诞生于对一致性与效率的追求。在快速迭代的 SaaS 开发环境中，设计碎片化是团队常面临的难题。Aura 通过建立一套完整的视觉语言和可复用组件体系，帮助设计师与开发者在同一套规则下协作，显著缩短从设计稿到可用界面的转化周期。
+        </p>
+        <p class="text-base leading-[1.8] text-on-surface">
+          整个系统以"克制与清晰"为核心美学原则。色彩方案采用中性灰阶为主轴，辅以低饱和的品牌强调色，确保信息层级在任何背景下都清晰可辨。 typography 层级经过精心调试，标题使用 Playfair Display 衬线字体营造杂志般的阅读质感，正文则使用 Noto Sans SC 保证屏幕可读性。
+        </p>
+        <p class="text-base leading-[1.8] text-on-surface">
+          组件层面，Aura 提供了超过 60 个原子级组件和 20 余个复合模板，覆盖表单、数据展示、导航、反馈等全部核心场景。每个组件均支持深色模式、多尺寸变体和无障碍访问，并配有详细的 Storybook 文档与使用示例。设计令牌（Design Tokens）与代码实现保持同步更新，确保设计意图能够无损传递至最终产品。
+        </p>
+      </div>
+
+      <!-- 作品-操作区 -->
+      <div class="flex flex-wrap items-center gap-4 pt-8 border-t border-outline-variant/20">
+        <!-- 外部链接按钮 -->
+        <a id="btn-view-project" 
+           href="https://example.com/aura-design-system" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="bg-primary text-on-primary px-6 py-3 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          查看项目
+        </a>
+
+        <!-- 编辑按钮（仅管理员可见，原型中展示 UI） -->
+        <button id="btn-edit-work" 
+                class="bg-surface-container text-on-surface border-none px-6 py-3 rounded-md text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all inline-flex items-center gap-2">
+          <i data-lucide="pencil" class="w-4 h-4"></i>
+          编辑
+        </button>
+      </div>
+
+    </div>
+
+    <!-- @main-content:end -->
+  </main>
+
+  <script>
+    $(function() {
+      // 编辑按钮 - 点击后应实现作品编辑跳转：
+      // 1. 从当前页面或 URL 参数中获取作品 ID
+      // 2. 跳转至 work-edit.html?id={work_id} 进入编辑模式
+      // 3. 编辑页应支持修改标题、描述、技术栈、封面图、外部链接等字段
+      // 4. 当前原型中 work-edit.html 尚未生成，故仅打印日志
+      $('#btn-edit-work').on('click', function() {
+        const workId = 1;
+        console.log('编辑作品，应跳转至 work-edit.html?id=' + workId);
+        // window.location.href = 'work-edit.html?id=' + workId;
+      });
+    });
+  </script>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

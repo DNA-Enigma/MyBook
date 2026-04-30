@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 字体 -->
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #111111;
+      --color-primary_container:    #E8E4DC;
+      --color-on-primary:           #FFFFFF;
+      /* === 背景 / 表面 === */
+      --color-background:                 #F4F1EA;
+      --color-surface-container-lowest:   #EFEBE2;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #E8E4DC;
+      --color-surface-container-high:     #D8D1C4;
+      --color-surface-container-highest:  #CFC8BA;
+      /* === 文字 === */
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      /* === 功能色 === */
+      --color-success:  #22c55e;
+      --color-error:    #ef4444;
+      --color-warning:  #f59e0b;
+      /* === 边框 === */
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #D8D1C4;
+      /* === 圆角 === */
+      --radius-sm:   0.25rem;
+      --radius-md:   0.375rem;
+      --radius-lg:   0.5rem;
+      --radius-xl:   0.75rem;
+      --radius-2xl:  1rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.10);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      /* === 字体 === */
+      --font-sans: "Noto Sans SC", "Noto Serif SC", system-ui, sans-serif;
+      --font-serif: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans min-h-screen">
+
+  <!-- @main-content:start -->
+  <main class="min-h-screen w-full flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-surface rounded-xl shadow-card p-8 md:p-10">
+
+      <!-- 品牌标识 -->
+      <div class="flex items-center justify-center gap-2 mb-8">
+        <i data-lucide="hexagon" class="text-primary w-6 h-6"></i>
+        <span class="font-serif font-bold text-xl tracking-tight text-on-surface">个人门户</span>
+      </div>
+
+      <!-- 页面标题 -->
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-on-surface font-serif">创建账号</h1>
+        <p class="text-sm text-on-surface-variant mt-2">开启你的个人门户之旅</p>
+      </div>
+
+      <!-- 注册表单 -->
+      <form id="register-form" class="space-y-5">
+        <!-- 邮箱输入框 -->
+        <div>
+          <label for="input-email" class="block text-sm font-medium text-on-surface mb-1.5">邮箱</label>
+          <input id="input-email" type="email" placeholder="请输入邮箱地址" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        </div>
+
+        <!-- 密码输入框 -->
+        <div>
+          <label for="input-password" class="block text-sm font-medium text-on-surface mb-1.5">密码</label>
+          <input id="input-password" type="password" placeholder="请设置密码" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        </div>
+
+        <!-- 确认密码输入框 -->
+        <div>
+          <label for="input-confirm-password" class="block text-sm font-medium text-on-surface mb-1.5">确认密码</label>
+          <input id="input-confirm-password" type="password" placeholder="请再次输入密码" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        </div>
+
+        <!-- 注册按钮 -->
+        <button id="btn-register" type="submit" class="w-full bg-primary text-on-primary px-4 py-2.5 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all">
+          注册
+        </button>
+      </form>
+
+      <!-- 底部登录链接 -->
+      <div class="mt-6 text-center">
+        <span class="text-sm text-on-surface-variant">已有账号？</span>
+        <a id="link-login" href="login.html" class="text-sm font-medium text-primary hover:underline">立即登录</a>
+      </div>
+
+    </div>
+  </main>
+  <!-- @main-content:end -->
+
+  <script>
+    lucide.createIcons();
+
+    $(function() {
+      // 注册表单提交 - demo项目不判断账密，直接跳转首页
+      $('#register-form').on('submit', function(e) {
+        e.preventDefault();
+        console.log('注册提交: email=', $('#input-email').val());
+        window.location.href = 'home.html';
+      });
+    });
+  </script>
+</body>
+
+</html>

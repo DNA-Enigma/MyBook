@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 字体 -->
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #111111;
+      --color-primary_container:    #E8E4DC;
+      --color-on-primary:           #FFFFFF;
+      /* === 背景 / 表面 === */
+      --color-background:                 #F4F1EA;
+      --color-surface-container-lowest:   #EFEBE2;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #E8E4DC;
+      --color-surface-container-high:     #D8D1C4;
+      --color-surface-container-highest:  #CFC8BA;
+      /* === 文字 === */
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      /* === 功能色 === */
+      --color-success:  #22c55e;
+      --color-error:    #ef4444;
+      --color-warning:  #f59e0b;
+      /* === 边框 === */
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #D8D1C4;
+      /* === 圆角 === */
+      --radius-sm:   0.25rem;
+      --radius-md:   0.375rem;
+      --radius-lg:   0.5rem;
+      --radius-xl:   0.75rem;
+      --radius-2xl:  1rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.10);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      /* === 字体 === */
+      --font-sans: "Noto Sans SC", "Noto Serif SC", system-ui, sans-serif;
+      --font-serif: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans min-h-screen">
+
+  <!-- @nav:start -->
+  <header class="bg-surface sticky top-0 z-40 border-b border-outline/20">
+    <div class="max-w-4xl mx-auto h-16 flex items-center justify-between px-6">
+      <div class="flex items-center gap-2">
+        <i data-lucide="hexagon" class="text-primary w-5 h-5"></i>
+        <span class="font-serif font-bold text-lg tracking-tight">个人门户</span>
+      </div>
+      <nav class="flex items-center gap-1">
+        <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">首页</a>
+        <a href="notes.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 rounded-md transition-colors" aria-current="page">笔记</a>
+        <a href="works.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">作品</a>
+        <a href="resources.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">资源库</a>
+        <a href="profile.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">关于我</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="login.html" class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">登录</a>
+        <a href="register.html" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity">注册</a>
+      </div>
+    </div>
+  </header>
+  <!-- @nav:end -->
+
+  <!-- @main-content:start -->
+  <main class="max-w-4xl mx-auto w-full px-6 py-10 pb-24">
+
+    <!-- 页面标题区 -->
+    <div class="mb-10">
+      <h1 id="page-title" class="text-3xl font-serif font-bold text-on-surface tracking-tight">新建笔记</h1>
+      <p class="text-sm text-on-surface-variant mt-2">记录你的想法、灵感与日常点滴</p>
+    </div>
+
+    <!-- 表单区域 -->
+    <div class="space-y-8">
+
+      <!-- 标题输入 -->
+      <div>
+        <label for="note-title" class="block text-sm font-medium text-on-surface mb-2">标题</label>
+        <input id="note-title" type="text"
+               class="w-full bg-surface-container border-none rounded-md px-4 py-3 text-lg font-serif text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"
+               placeholder="给你的笔记起个名字…" />
+      </div>
+
+      <!-- 分类与标签 双列 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 分类下拉 -->
+        <div>
+          <label for="note-category" class="block text-sm font-medium text-on-surface mb-2">分类</label>
+          <div class="relative">
+            <select id="note-category"
+                    class="w-full bg-surface-container border-none rounded-md px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors appearance-none cursor-pointer">
+              <option value="">选择分类</option>
+              <!-- 选项-技术 -->
+              <option value="tech">技术</option>
+              <!-- 选项-生活 -->
+              <option value="life">生活</option>
+              <!-- 选项-设计 -->
+              <option value="design">设计</option>
+              <!-- 选项-随笔 -->
+              <option value="essay">随笔</option>
+            </select>
+            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- 标签输入 -->
+        <div>
+          <label for="note-tags-input" class="block text-sm font-medium text-on-surface mb-2">标签</label>
+          <div id="tags-container" class="w-full bg-surface-container border-none rounded-md px-3 py-2 min-h-[42px] flex flex-wrap items-center gap-2 focus-within:ring-2 focus-within:ring-primary/30 transition-colors">
+            <!-- 标签-前端 -->
+            <span class="tag-item inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-xs font-medium bg-primary/10 text-primary">
+              前端
+              <button class="tag-remove hover:text-error transition-colors" data-tag="前端"><i data-lucide="x" class="w-3 h-3"></i></button>
+            </span>
+            <!-- 标签-React -->
+            <span class="tag-item inline-flex items-center gap-1 px-2.5 py-1 rounded-sm text-xs font-medium bg-primary/10 text-primary">
+              React
+              <button class="tag-remove hover:text-error transition-colors" data-tag="React"><i data-lucide="x" class="w-3 h-3"></i></button>
+            </span>
+            <input id="note-tags-input" type="text"
+                   class="flex-1 min-w-[80px] bg-transparent border-none text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none"
+                   placeholder="按回车添加标签" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 公开/私密开关 -->
+      <div class="flex items-center justify-between bg-surface rounded-lg shadow-card px-5 py-4">
+        <div class="flex items-center gap-3">
+          <div id="visibility-icon-public" class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <i data-lucide="globe" class="w-4 h-4 text-primary"></i>
+          </div>
+          <div id="visibility-icon-private" class="w-8 h-8 rounded-full bg-surface-container hidden items-center justify-center">
+            <i data-lucide="lock" class="w-4 h-4 text-on-surface-variant"></i>
+          </div>
+          <div>
+            <span id="visibility-label" class="text-sm font-medium text-on-surface">公开笔记</span>
+            <p id="visibility-desc" class="text-xs text-on-surface-variant mt-0.5">所有人都能看到这篇笔记</p>
+          </div>
+        </div>
+        <button id="toggle-public" type="button"
+                class="relative inline-flex h-7 w-12 items-center rounded-full bg-primary transition-colors"
+                role="switch" aria-checked="true">
+          <span id="toggle-knob" class="translate-x-6 inline-block h-5 w-5 transform rounded-full bg-on-primary transition-transform shadow-sm"></span>
+        </button>
+      </div>
+
+      <!-- 内容编辑器 -->
+      <div>
+        <label for="note-content" class="block text-sm font-medium text-on-surface mb-2">内容</label>
+        <div class="bg-surface rounded-lg shadow-card overflow-hidden">
+          <!-- 编辑器工具栏 -->
+          <div class="flex items-center gap-0.5 px-3 py-2 border-b border-outline-variant/20">
+            <button id="toolbar-bold" type="button" class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant transition-colors" title="粗体">
+              <i data-lucide="bold" class="w-4 h-4"></i>
+            </button>
+            <button id="toolbar-italic" type="button" class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant transition-colors" title="斜体">
+              <i data-lucide="italic" class="w-4 h-4"></i>
+            </button>
+            <button id="toolbar-heading" type="button" class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant transition-colors" title="标题">
+              <i data-lucide="heading" class="w-4 h-4"></i>
+            </button>
+            <div class="w-px h-4 bg-outline-variant/30 mx-1"></div>
+            <button id="toolbar-list" type="button" class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant transition-colors" title="无序列表">
+              <i data-lucide="list" class="w-4 h-4"></i>
+            </button>
+            <button id="toolbar-link" type="button" class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant transition-colors" title="链接">
+              <i data-lucide="link" class="w-4 h-4"></i>
+            </button>
+            <button id="toolbar-code" type="button" class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant transition-colors" title="代码块">
+              <i data-lucide="code" class="w-4 h-4"></i>
+            </button>
+            <button id="toolbar-quote" type="button" class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant transition-colors" title="引用">
+              <i data-lucide="quote" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <!-- 文本区域 -->
+          <textarea id="note-content"
+                    class="w-full bg-surface border-none px-4 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none resize-none font-mono leading-relaxed"
+                    rows="22"
+                    placeholder="# 在这里开始书写
+
+支持 Markdown 语法：
+
+## 二级标题
+
+**粗体文字** 和 *斜体文字*
+
+- 列表项一
+- 列表项二
+- 列表项三
+
+> 这是一段引用文字，可以用来标注重要的观点或摘录。
+
+```javascript
+// 代码块示例
+function hello() {
+  console.log('Hello, World!');
+}
+```
+
+[链接文本](https://example.com)
+
+继续书写你的想法…"></textarea>
+        </div>
+      </div>
+
+      <!-- 底部操作栏 -->
+      <div class="flex items-center justify-end gap-3 pt-6 border-t border-outline-variant/20">
+        <a href="notes.html" id="btn-cancel"
+           class="bg-surface-container text-on-surface border-none px-5 py-2.5 rounded-md text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">
+          取消
+        </a>
+        <button id="btn-save" type="button"
+                class="bg-primary text-on-primary px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+          <i data-lucide="check" class="w-4 h-4"></i>保存笔记
+        </button>
+      </div>
+
+    </div>
+
+    <!-- 放弃编辑确认弹窗 -->
+    <div id="modal-discard" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 hidden">
+      <div class="bg-surface rounded-xl shadow-dialog max-w-sm w-full p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-full bg-warning/15 flex items-center justify-center shrink-0">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-warning"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-on-surface">确认放弃编辑？</h3>
+          </div>
+        </div>
+        <p class="text-sm text-on-surface-variant mb-6">你有未保存的更改，放弃后将无法恢复。</p>
+        <div class="flex items-center justify-end gap-3">
+          <button id="modal-discard-cancel" type="button" class="bg-surface-container text-on-surface border-none px-4 py-2 rounded-md text-sm font-medium hover:bg-surface-container-high transition-colors">继续编辑</button>
+          <button id="modal-discard-confirm" type="button" class="bg-error text-white border-none px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity">放弃更改</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  <!-- @main-content:end -->
+
+  <script>
+    $(function() {
+      // ========== 初始化图标 ==========
+      lucide.createIcons();
+
+      // ========== 判断新建/编辑模式 ==========
+      // 编辑模式下页面标题应改为"编辑笔记"，并回显已有数据
+      // 1. 解析 URL 参数，获取 note_id
+      // 2. 若存在 note_id，将标题改为"编辑笔记"
+      // 3. 将硬编码的 mock 数据填充到表单各字段中
+      const urlParams = new URLSearchParams(window.location.search);
+      const noteId = urlParams.get('id');
+      if (noteId) {
+        $('#page-title').text('编辑笔记');
+        // 编辑模式下回显 mock 数据（实际应从后端获取）
+        $('#note-title').val('深入理解 React Hooks 的设计哲学');
+        $('#note-category').val('tech');
+        $('#note-content').val('# 深入理解 React Hooks 的设计哲学\n\nReact Hooks 是 React 16.8 引入的特性，它让函数组件拥有了状态和其他 React 特性。\n\n## 为什么需要 Hooks\n\n在 Hooks 出现之前，我们主要使用类组件来管理状态。但类组件存在一些问题：\n\n- **逻辑复用困难**：高阶组件和 render props 会导致组件嵌套地狱\n- **this 指向问题**：需要绑定事件处理函数\n- **生命周期方法拆分逻辑**：相关逻辑分散在不同生命周期中\n\n## useState 的工作原理\n\n```javascript\nconst [count, setCount] = useState(0);\n```\n\nuseState 返回一个状态值和更新函数。React 通过闭包和链表来跟踪每个组件的状态。\n\n> Hooks 的设计灵感来源于代数效应（Algebraic Effects），这是一种函数式编程的概念。\n\n## 最佳实践\n\n1. 只在最顶层调用 Hooks\n2. 只在 React 函数中调用 Hooks\n3. 使用 ESLint 插件进行规则检查\n\n继续探索 Hooks 的奥秘…');
+      }
+
+      // ========== 公开/私密开关切换 ==========
+      $('#toggle-public').on('click', function() {
+        const isChecked = $(this).attr('aria-checked') === 'true';
+        const newState = !isChecked;
+        $(this).attr('aria-checked', newState);
+        if (newState) {
+          $(this).removeClass('bg-surface-container-high').addClass('bg-primary');
+          $('#toggle-knob').removeClass('translate-x-1').addClass('translate-x-6');
+          $('#visibility-label').text('公开笔记');
+          $('#visibility-desc').text('所有人都能看到这篇笔记');
+          $('#visibility-icon-public').removeClass('hidden').addClass('flex');
+          $('#visibility-icon-private').removeClass('flex').addClass('hidden');
+        } else {
+          $(this).removeClass('bg-primary').addClass('bg-surface-container-high');
+          $('#toggle-knob').removeClass('translate-x-6').addClass('translate-x-1');
+          $('#visibility-label').text('私密笔记');
+          $('#visibility-desc').text('仅自己可见');
+          $('#visibility-icon-public').removeClass('flex').addClass('hidden');
+          $('#visibility-icon-private').removeClass('hidden').addClass('flex');
+        }
+      });
+
+      // ========== 标签输入 ==========
+      // 标签输入为复杂交互，此处仅绑定事件入口
+      // 完整实现应包含：
+      // 1. 在输入框中输入文字并按 Enter/逗号/空格时，将文字转为标签 pill 添加到容器中
+      // 2. 每个标签 pill 显示标签名和删除按钮
+      // 3. 点击删除按钮或按 Backspace 在空输入时删除最后一个标签
+      // 4. 重复标签自动去重并给出提示
+      // 5. 标签数量限制（如最多 10 个）
+      $('#note-tags-input').on('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          const val = $(this).val().trim();
+          if (val) {
+            console.log('添加标签:', val);
+            // 实际应创建标签 DOM 并插入到输入框前
+          }
+          $(this).val('');
+        }
+        if (e.key === 'Backspace' && $(this).val() === '') {
+          // 删除最后一个标签
+          const lastTag = $('#tags-container .tag-item').last();
+          if (lastTag.length) {
+            console.log('删除标签:', lastTag.find('.tag-remove').data('tag'));
+            lastTag.remove();
+          }
+        }
+      });
+
+      // 删除已有标签
+      $('#tags-container').on('click', '.tag-remove', function() {
+        const tagName = $(this).data('tag');
+        console.log('删除标签:', tagName);
+        $(this).closest('.tag-item').remove();
+      });
+
+      // ========== Markdown 工具栏 ==========
+      // Markdown 编辑器工具栏为复杂交互，此处仅绑定事件入口
+      // 完整实现应包含：
+      // 1. 获取 textarea 当前光标位置
+      // 2. 根据点击的按钮类型，在光标处插入对应的 Markdown 语法标记
+      //    - 粗体: 在选中文本两侧插入 ** 或将光标包裹在 **** 中间
+      //    - 斜体: 在选中文本两侧插入 * 或将光标包裹在 ** 中间
+      //    - 标题: 在当前行开头插入 ## 
+      //    - 列表: 在当前行开头插入 - 
+      //    - 链接: 插入 [链接文本](url) 并选中链接文本
+      //    - 代码块: 插入 ```\n\n``` 并将光标置于中间
+      //    - 引用: 在当前行开头插入 > 
+      // 3. 插入后保持 textarea focus 并恢复光标位置
+      $('#toolbar-bold, #toolbar-italic, #toolbar-heading, #toolbar-list, #toolbar-link, #toolbar-code, #toolbar-quote').on('click', function() {
+        const toolbarId = $(this).attr('id');
+        console.log('点击工具栏按钮:', toolbarId);
+        // 实际应实现 Markdown 语法插入逻辑
+      });
+
+      // ========== 保存按钮 ==========
+      $('#btn-save').on('click', function() {
+        const title = $('#note-title').val().trim();
+        if (!title) {
+          alert('请输入笔记标题');
+          $('#note-title').focus();
+          return;
+        }
+        const data = {
+          title: title,
+          category: $('#note-category').val(),
+          tags: $('#tags-container .tag-item').map(function() { return $(this).text().trim(); }).get(),
+          is_public: $('#toggle-public').attr('aria-checked') === 'true',
+          content: $('#note-content').val()
+        };
+        console.log('保存笔记数据:', data);
+        // 实际应调用后端 API 保存笔记
+        // 新建模式：POST /api/notes，成功后跳转到笔记详情页 note-detail.html?id=xxx
+        // 编辑模式：PUT /api/notes/:id，成功后跳转到笔记详情页 note-detail.html?id=xxx
+        const redirectId = noteId || 'mock-note-id';
+        window.location.href = 'note-detail.html?id=' + redirectId;
+      });
+
+      // ========== 取消按钮 ==========
+      // 点击取消时，若表单有未保存的更改，弹出确认弹窗；否则直接返回列表页
+      let hasUnsavedChanges = true; // 实际应通过监听表单变化来动态设置
+      $('#btn-cancel').on('click', function(e) {
+        if (hasUnsavedChanges) {
+          e.preventDefault();
+          $('#modal-discard').removeClass('hidden');
+        }
+      });
+
+      // 弹窗 - 继续编辑
+      $('#modal-discard-cancel').on('click', function() {
+        $('#modal-discard').addClass('hidden');
+      });
+
+      // 弹窗 - 放弃更改
+      $('#modal-discard-confirm').on('click', function() {
+        window.location.href = 'notes.html';
+      });
+
+      // 点击弹窗遮罩关闭
+      $('#modal-discard').on('click', function(e) {
+        if (e.target === this) {
+          $('#modal-discard').addClass('hidden');
+        }
+      });
+
+      // ========== 监听表单变化标记未保存状态 ==========
+      $('#note-title, #note-category, #note-content').on('input change', function() {
+        hasUnsavedChanges = true;
+      });
+    });
+  </script>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 字体 -->
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #111111;
+      --color-primary-container:    #E8E4DC;
+      --color-on-primary:           #FFFFFF;
+      /* === 背景 / 表面 === */
+      --color-background:                 #F4F1EA;
+      --color-surface-container-lowest:   #EFEBE2;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #E8E4DC;
+      --color-surface-container-high:     #D8D1C4;
+      --color-surface-container-highest:  #CFC8BA;
+      /* === 文字 === */
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      /* === 功能色 === */
+      --color-success:  #22c55e;
+      --color-error:    #ef4444;
+      --color-warning:  #f59e0b;
+      /* === 边框 === */
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #D8D1C4;
+      /* === 圆角 === */
+      --radius-sm:   0.25rem;
+      --radius-md:   0.375rem;
+      --radius-lg:   0.5rem;
+      --radius-xl:   0.75rem;
+      --radius-2xl:  1rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.10);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      /* === 字体 === */
+      --font-sans: "Noto Sans SC", "Noto Serif SC", system-ui, sans-serif;
+      --font-serif: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+
+  <style>
+    /* 杂志风文章内容样式 */
+    .article-body h2 {
+      font-family: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #111111;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+    .article-body h3 {
+      font-family: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+      font-size: 1.375rem;
+      font-weight: 600;
+      color: #111111;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+    .article-body p {
+      font-size: 1.0625rem;
+      line-height: 1.85;
+      color: #333333;
+      margin-bottom: 1.25rem;
+    }
+    .article-body ul, .article-body ol {
+      margin-bottom: 1.25rem;
+      padding-left: 1.5rem;
+    }
+    .article-body ul li {
+      font-size: 1.0625rem;
+      line-height: 1.85;
+      color: #333333;
+      margin-bottom: 0.5rem;
+      list-style-type: disc;
+    }
+    .article-body ol li {
+      font-size: 1.0625rem;
+      line-height: 1.85;
+      color: #333333;
+      margin-bottom: 0.5rem;
+      list-style-type: decimal;
+    }
+    .article-body blockquote {
+      border-left: 3px solid #D8D1C4;
+      padding-left: 1.25rem;
+      margin: 1.5rem 0;
+      font-style: italic;
+      color: #6B665E;
+    }
+    .article-body blockquote p {
+      color: #6B665E;
+      margin-bottom: 0.5rem;
+    }
+    .article-body blockquote p:last-child {
+      margin-bottom: 0;
+    }
+    .article-body pre {
+      background-color: #EFEBE2;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+      font-size: 0.875rem;
+      line-height: 1.7;
+    }
+    .article-body code {
+      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+      font-size: 0.9em;
+      background-color: #EFEBE2;
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      color: #111111;
+    }
+    .article-body pre code {
+      background-color: transparent;
+      padding: 0;
+    }
+    .article-body strong {
+      font-weight: 600;
+      color: #111111;
+    }
+    .article-body a {
+      color: #111111;
+      text-decoration: underline;
+      text-decoration-color: #D8D1C4;
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.2s;
+    }
+    .article-body a:hover {
+      text-decoration-color: #111111;
+    }
+    .article-body hr {
+      border: none;
+      border-top: 1px solid rgba(216, 209, 196, 0.4);
+      margin: 2.5rem 0;
+    }
+    /* 首字下沉效果 */
+    .article-body .drop-cap::first-letter {
+      float: left;
+      font-family: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+      font-size: 3.5rem;
+      line-height: 0.85;
+      padding-right: 0.5rem;
+      padding-top: 0.15rem;
+      font-weight: 700;
+      color: #111111;
+    }
+  </style>
+</head>
+
+<body class="bg-background text-on-surface font-sans min-h-screen">
+
+  <!-- @nav:start -->
+  <header class="bg-surface sticky top-0 z-40 border-b border-outline/20">
+    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
+      <div class="flex items-center gap-2">
+        <i data-lucide="hexagon" class="text-primary w-5 h-5"></i>
+        <span class="font-serif font-bold text-lg tracking-tight">个人门户</span>
+      </div>
+      <nav class="flex items-center gap-1">
+        <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">首页</a>
+        <a href="notes.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 rounded-md transition-colors" aria-current="page">笔记</a>
+        <a href="works.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">作品</a>
+        <a href="resources.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">资源库</a>
+        <a href="profile.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">关于我</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="login.html" class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">登录</a>
+        <a href="register.html" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity">注册</a>
+      </div>
+    </div>
+  </header>
+  <!-- @nav:end -->
+
+  <main class="max-w-7xl mx-auto w-full">
+    <!-- @main-content:start -->
+    <div class="max-w-3xl mx-auto px-6 py-12 md:py-16">
+
+      <!-- 返回按钮 -->
+      <a href="notes.html" id="btn-back" class="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-on-surface transition-colors mb-8 group">
+        <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
+        返回笔记列表
+      </a>
+
+      <!-- 笔记元信息区 -->
+      <div class="text-center mb-10">
+        <!-- 分类标签 -->
+        <span class="inline-flex items-center px-3 py-1 rounded-sm text-xs font-medium bg-primary/10 text-primary tracking-wide uppercase">前端开发</span>
+
+        <!-- 笔记标题 -->
+        <h1 class="font-serif text-4xl md:text-5xl font-bold text-on-surface mt-5 mb-5 leading-tight tracking-tight">
+          构建现代化 Web 应用
+        </h1>
+
+        <!-- 作者、日期、公开状态 -->
+        <div class="flex items-center justify-center gap-4 text-sm text-on-surface-variant flex-wrap">
+          <span class="inline-flex items-center gap-1.5">
+            <i data-lucide="user" class="w-3.5 h-3.5"></i>
+            小初
+          </span>
+          <span class="text-outline-variant">·</span>
+          <span class="inline-flex items-center gap-1.5">
+            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+            2024年3月15日
+          </span>
+          <span class="text-outline-variant">·</span>
+          <span class="inline-flex items-center gap-1.5">
+            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+            阅读约 12 分钟
+          </span>
+          <span class="text-outline-variant">·</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-success/15 text-success">公开</span>
+        </div>
+      </div>
+
+      <!-- 操作按钮栏（仅作者/管理员可见） -->
+      <div class="flex justify-end gap-3 mb-10">
+        <button id="btn-edit" class="inline-flex items-center gap-2 bg-surface-container text-on-surface border-none px-4 py-2 rounded-md text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">
+          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+          编辑
+        </button>
+        <button id="btn-delete" class="inline-flex items-center gap-2 bg-error/10 text-error border-none px-4 py-2 rounded-md text-sm font-medium hover:bg-error/20 active:scale-[0.98] transition-all">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          删除
+        </button>
+      </div>
+
+      <!-- 笔记内容区 -->
+      <article class="article-body">
+        <p class="drop-cap">
+          在当今快速发展的技术生态中，构建现代化 Web 应用已经不再是简单的页面堆砌。从架构设计到部署运维，每一个环节都需要精心规划和实践。本文将从实际项目经验出发，系统性地介绍如何构建一个高性能、可维护、用户体验优秀的现代化 Web 应用。
+        </p>
+
+        <h2>一、技术栈选型</h2>
+        <p>
+          技术栈的选择直接决定了项目的开发效率和长期维护成本。在选型时，我们需要考虑团队技术储备、社区活跃度、生态系统完善程度等多个维度。
+        </p>
+        <p>
+          目前主流的前端技术栈通常包含以下几个核心部分：
+        </p>
+        <ul>
+          <li><strong>框架层</strong>：React、Vue 或 Svelte，根据团队偏好和项目规模选择</li>
+          <li><strong>类型系统</strong>：TypeScript 已经成为中大型项目的标配</li>
+          <li><strong>样式方案</strong>：Tailwind CSS 或 CSS-in-JS 方案</li>
+          <li><strong>构建工具</strong>：Vite 或 Next.js 内置的 Webpack</li>
+          <li><strong>状态管理</strong>：Zustand、Jotai 或 Redux Toolkit</li>
+        </ul>
+
+        <blockquote>
+          <p>选择技术栈的关键不在于追逐最新潮流，而在于找到最适合当前团队能力和项目需求的平衡点。</p>
+        </blockquote>
+
+        <h2>二、项目架构设计</h2>
+        <p>
+          良好的架构设计是项目成功的基石。一个清晰的目录结构不仅能提高开发效率，还能降低新成员的上手成本。
+        </p>
+
+        <h3>2.1 目录结构规范</h3>
+        <p>推荐采用基于功能模块的组织方式：</p>
+
+        <pre><code>src/
+  components/        # 通用组件
+    ui/             # 基础 UI 组件
+    layout/         # 布局组件
+  features/         # 功能模块
+    auth/           # 认证相关
+    notes/          # 笔记模块
+    works/          # 作品模块
+  lib/              # 工具函数和配置
+  hooks/            # 自定义 Hooks
+  types/            # 全局类型定义
+  styles/           # 全局样式</code></pre>
+
+        <h3>2.2 组件设计原则</h3>
+        <p>组件设计应遵循单一职责原则，每个组件只负责一个明确的功能：</p>
+        <ol>
+          <li>容器组件负责数据获取和状态管理</li>
+          <li>展示组件只接收 props，不处理业务逻辑</li>
+          <li>通用组件保持高度可配置性</li>
+          <li>避免过深的组件嵌套层级</li>
+        </ol>
+
+        <h2>三、开发实践</h2>
+        <p>
+          在具体的开发过程中，有一些最佳实践可以显著提升代码质量和开发体验。
+        </p>
+
+        <h3>3.1 类型安全</h3>
+        <p>
+          TypeScript 的类型系统可以帮助我们在编码阶段就发现潜在问题。建议为所有 API 响应定义明确的接口：
+        </p>
+
+        <pre><code>interface Note {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+  is_public: boolean;
+  author_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ApiResponse&lt;T&gt; {
+  data: T;
+  message: string;
+  status: number;
+}</code></pre>
+
+        <h3>3.2 错误处理</h3>
+        <p>
+          优雅的错误处理是专业应用的重要标志。应当建立统一的错误处理机制，区分网络错误、业务错误和系统错误：
+        </p>
+        <ul>
+          <li>网络超时：提供重试机制和友好提示</li>
+          <li>业务异常：根据错误码展示对应文案</li>
+          <li>未知错误：记录日志并引导用户反馈</li>
+        </ul>
+
+        <h2>四、性能优化</h2>
+        <p>
+          性能是用户体验的核心指标。现代 Web 应用的性能优化应从多个维度入手：
+        </p>
+
+        <h3>4.1 加载性能</h3>
+        <ol>
+          <li><strong>代码分割</strong>：使用动态导入（Dynamic Import）按需加载路由和组件</li>
+          <li><strong>资源压缩</strong>：启用 Gzip/Brotli 压缩，优化图片格式和尺寸</li>
+          <li><strong>缓存策略</strong>：合理配置 Service Worker 和 HTTP 缓存头</li>
+          <li><strong>预加载</strong>：对关键资源使用 link rel="preload"</li>
+        </ol>
+
+        <h3>4.2 运行时性能</h3>
+        <ul>
+          <li>避免不必要的重渲染，使用 React.memo 和 useMemo 优化</li>
+          <li>虚拟列表处理大量数据场景</li>
+          <li>防抖和节流处理高频事件</li>
+          <li>Web Workers 处理复杂计算任务</li>
+        </ul>
+
+        <blockquote>
+          <p>性能优化不是一次性的工作，而是一个持续的过程。建议建立性能监控体系，定期审计和分析性能指标。</p>
+        </blockquote>
+
+        <h2>五、部署与 CI/CD</h2>
+        <p>
+          现代化的部署流程应该实现自动化，从代码提交到生产环境的全流程无人值守。
+        </p>
+
+        <h3>5.1 构建流程</h3>
+        <p>一个典型的 CI/CD 流水线包含以下阶段：</p>
+        <ol>
+          <li>代码提交触发自动化构建</li>
+          <li>运行单元测试和集成测试</li>
+          <li>执行代码质量检查（ESLint、TypeScript 类型检查）</li>
+          <li>构建生产环境产物</li>
+          <li>部署到预发布环境进行验收</li>
+          <li>灰度发布到生产环境</li>
+        </ol>
+
+        <h3>5.2 部署策略</h3>
+        <p>根据项目特点选择合适的部署方式：</p>
+        <ul>
+          <li><strong>静态托管</strong>：Vercel、Netlify、Cloudflare Pages 适合 Next.js SSG 项目</li>
+          <li><strong>容器化部署</strong>：Docker + Kubernetes 适合微服务架构</li>
+          <li><strong>传统服务器</strong>：Ubuntu + Nginx + PM2 适合 Node.js 应用</li>
+        </ul>
+
+        <hr>
+
+        <h2>总结</h2>
+        <p>
+          构建现代化 Web 应用是一个系统工程，涉及技术选型、架构设计、开发规范、性能优化和部署运维等多个方面。本文介绍的实践经验并非银弹，而是需要结合具体项目场景灵活调整。最重要的是建立持续学习和改进的文化，让团队始终保持对新技术和最佳实践的敏感度。
+        </p>
+        <p>
+          希望这篇文章能为你的项目带来一些启发。如果你有任何问题或建议，欢迎在评论区交流讨论。
+        </p>
+      </article>
+
+      <!-- 底部标签区 -->
+      <div class="mt-14 pt-8 border-t border-outline-variant/20">
+        <div class="flex items-center gap-2 mb-4">
+          <i data-lucide="tags" class="w-4 h-4 text-on-surface-variant"></i>
+          <span class="text-sm font-medium text-on-surface">标签</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <!-- 标签-React -->
+          <a href="notes.html?tag=React" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">React</a>
+          <!-- 标签-Next.js -->
+          <a href="notes.html?tag=Next.js" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">Next.js</a>
+          <!-- 标签-TypeScript -->
+          <a href="notes.html?tag=TypeScript" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">TypeScript</a>
+          <!-- 标签-Tailwind CSS -->
+          <a href="notes.html?tag=Tailwind+CSS" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">Tailwind CSS</a>
+          <!-- 标签-架构设计 -->
+          <a href="notes.html?tag=架构设计" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">架构设计</a>
+          <!-- 标签-性能优化 -->
+          <a href="notes.html?tag=性能优化" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">性能优化</a>
+          <!-- 标签-CI/CD -->
+          <a href="notes.html?tag=CI%2FCD" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">CI/CD</a>
+        </div>
+      </div>
+
+    </div>
+    <!-- @main-content:end -->
+  </main>
+
+  <!-- 删除确认弹窗 -->
+  <div id="modal-delete" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-surface rounded-xl shadow-dialog max-w-md w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-error"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-on-surface">确认删除笔记</h3>
+      </div>
+      <p class="text-sm text-on-surface-variant mb-6">
+        你确定要删除「<span class="font-medium text-on-surface">构建现代化 Web 应用</span>」这篇笔记吗？此操作不可恢复。
+      </p>
+      <div class="flex justify-end gap-3">
+        <button id="btn-cancel-delete" class="bg-surface-container text-on-surface border-none px-4 py-2 rounded-md text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">取消</button>
+        <button id="btn-confirm-delete" class="bg-error text-white border-none px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(function() {
+      // 编辑按钮 - 点击后跳转到笔记编辑页
+      // 实际应携带当前笔记ID作为URL参数
+      $('#btn-edit').on('click', function() {
+        window.location.href = 'note-edit.html?id=note-001';
+      });
+
+      // 删除按钮 - 点击后弹出确认删除弹窗
+      $('#btn-delete').on('click', function() {
+        $('#modal-delete').removeClass('hidden');
+      });
+
+      // 取消删除按钮 - 点击后关闭弹窗
+      $('#btn-cancel-delete').on('click', function() {
+        $('#modal-delete').addClass('hidden');
+      });
+
+      // 确认删除按钮 - 点击后执行删除操作
+      // 1. 调用删除 API 删除当前笔记（携带 note_id 参数）
+      // 2. 删除成功后显示成功提示
+      // 3. 1秒后自动跳转到笔记列表页
+      $('#btn-confirm-delete').on('click', function() {
+        console.log('删除笔记: note-001');
+        // 实际应调用 API 删除笔记
+        $('#modal-delete').addClass('hidden');
+        // 模拟删除后跳转
+        setTimeout(function() {
+          window.location.href = 'notes.html';
+        }, 500);
+      });
+
+      // 点击弹窗遮罩层关闭弹窗
+      $('#modal-delete').on('click', function(e) {
+        if (e.target === this) {
+          $('#modal-delete').addClass('hidden');
+        }
+      });
+    });
+  </script>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 字体 -->
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #111111;
+      --color-primary-container:    #E8E4DC;
+      --color-on-primary:           #FFFFFF;
+      /* === 背景 / 表面 === */
+      --color-background:                 #F4F1EA;
+      --color-surface-container-lowest:   #EFEBE2;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #E8E4DC;
+      --color-surface-container-high:     #D8D1C4;
+      --color-surface-container-highest:  #CFC8BA;
+      /* === 文字 === */
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      /* === 功能色 === */
+      --color-success:  #22c55e;
+      --color-error:    #ef4444;
+      --color-warning:  #f59e0b;
+      /* === 边框 === */
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #D8D1C4;
+      /* === 圆角 === */
+      --radius-sm:   0.25rem;
+      --radius-md:   0.375rem;
+      --radius-lg:   0.5rem;
+      --radius-xl:   0.75rem;
+      --radius-2xl:  1rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.10);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      /* === 字体 === */
+      --font-sans: "Noto Sans SC", "Noto Serif SC", system-ui, sans-serif;
+      --font-serif: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans min-h-screen">
+
+  <!-- @nav:start 导航组件，不需要的页面则不要复制此段 -->
+  <header class="bg-surface sticky top-0 z-40 border-b border-outline/20">
+    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
+      <div class="flex items-center gap-2">
+        <i data-lucide="hexagon" class="text-primary w-5 h-5"></i>
+        <span class="font-serif font-bold text-lg tracking-tight">个人门户</span>
+      </div>
+      <nav class="flex items-center gap-1">
+        <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">首页</a>
+        <a href="notes.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">笔记</a>
+        <a href="works.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 rounded-md transition-colors" aria-current="page">作品</a>
+        <a href="resources.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">资源库</a>
+        <a href="profile.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">关于我</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="login.html" class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">登录</a>
+        <a href="register.html" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity">注册</a>
+      </div>
+    </div>
+  </header>
+  <!-- @nav:end 导航组件，不需要的页面则不要复制此段 -->
+
+  <!-- @main-content:start -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-12">
+
+    <!-- 页面标题区 -->
+    <div class="mb-10">
+      <h1 class="font-serif text-4xl font-bold text-on-surface tracking-tight mb-3">作品</h1>
+      <p class="text-base text-on-surface-variant max-w-2xl">精选个人创作项目，涵盖设计、开发、摄影与写作。每个作品都是一次对细节与品质的探索。</p>
+    </div>
+
+    <!-- 筛选标签 + 新建按钮 -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-2" id="filter-tags">
+        <!-- 列表-筛选标签1 -->
+        <button id="filter-all" class="filter-tag px-4 py-2 rounded-md text-sm font-medium bg-primary text-on-primary transition-colors" data-category="all">全部</button>
+        <!-- 列表-筛选标签2 -->
+        <button id="filter-design" class="filter-tag px-4 py-2 rounded-md text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-category="design">设计</button>
+        <!-- 列表-筛选标签3 -->
+        <button id="filter-dev" class="filter-tag px-4 py-2 rounded-md text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-category="dev">开发</button>
+        <!-- 列表-筛选标签4 -->
+        <button id="filter-photo" class="filter-tag px-4 py-2 rounded-md text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-category="photo">摄影</button>
+        <!-- 列表-筛选标签5 -->
+        <button id="filter-writing" class="filter-tag px-4 py-2 rounded-md text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" data-category="writing">写作</button>
+      </div>
+      <!-- 新建作品按钮（仅管理员可见） -->
+      <button id="btn-new-work" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>新建作品
+      </button>
+    </div>
+
+    <!-- 作品网格 -->
+    <div id="works-grid" class="grid grid-cols-3 gap-6">
+
+      <!-- 卡片-作品1 -->
+      <div class="work-card bg-surface rounded-lg shadow-card overflow-hidden group cursor-pointer" data-category="design">
+        <div class="aspect-[4/3] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80" alt="品牌视觉设计方案展示" data-category="商业科技" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary">设计</span>
+          </div>
+          <h3 class="text-base font-semibold text-on-surface mb-2">品牌视觉识别系统</h3>
+          <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">为科技初创企业打造的全套品牌视觉识别系统，包含Logo设计、色彩规范与品牌应用指南。</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Figma</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Illustrator</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片-作品2 -->
+      <div class="work-card bg-surface rounded-lg shadow-card overflow-hidden group cursor-pointer" data-category="dev">
+        <div class="aspect-[4/3] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80" alt="代码编辑器界面截图" data-category="商业科技" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary">开发</span>
+          </div>
+          <h3 class="text-base font-semibold text-on-surface mb-2">个人博客系统</h3>
+          <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">基于 Next.js 构建的全栈博客平台，支持 Markdown 渲染、标签分类与深色模式切换。</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Next.js</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Tailwind</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">TypeScript</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片-作品3 -->
+      <div class="work-card bg-surface rounded-lg shadow-card overflow-hidden group cursor-pointer" data-category="photo">
+        <div class="aspect-[4/3] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80" alt="城市夜景灯光摄影" data-category="建筑城市" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary">摄影</span>
+          </div>
+          <h3 class="text-base font-semibold text-on-surface mb-2">城市光影纪行</h3>
+          <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">以上海与东京为取景地的城市夜景摄影系列，捕捉霓虹与建筑交织的都市美学。</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Sony A7III</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Lightroom</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片-作品4 -->
+      <div class="work-card bg-surface rounded-lg shadow-card overflow-hidden group cursor-pointer" data-category="writing">
+        <div class="aspect-[4/3] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80" alt="笔记本与咖啡的写作桌面" data-category="商业科技" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary">写作</span>
+          </div>
+          <h3 class="text-base font-semibold text-on-surface mb-2">前端工程化实践指南</h3>
+          <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">系统梳理现代前端工程化体系，涵盖构建工具、代码规范、CI/CD 与性能优化实践。</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Markdown</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Notion</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片-作品5 -->
+      <div class="work-card bg-surface rounded-lg shadow-card overflow-hidden group cursor-pointer" data-category="dev">
+        <div class="aspect-[4/3] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&q=80" alt="手机应用界面设计展示" data-category="商业科技" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary">开发</span>
+          </div>
+          <h3 class="text-base font-semibold text-on-surface mb-2">电商小程序</h3>
+          <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">全功能电商小程序，支持商品浏览、购物车、支付与订单管理，日均活跃用户超过五千。</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">React</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Node.js</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">MongoDB</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片-作品6 -->
+      <div class="work-card bg-surface rounded-lg shadow-card overflow-hidden group cursor-pointer" data-category="design">
+        <div class="aspect-[4/3] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=800&q=80" alt="移动端UI界面设计稿" data-category="商业科技" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary">设计</span>
+          </div>
+          <h3 class="text-base font-semibold text-on-surface mb-2">产品 UI 重设计</h3>
+          <p class="text-sm text-on-surface-variant mb-3 line-clamp-2">为一款效率工具 App 进行的全面界面重设计，优化信息架构与交互流程，提升用户留存。</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Figma</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-surface-container text-on-surface-variant">Principle</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+  <!-- @main-content:end -->
+
+  <script>
+    $(function() {
+      lucide.createIcons();
+
+      // 分类筛选交互
+      // 点击筛选标签时：
+      // 1. 移除所有标签的激活样式，为当前点击标签添加激活样式（bg-primary text-on-primary）
+      // 2. 获取当前标签的 data-category 值
+      // 3. 如果为 all，显示所有作品卡片；否则只显示 data-category 匹配的卡片，隐藏其他
+      $('#filter-tags').on('click', '.filter-tag', function() {
+        var category = $(this).data('category');
+
+        // 切换标签激活态
+        $('.filter-tag').removeClass('bg-primary text-on-primary').addClass('text-on-surface-variant hover:text-on-surface hover:bg-surface-container');
+        $(this).removeClass('text-on-surface-variant hover:text-on-surface hover:bg-surface-container').addClass('bg-primary text-on-primary');
+
+        // 筛选卡片
+        if (category === 'all') {
+          $('.work-card').show();
+        } else {
+          $('.work-card').each(function() {
+            if ($(this).data('category') === category) {
+              $(this).show();
+            } else {
+              $(this).hide();
+            }
+          });
+        }
+      });
+
+      // 作品卡片点击 - 跳转作品详情页
+      // 点击后应跳转到 work-detail.html，并传递作品 id 参数
+      $('#works-grid').on('click', '.work-card', function() {
+        var workId = $(this).index() + 1;
+        window.location.href = 'work-detail.html?id=' + workId;
+      });
+
+      // 新建作品按钮 - 仅管理员可见
+      // 点击后应跳转到作品编辑页（如 work-edit.html），用于创建新作品
+      // 实际项目中需先校验当前用户角色是否为 admin
+      $('#btn-new-work').on('click', function() {
+        console.log('新建作品：需要校验管理员权限后跳转编辑页');
+        // window.location.href = 'work-edit.html';
+      });
+    });
+  </script>
+</body>
+
+</html>
