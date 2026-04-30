@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+const MAX_TITLE_LENGTH = 200;
+const MAX_CONTENT_LENGTH = 50000;
+const MAX_TAGS = 10;
+const ALLOWED_CATEGORIES = ["技术", "生活", "设计", "随笔"];
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+
+    // UUID 格式验证
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json({ error: "无效的笔记ID" }, { status: 400 });
+    }
+
     const { data, error } = await supabaseAdmin
       .from("notes")
       .select("*, profiles(name, avatar_url)")
@@ -41,16 +53,56 @@ export async function PUT(
     }
 
     const body = await request.json();
+
+    // 输入验证
+    const title = body.title ? String(body.title).trim() : undefined;
+    if (title !== undefined) {
+      if (title.length === 0) {
+        return NextResponse.json({ error: "标题不能为空" }, { status: 400 });
+      }
+      if (title.length > MAX_TITLE_LENGTH) {
+        return NextResponse.json(
+          { error: `标题长度不能超过${MAX_TITLE_LENGTH}字` },
+          { status: 400 }
+        );
+      }
+    }
+
+    const content = body.content !== undefined ? String(body.content) : undefined;
+    if (content !== undefined && content.length > MAX_CONTENT_LENGTH) {
+      return NextResponse.json(
+        { error: `内容长度不能超过${MAX_CONTENT_LENGTH}字` },
+        { status: 400 }
+      );
+    }
+
+    let tags: string[] | undefined;
+    if (body.tags !== undefined) {
+      tags = Array.isArray(body.tags)
+        ? body.tags
+          .map((t: string) => String(t).trim().substring(0, 30))
+          .filter(Boolean)
+          .slice(0, MAX_TAGS)
+        : [];
+    }
+
+    const updateData: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+    if (title !== undefined) updateData.title = title;
+    if (content !== undefined) updateData.content = content;
+    if (body.category !== undefined) {
+      if (!ALLOWED_CATEGORIES.includes(body.category)) {
+        return NextResponse.json({ error: "无效的分类" }, { status: 400 });
+      }
+      updateData.category = body.category;
+    }
+    if (tags !== undefined) updateData.tags = tags;
+    if (body.is_public !== undefined) updateData.is_public = body.is_public;
+
     const { data, error } = await supabaseAdmin
       .from("notes")
-      .update({
-        title: body.title,
-        content: body.content,
-        category: body.category,
-        tags: body.tags,
-        is_public: body.is_public,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", id)
       .eq("author_id", userData.user.id)
       .select()

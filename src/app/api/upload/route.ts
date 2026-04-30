@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
 import { uploadFile } from "@/lib/storage";
+import { validateUploadFile, generateSafeFileName, checkRateLimit } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,22 +10,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
+    // 验证用户身份
+    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    if (!userData.user) {
+      return NextResponse.json({ error: "未登录或登录已过期" }, { status: 401 });
+    }
+
+    // 速率限制：每个用户每分钟最多 10 次上传
+    const rateKey = `upload:${userData.user.id}`;
+    const rateCheck = checkRateLimit(rateKey, 10, 60000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `上传过于频繁，请${rateCheck.retryAfter}秒后重试` },
+        { status: 429 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
     if (!file) {
       return NextResponse.json({ error: "未提供文件" }, { status: 400 });
     }
 
+    // 文件安全检查
+    const fileCheck = validateUploadFile(file);
+    if (!fileCheck.valid) {
+      return NextResponse.json({ error: fileCheck.message }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const key = await uploadFile(
+    // 使用安全的文件名
+    const safeFileName = generateSafeFileName(file.name);
+    const key = `uploads/${userData.user.id}/${safeFileName}`;
+
+    const uploadKey = await uploadFile(
       buffer,
-      `uploads/${Date.now()}-${file.name}`,
+      key,
       file.type || "application/octet-stream"
     );
 
-    return NextResponse.json({ key, success: true });
+    return NextResponse.json({
+      key: uploadKey,
+      originalName: file.name,
+      size: file.size,
+      success: true,
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "上传失败" },

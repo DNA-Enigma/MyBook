@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/security";
+
+const MAX_TITLE_LENGTH = 200;
+const MAX_DESCRIPTION_LENGTH = 10000;
+const ALLOWED_CATEGORIES = ["设计", "开发", "摄影", "写作"];
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +14,6 @@ export async function GET(request: NextRequest) {
     let query = supabaseAdmin
       .from("works")
       .select("*")
-      .eq("is_public", true)
       .order("created_at", { ascending: false });
 
     if (category && category !== "all") {
@@ -39,26 +43,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("role")
-      .eq("id", userData.user.id)
-      .maybeSingle();
-
-    if (profile?.role !== "admin") {
-      return NextResponse.json({ error: "权限不足" }, { status: 403 });
+    // 速率限制
+    const rateKey = `works_create:${userData.user.id}`;
+    const rateCheck = checkRateLimit(rateKey, 10, 60000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `创建过于频繁，请${rateCheck.retryAfter}秒后重试` },
+        { status: 429 }
+      );
     }
 
     const body = await request.json();
+
+    // 标题验证
+    const title = String(body.title || "").trim();
+    if (!title) {
+      return NextResponse.json({ error: "标题不能为空" }, { status: 400 });
+    }
+    if (title.length > MAX_TITLE_LENGTH) {
+      return NextResponse.json(
+        { error: `标题长度不能超过${MAX_TITLE_LENGTH}字` },
+        { status: 400 }
+      );
+    }
+
+    // 描述长度验证
+    const description = String(body.description || "");
+    if (description.length > MAX_DESCRIPTION_LENGTH) {
+      return NextResponse.json(
+        { error: `描述长度不能超过${MAX_DESCRIPTION_LENGTH}字` },
+        { status: 400 }
+      );
+    }
+
+    // 分类验证
+    const category = body.category || "开发";
+    if (!ALLOWED_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: "无效的分类" }, { status: 400 });
+    }
+
     const { data, error } = await supabaseAdmin
       .from("works")
       .insert({
-        title: body.title,
-        description: body.description,
-        category: body.category || "开发",
-        tech_stack: body.tech_stack || [],
-        cover_url: body.cover_url,
-        project_url: body.project_url,
+        title,
+        description,
+        cover_image_url: body.cover_image_url || null,
+        category,
+        tech_stack: Array.isArray(body.tech_stack) ? body.tech_stack : [],
+        external_link: body.external_link || null,
         is_public: body.is_public ?? true,
       })
       .select()

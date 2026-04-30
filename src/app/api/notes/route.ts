@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/security";
+
+const MAX_TITLE_LENGTH = 200;
+const MAX_CONTENT_LENGTH = 50000;
+const MAX_TAGS = 10;
+const ALLOWED_CATEGORIES = ["技术", "生活", "设计", "随笔"];
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,10 +27,14 @@ export async function GET(request: NextRequest) {
       query = query.eq("is_public", true);
     }
     if (search) {
-      query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+      const safeSearch = search.replace(/[%_]/g, "\\$&").substring(0, 100);
+      query = query.or(`title.ilike.%${safeSearch}%,content.ilike.%${safeSearch}%`);
     }
     if (limit) {
-      query = query.limit(parseInt(limit));
+      const limitNum = parseInt(limit);
+      if (!isNaN(limitNum) && limitNum > 0 && limitNum <= 100) {
+        query = query.limit(limitNum);
+      }
     }
 
     const { data: notesData, error: notesError } = await query;
@@ -71,14 +81,59 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
+    // 速率限制
+    const rateKey = `notes_create:${userData.user.id}`;
+    const rateCheck = checkRateLimit(rateKey, 10, 60000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `创建过于频繁，请${rateCheck.retryAfter}秒后重试` },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
+
+    // 标题验证
+    const title = String(body.title || "").trim();
+    if (!title) {
+      return NextResponse.json({ error: "标题不能为空" }, { status: 400 });
+    }
+    if (title.length > MAX_TITLE_LENGTH) {
+      return NextResponse.json(
+        { error: `标题长度不能超过${MAX_TITLE_LENGTH}字` },
+        { status: 400 }
+      );
+    }
+
+    // 内容长度验证
+    const content = String(body.content || "");
+    if (content.length > MAX_CONTENT_LENGTH) {
+      return NextResponse.json(
+        { error: `内容长度不能超过${MAX_CONTENT_LENGTH}字` },
+        { status: 400 }
+      );
+    }
+
+    // 分类验证
+    const category = body.category || "技术";
+    if (!ALLOWED_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: "无效的分类" }, { status: 400 });
+    }
+
+    // 标签验证
+    let tags = Array.isArray(body.tags) ? body.tags : [];
+    tags = tags
+      .map((t: string) => String(t).trim().substring(0, 30))
+      .filter(Boolean)
+      .slice(0, MAX_TAGS);
+
     const { data, error } = await supabaseAdmin
       .from("notes")
       .insert({
-        title: body.title,
-        content: body.content,
-        category: body.category || "技术",
-        tags: body.tags || [],
+        title,
+        content,
+        category,
+        tags,
         is_public: body.is_public ?? true,
         author_id: userData.user.id,
       })

@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/security";
+
+const MAX_NAME_LENGTH = 200;
+const MAX_DESCRIPTION_LENGTH = 5000;
+const ALLOWED_CATEGORIES = ["软件", "文档", "图片媒体", "Docker镜像"];
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
-    const search = searchParams.get("search");
 
     let query = supabaseAdmin
       .from("resources")
       .select("*")
-      .eq("is_public", true)
       .order("created_at", { ascending: false });
 
     if (category && category !== "all") {
       query = query.eq("category", category);
-    }
-    if (search) {
-      query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
     const { data, error } = await query;
@@ -43,27 +43,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("role")
-      .eq("id", userData.user.id)
-      .maybeSingle();
-
-    if (profile?.role !== "admin") {
-      return NextResponse.json({ error: "权限不足" }, { status: 403 });
+    // 速率限制
+    const rateKey = `resources_create:${userData.user.id}`;
+    const rateCheck = checkRateLimit(rateKey, 10, 60000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `创建过于频繁，请${rateCheck.retryAfter}秒后重试` },
+        { status: 429 }
+      );
     }
 
     const body = await request.json();
+
+    // 名称验证
+    const name = String(body.name || "").trim();
+    if (!name) {
+      return NextResponse.json({ error: "名称不能为空" }, { status: 400 });
+    }
+    if (name.length > MAX_NAME_LENGTH) {
+      return NextResponse.json(
+        { error: `名称长度不能超过${MAX_NAME_LENGTH}字` },
+        { status: 400 }
+      );
+    }
+
+    // 描述长度验证
+    const description = String(body.description || "");
+    if (description.length > MAX_DESCRIPTION_LENGTH) {
+      return NextResponse.json(
+        { error: `描述长度不能超过${MAX_DESCRIPTION_LENGTH}字` },
+        { status: 400 }
+      );
+    }
+
+    // 分类验证
+    const category = body.category || "文档";
+    if (!ALLOWED_CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: "无效的分类" }, { status: 400 });
+    }
+
     const { data, error } = await supabaseAdmin
       .from("resources")
       .insert({
-        name: body.name,
-        description: body.description,
-        category: body.category || "软件",
-        file_url: body.file_url,
-        file_size: body.file_size,
-        file_type: body.file_type,
-        download_count: 0,
+        name,
+        description,
+        file_url: body.file_url || null,
+        file_key: body.file_key || null,
+        file_type: body.file_type || null,
+        file_size: body.file_size || null,
+        category,
+        docker_pull_cmd: body.docker_pull_cmd || null,
         is_public: body.is_public ?? true,
       })
       .select()
