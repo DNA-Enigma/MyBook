@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json({ error: "无效的资源ID" }, { status: 400 });
+    }
     const { data, error } = await supabaseAdmin
       .from("resources")
       .select("*")
@@ -30,6 +35,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json({ error: "无效的资源ID" }, { status: 400 });
+    }
+
     const accessToken = request.cookies.get("sb-access-token")?.value;
     if (!accessToken) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });

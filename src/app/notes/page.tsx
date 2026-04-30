@@ -25,7 +25,7 @@ export default function NotesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("全部");
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     fetchNotes();
@@ -54,7 +54,7 @@ export default function NotesPage() {
           <h1 className="font-serif text-4xl font-bold text-primary">笔记</h1>
           <p className="mt-2 text-muted-foreground">记录思考与灵感，沉淀有价值的内容</p>
         </div>
-        {isAdmin && (
+        {user && (
           <Button asChild className="bg-primary text-primary-foreground hover:opacity-90">
             <Link href="/notes/edit">
               <Plus className="mr-1.5 h-4 w-4" />

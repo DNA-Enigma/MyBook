@@ -1,5 +1,4 @@
 import { createServer } from 'http';
-import { parse } from 'url';
 import next from 'next';
 
 const dev = process.env.COZE_PROJECT_ENV !== 'PROD';
@@ -43,8 +42,19 @@ app.prepare().then(() => {
     });
 
     try {
-      const parsedUrl = parse(req.url!, true);
-      await handle(req, res, parsedUrl);
+      const url = new URL(req.url!, `http://${req.headers.host || `${hostname}:${port}`}`);
+      const query: Record<string, string | string[]> = {};
+      for (const [key, value] of url.searchParams) {
+        const existing = query[key];
+        if (existing === undefined) {
+          query[key] = value;
+        } else if (Array.isArray(existing)) {
+          existing.push(value);
+        } else {
+          query[key] = [existing, value];
+        }
+      }
+      await handle(req, res, { pathname: url.pathname, query } as Parameters<typeof handle>[2]);
     } catch (err) {
       console.error('Error occurred handling', req.url, err);
       res.statusCode = 500;

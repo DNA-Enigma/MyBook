@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ export default function NoteEditPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const noteId = searchParams.get("id");
+  const { user } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -24,6 +26,7 @@ export default function NoteEditPage() {
   const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     if (!noteId) return;
@@ -32,6 +35,11 @@ export default function NoteEditPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.note) {
+          if (d.note.author_id !== user?.id) {
+            setForbidden(true);
+            setLoading(false);
+            return;
+          }
           setTitle(d.note.title);
           setContent(d.note.content);
           setCategory(d.note.category);
@@ -41,7 +49,19 @@ export default function NoteEditPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [noteId]);
+  }, [noteId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (forbidden) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-20 text-center">
+        <h1 className="font-serif text-2xl font-bold text-destructive">无权编辑</h1>
+        <p className="mt-2 text-muted-foreground">您没有权限编辑这篇笔记</p>
+        <Button asChild className="mt-6">
+          <Link href="/notes">返回笔记列表</Link>
+        </Button>
+      </div>
+    );
+  }
 
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {

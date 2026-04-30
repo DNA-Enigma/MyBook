@@ -147,6 +147,19 @@ export async function DELETE(
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
+    const { data: note } = await supabaseAdmin
+      .from("notes")
+      .select("id, author_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (!note) {
+      return NextResponse.json({ error: "笔记不存在" }, { status: 404 });
+    }
+    if (note.author_id !== userData.user.id) {
+      return NextResponse.json({ error: "无权删除" }, { status: 403 });
+    }
+
     const { error } = await supabaseAdmin
       .from("notes")
       .delete()
