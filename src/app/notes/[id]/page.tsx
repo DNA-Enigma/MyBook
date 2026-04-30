@@ -16,6 +16,7 @@ interface Note {
   category: string;
   tags: string[];
   is_public: boolean;
+  author_id: string;
   created_at: string;
   updated_at: string;
   profiles?: { name: string; avatar_url?: string };
@@ -52,7 +53,7 @@ export default function NoteDetailPage() {
     }
   };
 
-  const isAuthor = user && note && user.id === note.id;
+  const isAuthor = user && note && user.id === note.author_id;
 
   if (loading) {
     return (

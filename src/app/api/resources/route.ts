@@ -43,6 +43,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
+    // 管理员权限校验
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("role")
+      .eq("id", userData.user.id)
+      .maybeSingle();
+    if (profile?.role !== "admin") {
+      return NextResponse.json({ error: "无权限，仅管理员可操作" }, { status: 403 });
+    }
+
     // 速率限制
     const rateKey = `resources_create:${userData.user.id}`;
     const rateCheck = checkRateLimit(rateKey, 10, 60000);

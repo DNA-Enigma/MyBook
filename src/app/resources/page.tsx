@@ -12,8 +12,10 @@ interface Resource {
   description: string;
   category: string;
   file_url: string;
-  file_size: string;
+  file_key: string | null;
+  file_size: number | null;
   file_type: string;
+  docker_pull_cmd: string | null;
   download_count: number;
   created_at: string;
 }
@@ -56,7 +58,12 @@ export default function ResourcesPage() {
   }, [search, activeCategory]);
 
   const handleDownload = async (resource: Resource) => {
-    const res = await fetch(`/api/download?key=${encodeURIComponent(resource.file_url)}&name=${encodeURIComponent(resource.name)}`);
+    const key = resource.file_key || resource.file_url;
+    if (!key) {
+      alert("资源文件不存在");
+      return;
+    }
+    const res = await fetch(`/api/download?key=${encodeURIComponent(key)}&name=${encodeURIComponent(resource.name)}`);
     if (res.ok) {
       const { url } = await res.json();
       const response = await fetch(url);
@@ -155,7 +162,7 @@ export default function ResourcesPage() {
                           <p className="text-xs text-muted-foreground">{resource.description}</p>
                           {resource.category === "Docker镜像" && (
                             <code className="mt-1 block rounded bg-muted px-2 py-0.5 text-xs font-mono text-muted-foreground">
-                              docker pull {resource.file_url}
+                              {resource.docker_pull_cmd || `docker pull ${resource.file_url}`}
                             </code>
                           )}
                         </div>
@@ -166,7 +173,7 @@ export default function ResourcesPage() {
                         {resource.category}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{resource.file_size || "-"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{resource.file_size ? `${(resource.file_size / 1024 / 1024).toFixed(1)} MB` : "-"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{resource.download_count || 0}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
@@ -174,7 +181,7 @@ export default function ResourcesPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleCopy(`docker pull ${resource.file_url}`)}
+                            onClick={() => handleCopy(resource.docker_pull_cmd || `docker pull ${resource.file_url}`)}
                           >
                             <Copy className="mr-1 h-3.5 w-3.5" />
                             复制
@@ -220,6 +227,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     setUploading(true);
 
     let fileUrl = "";
+    let fileKey = null as string | null;
     if (file && category !== "Docker镜像") {
       const formData = new FormData();
       formData.append("file", file);
@@ -230,7 +238,8 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         return;
       }
       const uploadData = await uploadRes.json();
-      fileUrl = uploadData.key;
+      fileUrl = uploadData.publicUrl || uploadData.key;
+      fileKey = uploadData.key;
     } else {
       fileUrl = name;
     }
@@ -243,8 +252,10 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         description,
         category,
         file_url: fileUrl,
-        file_size: file ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : "-",
+        file_key: fileKey,
+        file_size: file ? file.size : null,
         file_type: file?.type || "docker",
+        docker_pull_cmd: category === "Docker镜像" ? `docker pull ${name}` : null,
       }),
     });
 

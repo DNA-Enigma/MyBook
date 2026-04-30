@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { uploadFile } from "@/lib/storage";
+import { uploadFile, getPublicUrl } from "@/lib/storage";
 import { validateUploadFile, generateSafeFileName, checkRateLimit } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
@@ -14,6 +14,16 @@ export async function POST(request: NextRequest) {
     const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录或登录已过期" }, { status: 401 });
+    }
+
+    // 仅管理员可上传资源
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("role")
+      .eq("id", userData.user.id)
+      .single();
+    if (!profile || profile.role !== "admin") {
+      return NextResponse.json({ error: "无权上传，仅管理员可操作" }, { status: 403 });
     }
 
     // 速率限制：每个用户每分钟最多 10 次上传
@@ -51,8 +61,11 @@ export async function POST(request: NextRequest) {
       file.type || "application/octet-stream"
     );
 
+    const publicUrl = await getPublicUrl(uploadKey);
+
     return NextResponse.json({
       key: uploadKey,
+      publicUrl,
       originalName: file.name,
       size: file.size,
       success: true,

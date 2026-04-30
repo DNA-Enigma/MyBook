@@ -30,6 +30,7 @@ export default function NoteEditPage() {
 
   useEffect(() => {
     if (!noteId) return;
+    setForbidden(false);
     setLoading(true);
     fetch(`/api/notes/${noteId}`)
       .then((r) => r.json())

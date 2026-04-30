@@ -13,8 +13,8 @@ interface Work {
   description: string;
   category: string;
   tech_stack: string[];
-  cover_url: string;
-  project_url: string;
+  cover_image_url: string;
+  external_link: string;
   created_at: string;
 }
 
@@ -69,7 +69,7 @@ export default function WorkDetailPage() {
     <div>
       <div className="aspect-[21/9] w-full overflow-hidden">
         <img
-          src={work.cover_url || "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=1200&h=500&fit=crop"}
+          src={work.cover_image_url || "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=1200&h=500&fit=crop"}
           alt={work.title}
           className="h-full w-full object-cover"
         />
@@ -111,10 +111,10 @@ export default function WorkDetailPage() {
           ))}
         </div>
 
-        {work.project_url && (
+        {work.external_link && (
           <div className="mt-8">
             <Button asChild className="bg-primary text-primary-foreground hover:opacity-90">
-              <a href={work.project_url} target="_blank" rel="noopener noreferrer">
+              <a href={work.external_link} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-1.5 h-4 w-4" />
                 查看项目
               </a>

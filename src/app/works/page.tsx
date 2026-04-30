@@ -13,8 +13,8 @@ interface Work {
   description: string;
   category: string;
   tech_stack: string[];
-  cover_url: string;
-  project_url: string;
+  cover_image_url: string;
+  external_link: string;
   created_at: string;
 }
 
@@ -115,7 +115,7 @@ export default function WorksPage() {
             >
               <div className="relative aspect-[16/10] overflow-hidden">
                 <img
-                  src={work.cover_url || "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=600&h=400&fit=crop"}
+                  src={work.cover_image_url || "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=600&h=400&fit=crop"}
                   alt={work.title}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />

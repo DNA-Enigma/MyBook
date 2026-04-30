@@ -108,7 +108,7 @@ export default function ProfilePage() {
             加入于 {profile?.created_at ? new Date(profile.created_at).toLocaleDateString("zh-CN") : "-"}
           </p>
         </div>
-        {isAdmin && !editing && (
+        {user && !editing && (
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
             <Pencil className="mr-1.5 h-4 w-4" />
             编辑资料
