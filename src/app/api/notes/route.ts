@@ -92,6 +92,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // 生产环境调试：检查环境变量
+    const hasUrl = !!process.env.COZE_SUPABASE_URL;
+    const hasKey = !!process.env.COZE_SUPABASE_SERVICE_ROLE_KEY;
+    if (!hasUrl || !hasKey) {
+      return NextResponse.json(
+        { error: `环境变量缺失: URL=${hasUrl}, KEY=${hasKey}` },
+        { status: 500 }
+      );
+    }
+
     const accessToken = request.cookies.get("sb-access-token")?.value;
     if (!accessToken) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
