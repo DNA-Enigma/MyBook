@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,7 +13,15 @@ import { ArrowLeft, Save, X } from "lucide-react";
 
 const categories = ["技术", "生活", "设计", "随笔"];
 
-export default function NoteEditPage() {
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">加载中...</p></div>}>
+      <NoteEditPage />
+    </Suspense>
+  );
+}
+
+function NoteEditPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const noteId = searchParams.get("id");

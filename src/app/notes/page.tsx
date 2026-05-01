@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { Suspense, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,14 @@ interface Note {
 const categories = ["全部", "技术", "生活", "设计", "随笔"];
 
 export default function NotesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">加载中...</p></div>}>
+      <NotesContent />
+    </Suspense>
+  );
+}
+
+function NotesContent() {
   const urlParams = useSearchParams();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
