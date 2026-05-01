@@ -84,6 +84,9 @@ export default function RegisterPage() {
               required
               className="mt-1.5 bg-muted border-none rounded-md"
             />
+            <p className="mt-1.5 text-xs text-foreground/60">
+              密码要求：8-64位，需同时包含大写字母、小写字母、数字和特殊符号
+            </p>
           </div>
           <div>
             <Label htmlFor="confirmPassword">确认密码</Label>

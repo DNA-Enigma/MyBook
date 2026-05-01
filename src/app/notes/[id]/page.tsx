@@ -101,7 +101,7 @@ export default function NoteDetailPage() {
     <div className="mx-auto max-w-3xl px-6 py-10">
       <Link
         href="/notes"
-        className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-primary"
+        className="mb-6 inline-flex items-center text-sm text-foreground/80 hover:text-primary"
       >
         <ArrowLeft className="mr-1 h-4 w-4" />
         返回笔记列表
@@ -112,11 +112,11 @@ export default function NoteDetailPage() {
           {note.category}
         </span>
         {note.is_public ? (
-          <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+          <span className="flex items-center gap-0.5 text-xs text-foreground/70">
             <Globe className="h-3 w-3" /> 公开
           </span>
         ) : (
-          <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+          <span className="flex items-center gap-0.5 text-xs text-foreground/70">
             <Lock className="h-3 w-3" /> 私密
           </span>
         )}
@@ -126,7 +126,7 @@ export default function NoteDetailPage() {
         {note.title}
       </h1>
 
-      <div className="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
+      <div className="mt-4 flex items-center gap-3 text-sm text-foreground/70">
         <span>{note.profiles?.name || "匿名"}</span>
         <span>·</span>
         <span>{new Date(note.created_at).toLocaleDateString("zh-CN")}</span>

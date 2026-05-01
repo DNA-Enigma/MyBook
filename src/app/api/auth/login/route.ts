@@ -35,7 +35,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = NextResponse.json({ success: true });
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, email, name, role, avatar_url, bio, contact_email, github_url, website_url, linkedin_url, created_at")
+      .eq("id", data.user.id)
+      .single();
+
+    const response = NextResponse.json({ success: true, user: profile });
 
     // 安全的 Cookie 设置
     const isProd = process.env.NODE_ENV === "production";

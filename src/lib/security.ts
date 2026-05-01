@@ -8,26 +8,32 @@ export function validatePassword(password: string): {
   valid: boolean;
   message: string;
 } {
+  const errors: string[] = [];
+
   if (!password || password.length < 8) {
-    return { valid: false, message: "密码长度至少8位" };
+    errors.push("至少8位");
   }
   if (!/[a-z]/.test(password)) {
-    return { valid: false, message: "密码需包含小写字母" };
+    errors.push("包含小写字母");
   }
   if (!/[A-Z]/.test(password)) {
-    return { valid: false, message: "密码需包含大写字母" };
+    errors.push("包含大写字母");
   }
   if (!/[0-9]/.test(password)) {
-    return { valid: false, message: "密码需包含数字" };
+    errors.push("包含数字");
   }
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    return { valid: false, message: "密码需包含特殊字符" };
+    errors.push("包含特殊字符");
   }
 
   // 检查常见弱密码（子串匹配，更严格）
   const weakPattern = /(?:123456|password|qwerty|letmein|iloveyou|admin|welcome|monkey|login|abc123|111111|123123|baseball|football|12345678|123456789|1234567|1234|qwertyuiop)/i;
   if (weakPattern.test(password)) {
-    return { valid: false, message: "密码过于常见，请使用更复杂的密码" };
+    errors.push("不能是常见弱密码");
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, message: `密码不符合要求：${errors.join("、")}` };
   }
 
   return { valid: true, message: "密码符合要求" };
