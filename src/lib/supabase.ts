@@ -31,12 +31,22 @@ function getAnonClient(): SupabaseClient {
 
 export const supabaseAdmin = new Proxy({} as SupabaseClient, {
   get(_, prop) {
-    return (getAdminClient() as any)[prop];
+    const client = getAdminClient();
+    const value = (client as any)[prop];
+    if (typeof value === "function") {
+      return value.bind(client);
+    }
+    return value;
   },
 });
 
 export const supabaseAnon = new Proxy({} as SupabaseClient, {
   get(_, prop) {
-    return (getAnonClient() as any)[prop];
+    const client = getAnonClient();
+    const value = (client as any)[prop];
+    if (typeof value === "function") {
+      return value.bind(client);
+    }
+    return value;
   },
 });
