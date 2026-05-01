@@ -174,13 +174,16 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ note: data });
   } catch (err) {
+    const raw = JSON.stringify(err);
     const message =
       (err as { message?: string })?.message ||
       (err as { error_description?: string })?.error_description ||
       (err as { msg?: string })?.msg ||
-      String(err);
+      raw ||
+      "创建失败";
+    console.error("[NOTES_CREATE_ERROR]", message, raw);
     return NextResponse.json(
-      { error: message || "创建失败" },
+      { error: message },
       { status: 500 }
     );
   }
