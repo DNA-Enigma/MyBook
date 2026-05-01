@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { notes, profiles } from "@/storage/database/shared/schema";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, sql } from "drizzle-orm";
 import { ArrowLeft, BookOpen, Calendar, Mail, Globe } from "lucide-react";
 
 interface BlogPageProps {
@@ -14,7 +14,15 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
   // 获取用户资料
   const userProfile = await db
-    .select()
+    .select({
+      id: profiles.id,
+      name: profiles.name,
+      bio: profiles.bio,
+      avatar_url: profiles.avatar_url,
+      contact_email: profiles.contact_email,
+      website_url: profiles.website_url,
+      created_at: sql<string>`to_char(${profiles.created_at}, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')`,
+    })
     .from(profiles)
     .where(eq(profiles.id, id))
     .limit(1);
@@ -33,7 +41,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
       content: notes.content,
       category: notes.category,
       tags: notes.tags,
-      created_at: notes.created_at,
+      created_at: sql<string>`to_char(${notes.created_at}, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')`,
     })
     .from(notes)
     .where(and(eq(notes.author_id, id), eq(notes.is_public, true)))

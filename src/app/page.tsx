@@ -5,31 +5,39 @@ import { eq, desc, sql } from "drizzle-orm";
 import Link from "next/link";
 
 async function getRecentNotes() {
-  const result = await db
-    .select({
-      id: notes.id,
-      title: notes.title,
-      content: notes.content,
-      category: notes.category,
-      tags: notes.tags,
-      created_at: notes.created_at,
-      author_name: profiles.name,
-      author_avatar: profiles.avatar_url,
-    })
-    .from(notes)
-    .leftJoin(profiles, eq(notes.author_id, profiles.id))
-    .where(eq(notes.is_public, true))
-    .orderBy(desc(notes.created_at))
-    .limit(6);
-  return result;
+  try {
+    const result = await db
+      .select({
+        id: notes.id,
+        title: notes.title,
+        content: notes.content,
+        category: notes.category,
+        tags: notes.tags,
+        created_at: sql<string>`to_char(${notes.created_at}, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')`,
+        author_name: profiles.name,
+        author_avatar: profiles.avatar_url,
+      })
+      .from(notes)
+      .leftJoin(profiles, eq(notes.author_id, profiles.id))
+      .where(eq(notes.is_public, true))
+      .orderBy(desc(notes.created_at))
+      .limit(6);
+    return result;
+  } catch {
+    return [];
+  }
 }
 
 async function getNoteCount() {
-  const result = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(notes)
-    .where(eq(notes.is_public, true));
-  return Number(result[0]?.count ?? 0);
+  try {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notes)
+      .where(eq(notes.is_public, true));
+    return Number(result[0]?.count) || 0;
+  } catch {
+    return 0;
+  }
 }
 
 function truncate(str: string | null | undefined, n: number) {
@@ -55,7 +63,7 @@ export default async function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/notes"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
             >
               浏览笔记 <ArrowRight size={16} />
             </Link>
@@ -76,7 +84,7 @@ export default async function HomePage() {
             {[
               {
                 icon: BookOpen,
-                title: "笔记管理",
+                title: "博客",
                 desc: "记录技术心得与生活随笔，支持 Markdown 与公开分享",
                 href: "/notes",
               },
@@ -94,8 +102,8 @@ export default async function HomePage() {
               },
               {
                 icon: User,
-                title: "关于我",
-                desc: "了解我的技能、经历与联系方式",
+                title: "个人中心",
+                desc: "管理笔记资料，了解技能与经历",
                 href: "/profile",
               },
             ].map((item) => (

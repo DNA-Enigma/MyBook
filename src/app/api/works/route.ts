@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/security";
+import { db } from "@/lib/db";
+import { works, profiles } from "@/storage/database/shared/schema";
+import { eq, desc } from "drizzle-orm";
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 10000;
@@ -11,21 +14,38 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
 
-    let query = supabaseAdmin
-      .from("works")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const query = db
+      .select({
+        id: works.id,
+        title: works.title,
+        description: works.description,
+        cover_image_url: works.cover_image_url,
+        category: works.category,
+        tech_stack: works.tech_stack,
+        external_link: works.external_link,
+        is_public: works.is_public,
+        created_at: works.created_at,
+        author_id: works.author_id,
+        author_name: profiles.name,
+        author_avatar: profiles.avatar_url,
+      })
+      .from(works)
+      .leftJoin(profiles, eq(works.author_id, profiles.id))
+      .orderBy(desc(works.created_at));
 
-    if (category && category !== "all") {
-      query = query.eq("category", category);
-    }
+    const rows = category && category !== "all" ? await query.where(eq(works.category, category)) : await query;
 
-    const { data, error } = await query;
-    if (error) throw error;
-    return NextResponse.json({ works: data || [] });
+    const formatted = rows.map((r) => ({
+      ...r,
+      created_at: r.created_at ? new Date(r.created_at).toISOString() : null,
+      author: r.author_id ? { name: r.author_name, avatar_url: r.author_avatar } : null,
+    }));
+
+    return NextResponse.json({ works: formatted });
   } catch (err) {
+    console.error("Works GET error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "查询失败" },
+      { error: err instanceof Error ? err.message : "查询失败", detail: String(err) },
       { status: 500 }
     );
   }
@@ -92,6 +112,7 @@ export async function POST(request: NextRequest) {
         tech_stack: Array.isArray(body.tech_stack) ? body.tech_stack : [],
         external_link: body.external_link || null,
         is_public: body.is_public ?? true,
+        author_id: userData.user.id,
       })
       .select()
       .single();

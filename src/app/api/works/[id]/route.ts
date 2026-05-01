@@ -31,13 +31,20 @@ export async function GET(
     }
     const { data, error } = await supabaseAdmin
       .from("works")
-      .select("*")
+      .select("*, profiles(name, avatar_url)")
       .eq("id", id)
       .maybeSingle();
 
     if (error) throw error;
     if (!data) return NextResponse.json({ error: "作品不存在" }, { status: 404 });
-    return NextResponse.json({ work: data });
+
+    const work = {
+      ...data,
+      author: data.profiles ? { name: data.profiles.name, avatar_url: data.profiles.avatar_url } : null,
+    };
+    delete (work as Record<string, unknown>).profiles;
+
+    return NextResponse.json({ work });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "查询失败" },

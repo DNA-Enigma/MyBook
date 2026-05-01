@@ -1,4 +1,4 @@
-import { pgTable, serial, timestamp, text, varchar, boolean, jsonb, integer, bigint, index } from "drizzle-orm/pg-core"
+import { pgTable, serial, timestamp, text, varchar, boolean, jsonb, integer, bigint, index, uuid } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const healthCheck = pgTable("health_check", {
@@ -60,6 +60,7 @@ export const works = pgTable(
     category: varchar("category", { length: 50 }).notNull().default("开发"),
     tech_stack: jsonb("tech_stack"),
     external_link: text("external_link"),
+    author_id: text("author_id").references(() => profiles.id, { onDelete: "set null" }),
     is_public: boolean("is_public").notNull().default(true),
     created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updated_at: timestamp("updated_at", { withTimezone: true }),
@@ -68,6 +69,7 @@ export const works = pgTable(
     index("works_category_idx").on(table.category),
     index("works_is_public_idx").on(table.is_public),
     index("works_created_at_idx").on(table.created_at),
+    index("works_author_id_idx").on(table.author_id),
   ]
 );
 

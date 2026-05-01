@@ -319,19 +319,16 @@ export default function NotesPage() {
                 ))}
               </div>
               <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setActiveAuthor(note.author_id);
-                  }}
+                <Link
+                  href={`/blog/${note.author_id}`}
+                  onClick={(e) => e.stopPropagation()}
                   className="inline-flex items-center gap-1 hover:text-primary transition-colors"
                 >
                   <span className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
                     {note.author?.name?.[0] || "?"}
                   </span>
                   {note.author?.name || "匿名"}
-                </button>
+                </Link>
                 <span>·</span>
                 <span>{new Date(note.created_at).toLocaleDateString("zh-CN")}</span>
               </div>

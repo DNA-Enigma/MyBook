@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, ExternalLink } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 
 interface Work {
   id: string;
@@ -16,6 +16,8 @@ interface Work {
   cover_image_url: string;
   external_link: string;
   created_at: string;
+  author_id: string | null;
+  author?: { name: string | null; avatar_url: string | null } | null;
 }
 
 const categories = ["全部", "设计", "开发", "摄影", "写作"];
@@ -27,10 +29,6 @@ export default function WorksPage() {
   const [activeCategory, setActiveCategory] = useState("全部");
   const { isAdmin } = useAuth();
 
-  useEffect(() => {
-    fetchWorks();
-  }, []);
-
   const fetchWorks = async () => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -40,6 +38,10 @@ export default function WorksPage() {
     setWorks(data.works || []);
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetchWorks();
+  }, []);
 
   useEffect(() => {
     fetchWorks();
@@ -142,6 +144,14 @@ export default function WorksPage() {
                     </span>
                   ))}
                 </div>
+                {work.author_id && (
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                      {work.author?.name?.[0] || "?"}
+                    </span>
+                    <span>{work.author?.name || "匿名"}</span>
+                  </div>
+                )}
               </div>
             </Link>
           ))}

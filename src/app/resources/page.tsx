@@ -37,10 +37,6 @@ export default function ResourcesPage() {
   const { isAdmin } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
 
-  useEffect(() => {
-    fetchResources();
-  }, []);
-
   const fetchResources = async () => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -51,6 +47,10 @@ export default function ResourcesPage() {
     setResources(data.resources || []);
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetchResources();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(fetchResources, 300);

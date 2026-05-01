@@ -22,7 +22,8 @@ export default function NoteEditPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("技术");
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -45,7 +46,7 @@ export default function NoteEditPage() {
           setTitle(d.note.title);
           setContent(d.note.content);
           setCategory(d.note.category);
-          setTags(d.note.tags?.join(", ") || "");
+          setTags(Array.isArray(d.note.tags) ? d.note.tags : []);
           setIsPublic(d.note.is_public);
         }
         setLoading(false);
@@ -80,7 +81,7 @@ export default function NoteEditPage() {
         title,
         content,
         category,
-        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        tags,
         is_public: isPublic,
       }),
     });
@@ -148,14 +149,44 @@ export default function NoteEditPage() {
             </select>
           </div>
           <div>
-            <Label htmlFor="tags">标签（逗号分隔）</Label>
-            <Input
-              id="tags"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="React, 前端, 架构"
-              className="mt-1.5 bg-muted border-none rounded-md"
-            />
+            <Label>标签</Label>
+            <div className="mt-1.5 flex flex-wrap items-center gap-2 rounded-md bg-muted px-3 py-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => setTags(tags.filter((t) => t !== tag))}
+                    className="rounded-full hover:bg-primary/20"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    const val = tagInput.trim();
+                    if (val && !tags.includes(val)) {
+                      setTags([...tags, val]);
+                      setTagInput("");
+                    }
+                  }
+                  if (e.key === "Backspace" && !tagInput && tags.length > 0) {
+                    setTags(tags.slice(0, -1));
+                  }
+                }}
+                placeholder={tags.length === 0 ? "输入标签按回车添加" : ""}
+                className="min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+              />
+            </div>
           </div>
         </div>
 

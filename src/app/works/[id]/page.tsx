@@ -16,6 +16,8 @@ interface Work {
   cover_image_url: string;
   external_link: string;
   created_at: string;
+  author_id: string | null;
+  author?: { name: string | null; avatar_url: string | null } | null;
 }
 
 export default function WorkDetailPage() {
@@ -88,6 +90,14 @@ export default function WorkDetailPage() {
           <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
             {work.category}
           </span>
+          {work.author_id && (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                {work.author?.name?.[0] || "?"}
+              </span>
+              {work.author?.name || "匿名"}
+            </span>
+          )}
         </div>
 
         <h1 className="font-serif text-3xl font-bold text-primary md:text-4xl">

@@ -26,7 +26,21 @@ export async function GET(request: NextRequest) {
       .eq("id", userData.user.id)
       .maybeSingle();
 
-    return NextResponse.json({ user: profile });
+    const user = profile || {
+      id: userData.user.id,
+      email: userData.user.email,
+      name: userData.user.user_metadata?.name || userData.user.email?.split("@")[0] || "用户",
+      role: "user",
+      avatar_url: null,
+      bio: null,
+      contact_email: null,
+      github_url: null,
+      website_url: null,
+      linkedin_url: null,
+      created_at: new Date().toISOString(),
+    };
+
+    return NextResponse.json({ user });
   } catch {
     return NextResponse.json({ user: null }, { status: 401 });
   }

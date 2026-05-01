@@ -8,10 +8,10 @@ import { FileText, Image, FolderOpen, User, LogOut, LogIn, Menu, X } from "lucid
 import { useState } from "react";
 
 const navItems = [
-  { href: "/notes", label: "笔记", icon: FileText },
+  { href: "/notes", label: "博客", icon: FileText },
   { href: "/works", label: "作品", icon: Image },
   { href: "/resources", label: "资源库", icon: FolderOpen },
-  { href: "/profile", label: "关于我", icon: User },
+  { href: "/profile", label: "个人中心", icon: User },
 ];
 
 export function Navbar() {

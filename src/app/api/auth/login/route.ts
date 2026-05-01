@@ -41,7 +41,21 @@ export async function POST(request: NextRequest) {
       .eq("id", data.user.id)
       .single();
 
-    const response = NextResponse.json({ success: true, user: profile });
+    const user = profile || {
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.name || data.user.email?.split("@")[0] || "用户",
+      role: "user",
+      avatar_url: null,
+      bio: null,
+      contact_email: null,
+      github_url: null,
+      website_url: null,
+      linkedin_url: null,
+      created_at: new Date().toISOString(),
+    };
+
+    const response = NextResponse.json({ success: true, user });
 
     // 安全的 Cookie 设置
     const isProd = process.env.NODE_ENV === "production";
