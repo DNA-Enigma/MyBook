@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+    const { data, error } = await getSupabaseAdmin().auth.signInWithPassword({
       email,
       password,
     });
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: profile } = await supabaseAdmin
+    const { data: profile } = await getSupabaseAdmin()
       .from("profiles")
       .select("id, email, name, role, avatar_url, bio, contact_email, github_url, website_url, linkedin_url, created_at")
       .eq("id", data.user.id)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSignedDownloadUrl } from "@/lib/storage";
 import { checkRateLimit } from "@/lib/security";
 
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "未登录，请先登录后下载" }, { status: 401 });
     }
 
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "登录已过期" }, { status: 401 });
     }

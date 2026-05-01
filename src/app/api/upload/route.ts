@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { uploadFile, getPublicUrl } from "@/lib/storage";
 import { validateUploadFile, generateSafeFileName, checkRateLimit } from "@/lib/security";
 
@@ -11,13 +11,13 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证用户身份
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录或登录已过期" }, { status: 401 });
     }
 
     // 仅管理员可上传资源
-    const { data: profile } = await supabaseAdmin
+    const { data: profile } = await getSupabaseAdmin()
       .from("profiles")
       .select("role")
       .eq("id", userData.user.id)

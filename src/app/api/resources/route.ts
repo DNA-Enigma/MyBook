@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/security";
 
 const MAX_NAME_LENGTH = 200;
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
 
-    let query = supabaseAdmin
+    let query = getSupabaseAdmin()
       .from("resources")
       .select("*")
       .order("created_at", { ascending: false });
@@ -38,13 +38,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
     // 管理员权限校验
-    const { data: profile } = await supabaseAdmin
+    const { data: profile } = await getSupabaseAdmin()
       .from("profiles")
       .select("role")
       .eq("id", userData.user.id)
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "无效的分类" }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("resources")
       .insert({
         name,

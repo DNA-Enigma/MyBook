@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 5000;
@@ -9,9 +9,9 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 async function requireAdmin(request: NextRequest) {
   const accessToken = request.cookies.get("sb-access-token")?.value;
   if (!accessToken) return { error: "未登录", status: 401 };
-  const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+  const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
   if (!userData.user) return { error: "未登录", status: 401 };
-  const { data: profile } = await supabaseAdmin
+  const { data: profile } = await getSupabaseAdmin()
     .from("profiles")
     .select("role")
     .eq("id", userData.user.id)
@@ -29,7 +29,7 @@ export async function GET(
     if (!uuidRegex.test(id)) {
       return NextResponse.json({ error: "无效的作品ID" }, { status: 400 });
     }
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("works")
       .select("*, profiles(name, avatar_url)")
       .eq("id", id)
@@ -106,7 +106,7 @@ export async function PUT(
     if (body.external_link !== undefined) updateData.external_link = body.external_link;
     if (body.is_public !== undefined) updateData.is_public = body.is_public;
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("works")
       .update(updateData)
       .eq("id", id)
@@ -139,7 +139,7 @@ export async function DELETE(
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const { error } = await supabaseAdmin.from("works").delete().eq("id", id);
+    const { error } = await getSupabaseAdmin().from("works").delete().eq("id", id);
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (err) {

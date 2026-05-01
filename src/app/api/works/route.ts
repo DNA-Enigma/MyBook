@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/security";
 import { db } from "@/lib/db";
 import { works, profiles } from "@/storage/database/shared/schema";
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "无效的分类" }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("works")
       .insert({
         title,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/security";
 
 const MAX_TITLE_LENGTH = 200;
@@ -20,11 +20,11 @@ export async function GET(request: NextRequest) {
     const accessToken = request.cookies.get("sb-access-token")?.value;
     let currentUserId: string | null = null;
     if (accessToken) {
-      const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+      const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
       currentUserId = userData.user?.id || null;
     }
 
-    let query = supabaseAdmin
+    let query = getSupabaseAdmin()
       .from("notes")
       .select("*")
       .order("created_at", { ascending: false });
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
 
     let authorsMap: Record<string, { name: string | null; avatar_url: string | null }> = {};
     if (authorIds.length > 0) {
-      const { data: profilesData } = await supabaseAdmin
+      const { data: profilesData } = await getSupabaseAdmin()
         .from("profiles")
         .select("id, name, avatar_url")
         .in("id", authorIds);
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
       .slice(0, MAX_TAGS);
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("notes")
       .insert({
         title,
@@ -164,8 +164,13 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ note: data });
   } catch (err) {
+    const message =
+      (err as { message?: string })?.message ||
+      (err as { error_description?: string })?.error_description ||
+      (err as { msg?: string })?.msg ||
+      String(err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "创建失败" },
+      { error: message || "创建失败" },
       { status: 500 }
     );
   }

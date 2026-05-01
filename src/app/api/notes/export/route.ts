@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 function toMarkdown(note: {
   title: string;
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const accessToken = request.cookies.get("sb-access-token")?.value;
     let currentUserId: string | null = null;
     if (accessToken) {
-      const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+      const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
       currentUserId = userData.user?.id || null;
     }
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const noteId = searchParams.get("id");
     const format = searchParams.get("format") || "json";
 
-    let query = supabaseAdmin.from("notes").select("*").order("created_at", { ascending: false });
+    let query = getSupabaseAdmin().from("notes").select("*").order("created_at", { ascending: false });
 
     if (noteId) {
       query = query.eq("id", noteId);

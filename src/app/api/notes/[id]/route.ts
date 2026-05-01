@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_CONTENT_LENGTH = 50000;
@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: "无效的笔记ID" }, { status: 400 });
     }
 
-    const { data: note, error: noteError } = await supabaseAdmin
+    const { data: note, error: noteError } = await getSupabaseAdmin()
       .from("notes")
       .select("*")
       .eq("id", id)
@@ -33,9 +33,9 @@ export async function GET(
     let currentUserId: string | null = null;
     let isAdmin = false;
     if (accessToken) {
-      const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+      const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
       currentUserId = userData.user?.id || null;
-      const { data: profile } = await supabaseAdmin
+      const { data: profile } = await getSupabaseAdmin()
         .from("profiles")
         .select("role")
         .eq("id", currentUserId || "")
@@ -50,7 +50,7 @@ export async function GET(
     // 手动查询作者信息（Supabase 自动 JOIN 需要直接外键）
     let author = null;
     if (note.author_id) {
-      const { data: profile } = await supabaseAdmin
+      const { data: profile } = await getSupabaseAdmin()
         .from("profiles")
         .select("name, avatar_url")
         .eq("id", note.author_id)
@@ -78,7 +78,7 @@ export async function PUT(
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
@@ -131,7 +131,7 @@ export async function PUT(
     if (tags !== undefined) updateData.tags = tags;
     if (body.is_public !== undefined) updateData.is_public = body.is_public;
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("notes")
       .update(updateData)
       .eq("id", id)
@@ -161,12 +161,12 @@ export async function DELETE(
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: note } = await supabaseAdmin
+    const { data: note } = await getSupabaseAdmin()
       .from("notes")
       .select("id, author_id")
       .eq("id", id)
@@ -179,7 +179,7 @@ export async function DELETE(
       return NextResponse.json({ error: "无权删除" }, { status: 403 });
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from("notes")
       .delete()
       .eq("id", id)

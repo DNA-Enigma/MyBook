@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/security";
 
 const MAX_IMPORT_COUNT = 50;
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         };
       });
 
-      const { data, error } = await supabaseAdmin.from("notes").insert(toInsert).select();
+      const { data, error } = await getSupabaseAdmin().from("notes").insert(toInsert).select();
       if (error) throw error;
 
       return NextResponse.json({ imported: data?.length || 0, notes: data });
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         : "随笔";
       const tags = parsed.tags.slice(0, MAX_TAGS);
 
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await getSupabaseAdmin()
         .from("notes")
         .insert({
           title: parsed.title.substring(0, 200),

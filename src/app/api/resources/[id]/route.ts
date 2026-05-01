@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -12,7 +12,7 @@ export async function GET(
     if (!uuidRegex.test(id)) {
       return NextResponse.json({ error: "无效的资源ID" }, { status: 400 });
     }
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("resources")
       .select("*")
       .eq("id", id)
@@ -44,12 +44,12 @@ export async function DELETE(
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
     if (!userData.user) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const { data: profile } = await supabaseAdmin
+    const { data: profile } = await getSupabaseAdmin()
       .from("profiles")
       .select("role")
       .eq("id", userData.user.id)
@@ -59,7 +59,7 @@ export async function DELETE(
       return NextResponse.json({ error: "权限不足" }, { status: 403 });
     }
 
-    const { error } = await supabaseAdmin.from("resources").delete().eq("id", id);
+    const { error } = await getSupabaseAdmin().from("resources").delete().eq("id", id);
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (err) {

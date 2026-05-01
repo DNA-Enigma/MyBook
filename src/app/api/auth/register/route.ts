@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { validatePassword, validateEmail, checkRateLimit } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     // 名称长度限制
     const safeName = name ? String(name).trim().substring(0, 50) : email.split("@")[0];
 
-    const { data, error } = await supabaseAdmin.auth.signUp({
+    const { data, error } = await getSupabaseAdmin().auth.signUp({
       email,
       password,
       options: {

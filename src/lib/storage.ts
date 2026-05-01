@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "./supabase";
+import { getSupabaseAdmin } from "./supabase";
 
 const BUCKET_NAME = process.env.COZE_BUCKET_NAME || "uploads";
 
@@ -7,7 +7,7 @@ export async function uploadFile(
   fileName: string,
   contentType: string
 ): Promise<string> {
-  const { error } = await supabaseAdmin.storage
+  const { error } = await getSupabaseAdmin().storage
     .from(BUCKET_NAME)
     .upload(fileName, fileBuffer, {
       contentType,
@@ -22,12 +22,12 @@ export async function uploadFile(
 }
 
 export async function getPublicUrl(fileName: string): Promise<string> {
-  const { data } = supabaseAdmin.storage.from(BUCKET_NAME).getPublicUrl(fileName);
+  const { data } = getSupabaseAdmin().storage.from(BUCKET_NAME).getPublicUrl(fileName);
   return data.publicUrl;
 }
 
 export async function getSignedDownloadUrl(fileName: string, expiresIn = 300): Promise<string> {
-  const { data, error } = await supabaseAdmin.storage
+  const { data, error } = await getSupabaseAdmin().storage
     .from(BUCKET_NAME)
     .createSignedUrl(fileName, expiresIn);
 
@@ -39,7 +39,7 @@ export async function getSignedDownloadUrl(fileName: string, expiresIn = 300): P
 }
 
 export async function deleteFile(fileName: string): Promise<void> {
-  const { error } = await supabaseAdmin.storage.from(BUCKET_NAME).remove([fileName]);
+  const { error } = await getSupabaseAdmin().storage.from(BUCKET_NAME).remove([fileName]);
   if (error) {
     throw new Error(`Delete failed: ${error.message}`);
   }
