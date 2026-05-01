@@ -12,23 +12,39 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const search = searchParams.get("search");
-    const isPublic = searchParams.get("public");
+    const tag = searchParams.get("tag");
+    const authorId = searchParams.get("author");
     const limit = searchParams.get("limit");
+
+    // 获取当前用户（如有）
+    const accessToken = request.cookies.get("sb-access-token")?.value;
+    let currentUserId: string | null = null;
+    if (accessToken) {
+      const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+      currentUserId = userData.user?.id || null;
+    }
 
     let query = supabaseAdmin
       .from("notes")
       .select("*")
       .order("created_at", { ascending: false });
 
+    // 未登录用户只能看公开笔记；登录用户看公开笔记+自己的笔记
+    if (!currentUserId) {
+      query = query.eq("is_public", true);
+    } else {
+      query = query.or(`is_public.eq.true,author_id.eq.${currentUserId}`);
+    }
+
     if (category && category !== "all") {
       query = query.eq("category", category);
-    }
-    if (isPublic === "true") {
-      query = query.eq("is_public", true);
     }
     if (search) {
       const safeSearch = search.replace(/[%_]/g, "\\$&").substring(0, 100);
       query = query.or(`title.ilike.%${safeSearch}%,content.ilike.%${safeSearch}%`);
+    }
+    if (authorId) {
+      query = query.eq("author_id", authorId);
     }
     if (limit) {
       const limitNum = parseInt(limit);
@@ -40,7 +56,12 @@ export async function GET(request: NextRequest) {
     const { data: notesData, error: notesError } = await query;
     if (notesError) throw notesError;
 
-    const notes = notesData || [];
+    let notes = notesData || [];
+
+    // tag 筛选在内存中处理（避免 Supabase jsonb contains 在中文 tag 上的 500 错误）
+    if (tag) {
+      notes = notes.filter((n: { tags: unknown }) => Array.isArray(n.tags) && (n.tags as string[]).includes(tag));
+    }
     const authorIds = [...new Set(notes.map((n: { author_id: string }) => n.author_id))];
 
     let authorsMap: Record<string, { name: string | null; avatar_url: string | null }> = {};

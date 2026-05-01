@@ -1,47 +1,39 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Palette, Database, User } from "lucide-react";
-import { unstable_cache } from "next/cache";
 import { Suspense } from "react";
+import { ArrowRight, BookOpen, Palette, Database, User } from "lucide-react";
 import { db } from "@/lib/db";
 import { notes, profiles } from "@/storage/database/shared/schema";
-import { desc, eq, and, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
-const getRecentNotes = unstable_cache(
-  async () => {
-    return db
-      .select({
-        id: notes.id,
-        title: notes.title,
-        content: notes.content,
-        category: notes.category,
-        tags: notes.tags,
-        created_at: notes.created_at,
-        author_name: profiles.name,
-        author_avatar: profiles.avatar_url,
-      })
-      .from(notes)
-      .leftJoin(profiles, eq(notes.author_id, profiles.id))
-      .where(eq(notes.is_public, true))
-      .orderBy(desc(notes.created_at))
-      .limit(6);
-  },
-  ["home-recent-notes"],
-  { revalidate: 60, tags: ["notes"] }
-);
+async function getRecentNotes() {
+  return db
+    .select({
+      id: notes.id,
+      title: notes.title,
+      content: notes.content,
+      category: notes.category,
+      tags: notes.tags,
+      created_at: notes.created_at,
+      author_name: profiles.name,
+      author_avatar: profiles.avatar_url,
+    })
+    .from(notes)
+    .leftJoin(profiles, eq(notes.author_id, profiles.id))
+    .where(eq(notes.is_public, true))
+    .orderBy(desc(notes.created_at))
+    .limit(6);
+}
 
-const getNoteCount = unstable_cache(
-  async () => {
-    const result = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(notes)
-      .where(eq(notes.is_public, true));
-    return result[0]?.count ?? 0;
-  },
-  ["home-note-count"],
-  { revalidate: 300, tags: ["notes"] }
-);
+async function getNoteCount() {
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(notes)
+    .where(eq(notes.is_public, true));
+  return result[0]?.count ?? 0;
+}
 
-function truncate(str: string, n: number) {
+function truncate(str: string | null | undefined, n: number) {
+  if (!str) return "";
   return str.length > n ? str.substring(0, n - 1) + "..." : str;
 }
 

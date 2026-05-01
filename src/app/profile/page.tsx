@@ -14,6 +14,10 @@ interface Profile {
   bio: string;
   avatar_url: string;
   role: string;
+  contact_email: string;
+  github_url: string;
+  website_url: string;
+  linkedin_url: string;
   created_at: string;
 }
 
@@ -27,6 +31,10 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [editAvatar, setEditAvatar] = useState("");
+  const [editContactEmail, setEditContactEmail] = useState("");
+  const [editGithub, setEditGithub] = useState("");
+  const [editWebsite, setEditWebsite] = useState("");
+  const [editLinkedin, setEditLinkedin] = useState("");
 
   useEffect(() => {
     if (!user?.id) {
@@ -41,6 +49,10 @@ export default function ProfilePage() {
           setEditName(d.user.name || "");
           setEditBio(d.user.bio || "");
           setEditAvatar(d.user.avatar_url || "");
+          setEditContactEmail(d.user.contact_email || "");
+          setEditGithub(d.user.github_url || "");
+          setEditWebsite(d.user.website_url || "");
+          setEditLinkedin(d.user.linkedin_url || "");
         }
         setLoading(false);
       })
@@ -57,6 +69,10 @@ export default function ProfilePage() {
         name: editName,
         bio: editBio,
         avatar_url: editAvatar,
+        contact_email: editContactEmail,
+        github_url: editGithub,
+        website_url: editWebsite,
+        linkedin_url: editLinkedin,
       }),
     });
     setSaving(false);
@@ -147,6 +163,44 @@ export default function ProfilePage() {
                 className="mt-1 bg-muted border-none rounded-md"
               />
             </div>
+            <div>
+              <label className="text-sm font-medium">联系邮箱</label>
+              <Input
+                value={editContactEmail}
+                onChange={(e) => setEditContactEmail(e.target.value)}
+                placeholder="hello@example.com"
+                className="mt-1 bg-muted border-none rounded-md"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="text-sm font-medium">GitHub</label>
+                <Input
+                  value={editGithub}
+                  onChange={(e) => setEditGithub(e.target.value)}
+                  placeholder="https://github.com/..."
+                  className="mt-1 bg-muted border-none rounded-md"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">个人网站</label>
+                <Input
+                  value={editWebsite}
+                  onChange={(e) => setEditWebsite(e.target.value)}
+                  placeholder="https://..."
+                  className="mt-1 bg-muted border-none rounded-md"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">LinkedIn</label>
+              <Input
+                value={editLinkedin}
+                onChange={(e) => setEditLinkedin(e.target.value)}
+                placeholder="https://linkedin.com/in/..."
+                className="mt-1 bg-muted border-none rounded-md"
+              />
+            </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
                 <X className="mr-1.5 h-4 w-4" />
@@ -206,39 +260,45 @@ export default function ProfilePage() {
         <h2 className="mb-4 font-serif text-xl font-semibold text-primary">联系方式</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <a
-            href={`mailto:${profile?.email || "hello@example.com"}`}
+            href={`mailto:${profile?.contact_email || profile?.email || "hello@example.com"}`}
             className="flex items-center gap-3 rounded-lg bg-card p-3 shadow-card transition-all hover:shadow-float"
           >
             <Mail className="h-5 w-5 text-primary" />
-            <span className="text-sm text-foreground">{profile?.email || "hello@example.com"}</span>
+            <span className="text-sm text-foreground">{profile?.contact_email || profile?.email || "hello@example.com"}</span>
           </a>
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 rounded-lg bg-card p-3 shadow-card transition-all hover:shadow-float"
-          >
-            <Github className="h-5 w-5 text-primary" />
-            <span className="text-sm text-foreground">GitHub</span>
-          </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 rounded-lg bg-card p-3 shadow-card transition-all hover:shadow-float"
-          >
-            <Linkedin className="h-5 w-5 text-primary" />
-            <span className="text-sm text-foreground">LinkedIn</span>
-          </a>
-          <a
-            href="https://example.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 rounded-lg bg-card p-3 shadow-card transition-all hover:shadow-float"
-          >
-            <Globe className="h-5 w-5 text-primary" />
-            <span className="text-sm text-foreground">个人网站</span>
-          </a>
+          {profile?.github_url ? (
+            <a
+              href={profile.github_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-lg bg-card p-3 shadow-card transition-all hover:shadow-float"
+            >
+              <Github className="h-5 w-5 text-primary" />
+              <span className="text-sm text-foreground">GitHub</span>
+            </a>
+          ) : null}
+          {profile?.linkedin_url ? (
+            <a
+              href={profile.linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-lg bg-card p-3 shadow-card transition-all hover:shadow-float"
+            >
+              <Linkedin className="h-5 w-5 text-primary" />
+              <span className="text-sm text-foreground">LinkedIn</span>
+            </a>
+          ) : null}
+          {profile?.website_url ? (
+            <a
+              href={profile.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-lg bg-card p-3 shadow-card transition-all hover:shadow-float"
+            >
+              <Globe className="h-5 w-5 text-primary" />
+              <span className="text-sm text-foreground">个人网站</span>
+            </a>
+          ) : null}
         </div>
       </div>
     </div>

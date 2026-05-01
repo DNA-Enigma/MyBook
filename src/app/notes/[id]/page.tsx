@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, Trash2, Lock, Globe } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Lock, Globe, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -51,6 +51,22 @@ export default function NoteDetailPage() {
       setDeleting(false);
       alert("删除失败");
     }
+  };
+
+  const handleExport = async () => {
+    if (!note) return;
+    const res = await fetch(`/api/notes/export?id=${note.id}&format=markdown`);
+    if (!res.ok) {
+      alert("导出失败");
+      return;
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${note.title.replace(/[^\w\u4e00-\u9fa5]/g, "_")}.md`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const isAdmin = user?.role === "admin";
@@ -122,20 +138,26 @@ export default function NoteDetailPage() {
         )}
       </div>
 
-      {canEdit && (
-        <div className="mt-4 flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/notes/edit?id=${note.id}`}>
-              <Pencil className="mr-1 h-3.5 w-3.5" />
-              编辑
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDelete} disabled={deleting}>
-            <Trash2 className="mr-1 h-3.5 w-3.5" />
-            {deleting ? "删除中..." : "删除"}
-          </Button>
-        </div>
-      )}
+      <div className="mt-4 flex gap-2">
+        {canEdit && (
+          <>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/notes/edit?id=${note.id}`}>
+                <Pencil className="mr-1 h-3.5 w-3.5" />
+                编辑
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDelete} disabled={deleting}>
+              <Trash2 className="mr-1 h-3.5 w-3.5" />
+              {deleting ? "删除中..." : "删除"}
+            </Button>
+          </>
+        )}
+        <Button variant="outline" size="sm" onClick={handleExport}>
+          <Download className="mr-1 h-3.5 w-3.5" />
+          导出 Markdown
+        </Button>
+      </div>
 
       <div className="prose prose-stone mt-8 max-w-none dark:prose-invert">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
@@ -144,12 +166,13 @@ export default function NoteDetailPage() {
       {note.tags?.length > 0 && (
         <div className="mt-10 flex flex-wrap gap-2 border-t border-border pt-6">
           {note.tags.map((tag) => (
-            <span
+            <Link
               key={tag}
-              className="rounded bg-muted px-3 py-1 text-sm text-muted-foreground"
+              href={`/notes?tag=${encodeURIComponent(tag)}`}
+              className="rounded bg-muted px-3 py-1 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
             >
               {tag}
-            </span>
+            </Link>
           ))}
         </div>
       )}

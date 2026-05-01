@@ -35,6 +35,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-on-primary: var(--primary-foreground);
+  --color-on-surface: var(--foreground);
+  --color-on-surface-variant: var(--muted-foreground);
+  --color-surface: var(--card);
+  --color-surface-container: var(--muted);
+  --color-surface-container-low: var(--background);
+  --color-outline: var(--border);
+  --color-outline-variant: var(--border);
   --color-surface-container-high: var(--surface-container-high);
   --color-surface-container-highest: var(--surface-container-highest);
   --radius-sm: calc(var(--radius) - 4px);

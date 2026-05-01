@@ -28,6 +28,25 @@ export async function GET(
     if (noteError) throw noteError;
     if (!note) return NextResponse.json({ error: "笔记不存在" }, { status: 404 });
 
+    // 权限检查：私密笔记只有作者本人或管理员可查看
+    const accessToken = request.cookies.get("sb-access-token")?.value;
+    let currentUserId: string | null = null;
+    let isAdmin = false;
+    if (accessToken) {
+      const { data: userData } = await supabaseAdmin.auth.getUser(accessToken);
+      currentUserId = userData.user?.id || null;
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("role")
+        .eq("id", currentUserId || "")
+        .maybeSingle();
+      isAdmin = profile?.role === "admin";
+    }
+
+    if (!note.is_public && note.author_id !== currentUserId && !isAdmin) {
+      return NextResponse.json({ error: "无权查看该笔记" }, { status: 403 });
+    }
+
     // 手动查询作者信息（Supabase 自动 JOIN 需要直接外键）
     let author = null;
     if (note.author_id) {
