@@ -4,7 +4,15 @@ import { checkRateLimit } from "@/lib/security";
 
 const MAX_NAME_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 5000;
-const ALLOWED_CATEGORIES = ["软件", "文档", "图片媒体", "Docker镜像"];
+const ALLOWED_CATEGORIES = ["软件", "文档", "图片媒体", "Docker镜像", "安装包", "压缩包", "源码", "其他"];
+const ALLOWED_FILE_TYPES = [
+  "application/zip", "application/x-zip-compressed",
+  "application/x-rar-compressed", "application/x-7z-compressed",
+  "application/x-tar", "application/gzip",
+  "application/x-msdownload", "application/x-dmg",
+  "application/x-executable", "text/plain",
+  "application/pdf", "application/json",
+];
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query;
     if (error) throw error;
-    return NextResponse.json({ resources: data || [] });
+    return NextResponse.json({ resources: (data || []).filter((r: Record<string, unknown>) => r.status === "approved") });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "查询失败" },
@@ -43,15 +51,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    // 管理员权限校验
+    // 获取用户角色
     const { data: profile } = await getSupabaseAdmin()
       .from("profiles")
       .select("role")
       .eq("id", userData.user.id)
       .maybeSingle();
-    if (profile?.role !== "admin") {
-      return NextResponse.json({ error: "无权限，仅管理员可操作" }, { status: 403 });
-    }
+    const isAdmin = profile?.role === "admin";
 
     // 速率限制
     const rateKey = `resources_create:${userData.user.id}`;
@@ -102,6 +108,8 @@ export async function POST(request: NextRequest) {
         file_type: body.file_type || null,
         file_size: body.file_size || null,
         category,
+        author_id: userData.user.id,
+        status: isAdmin ? "approved" : "pending",
         docker_pull_cmd: body.docker_pull_cmd || null,
         is_public: body.is_public ?? true,
       })

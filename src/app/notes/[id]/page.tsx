@@ -159,7 +159,7 @@ export default function NoteDetailPage() {
         </Button>
       </div>
 
-      <div className="prose prose-stone mt-8 max-w-none dark:prose-invert">
+      <div className="prose prose-stone mt-8 max-w-none dark:prose-invert [&_p]:whitespace-pre-wrap">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
       </div>
 

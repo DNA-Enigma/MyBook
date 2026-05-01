@@ -7,7 +7,8 @@ import { eq, desc } from "drizzle-orm";
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 10000;
-const ALLOWED_CATEGORIES = ["设计", "开发", "摄影", "写作"];
+const ALLOWED_CATEGORIES = ["设计", "开发", "摄影", "写作", "项目", "其他"];
+const ALLOWED_WORK_TYPES = ["project", "website", "photography", "design"];
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
         description: works.description,
         cover_image_url: works.cover_image_url,
         category: works.category,
+        work_type: works.work_type,
         tech_stack: works.tech_stack,
         external_link: works.external_link,
         is_public: works.is_public,
@@ -102,6 +104,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "无效的分类" }, { status: 400 });
     }
 
+    // 作品类型验证
+    const workType = body.work_type || "project";
+    if (!ALLOWED_WORK_TYPES.includes(workType)) {
+      return NextResponse.json({ error: "无效的作品类型" }, { status: 400 });
+    }
+
     const { data, error } = await getSupabaseAdmin()
       .from("works")
       .insert({
@@ -109,6 +117,7 @@ export async function POST(request: NextRequest) {
         description,
         cover_image_url: body.cover_image_url || null,
         category,
+        work_type: workType,
         tech_stack: Array.isArray(body.tech_stack) ? body.tech_stack : [],
         external_link: body.external_link || null,
         is_public: body.is_public ?? true,

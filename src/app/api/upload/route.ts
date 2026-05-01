@@ -75,8 +75,14 @@ export async function POST(request: NextRequest) {
       success: true,
     });
   } catch (err) {
+    const envCheck = {
+      url: !!process.env.COZE_SUPABASE_URL,
+      key: !!(process.env.COZE_SUPABASE_SERVICE_ROLE_KEY || "").slice(0, 10),
+      bucket: process.env.COZE_BUCKET_NAME || "uploads",
+    };
+    console.error("[UPLOAD ERROR]", JSON.stringify({ envCheck, error: String(err), stack: (err as Error).stack }));
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "上传失败" },
+      { error: err instanceof Error ? err.message : "上传失败", debug: envCheck },
       { status: 500 }
     );
   }

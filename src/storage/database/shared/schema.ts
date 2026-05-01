@@ -58,6 +58,7 @@ export const works = pgTable(
     description: text("description"),
     cover_image_url: text("cover_image_url"),
     category: varchar("category", { length: 50 }).notNull().default("开发"),
+    work_type: varchar("work_type", { length: 30 }).notNull().default("project"),
     tech_stack: jsonb("tech_stack"),
     external_link: text("external_link"),
     author_id: text("author_id").references(() => profiles.id, { onDelete: "set null" }),
@@ -73,6 +74,16 @@ export const works = pgTable(
   ]
 );
 
+export const resourceTypes = pgTable(
+  "resource_types",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    name: varchar("name", { length: 50 }).notNull().unique(),
+    description: text("description"),
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  }
+);
+
 export const resources = pgTable(
   "resources",
   {
@@ -84,6 +95,8 @@ export const resources = pgTable(
     file_type: varchar("file_type", { length: 50 }),
     file_size: bigint("file_size", { mode: "number" }),
     category: varchar("category", { length: 50 }).notNull().default("software"),
+    author_id: varchar("author_id", { length: 36 }),
+    status: varchar("status", { length: 20 }).notNull().default("approved"),
     docker_pull_cmd: text("docker_pull_cmd"),
     download_count: integer("download_count").notNull().default(0),
     is_public: boolean("is_public").notNull().default(true),

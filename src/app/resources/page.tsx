@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Upload, Download, Copy, FileText, Image, Box, Package } from "lucide-react";
+import { Search, Upload, Download, Copy, FileText, Image, Box, Package, Archive, FileCode, CheckCircle, XCircle, Clock } from "lucide-react";
 
 interface Resource {
   id: string;
@@ -20,13 +20,17 @@ interface Resource {
   created_at: string;
 }
 
-const categories = ["全部", "软件", "文档", "图片媒体", "Docker镜像"];
+const categories = ["全部", "软件", "文档", "图片媒体", "Docker镜像", "安装包", "压缩包", "源码", "其他"];
 
 const categoryIcons: Record<string, typeof Package> = {
   软件: Package,
   文档: FileText,
   图片媒体: Image,
   Docker镜像: Box,
+  安装包: Package,
+  压缩包: Archive,
+  源码: FileCode,
+  其他: Package,
 };
 
 export default function ResourcesPage() {
@@ -34,8 +38,9 @@ export default function ResourcesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("全部");
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
+  const [pendingResources, setPendingResources] = useState<Resource[]>([]);
 
   const fetchResources = async () => {
     setLoading(true);
@@ -89,7 +94,7 @@ export default function ResourcesPage() {
           <h1 className="font-serif text-4xl font-bold text-primary">资源库</h1>
           <p className="mt-2 text-muted-foreground">汇集软件、文档、媒体素材与 Docker 镜像</p>
         </div>
-        {isAdmin && (
+        {user && (
           <Button
             onClick={() => setShowUpload(true)}
             className="bg-primary text-primary-foreground hover:opacity-90"

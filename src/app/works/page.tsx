@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Link as LinkIcon, Code, Image as ImageIcon, Palette } from "lucide-react";
 
 interface Work {
   id: string;
   title: string;
   description: string;
   category: string;
+  work_type?: string;
   tech_stack: string[];
   cover_image_url: string;
   external_link: string;
@@ -20,14 +21,28 @@ interface Work {
   author?: { name: string | null; avatar_url: string | null } | null;
 }
 
-const categories = ["全部", "设计", "开发", "摄影", "写作"];
+const categories = ["全部", "设计", "开发", "摄影", "写作", "项目", "其他"];
+
+const workTypeIcons: Record<string, React.ReactNode> = {
+  website: <LinkIcon className="h-3.5 w-3.5" />,
+  project: <Code className="h-3.5 w-3.5" />,
+  photography: <ImageIcon className="h-3.5 w-3.5" />,
+  design: <Palette className="h-3.5 w-3.5" />,
+};
+
+const workTypeLabels: Record<string, string> = {
+  website: "网址链接",
+  project: "项目介绍",
+  photography: "摄影集",
+  design: "设计方案",
+};
 
 export default function WorksPage() {
   const [works, setWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("全部");
-  const { isAdmin } = useAuth();
+  const { user } = useAuth();
 
   const fetchWorks = async () => {
     setLoading(true);
@@ -60,7 +75,7 @@ export default function WorksPage() {
           <h1 className="font-serif text-4xl font-bold text-primary">作品</h1>
           <p className="mt-2 text-muted-foreground">展示设计、开发与创意项目</p>
         </div>
-        {isAdmin && (
+        {user && (
           <Button asChild className="bg-primary text-primary-foreground hover:opacity-90">
             <Link href="/works/edit">
               <Plus className="mr-1.5 h-4 w-4" />

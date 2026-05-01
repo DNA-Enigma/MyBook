@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Trash2, Pencil, Link as LinkIcon, Code, Image as ImageIcon, Palette } from "lucide-react";
 
 interface Work {
   id: string;
   title: string;
   description: string;
   category: string;
+  work_type?: string;
   tech_stack: string[];
   cover_image_url: string;
   external_link: string;
@@ -20,9 +21,23 @@ interface Work {
   author?: { name: string | null; avatar_url: string | null } | null;
 }
 
+const workTypeLabels: Record<string, string> = {
+  website: "网址链接",
+  project: "项目介绍",
+  photography: "摄影集",
+  design: "设计方案",
+};
+
+const workTypeIcons: Record<string, React.ReactNode> = {
+  website: <LinkIcon className="h-4 w-4" />,
+  project: <Code className="h-4 w-4" />,
+  photography: <ImageIcon className="h-4 w-4" />,
+  design: <Palette className="h-4 w-4" />,
+};
+
 export default function WorkDetailPage() {
   const { id } = useParams();
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [work, setWork] = useState<Work | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -86,10 +101,16 @@ export default function WorkDetailPage() {
           返回作品列表
         </Link>
 
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
             {work.category}
           </span>
+          {work.work_type && (
+            <span className="inline-flex items-center gap-1 rounded border border-border px-2 py-0.5 text-xs text-muted-foreground">
+              {workTypeIcons[work.work_type] || null}
+              {workTypeLabels[work.work_type] || work.work_type}
+            </span>
+          )}
           {work.author_id && (
             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
@@ -115,10 +136,8 @@ export default function WorkDetailPage() {
           ))}
         </div>
 
-        <div className="mt-8 space-y-4 text-base leading-relaxed text-foreground">
-          {work.description.split("\n\n").map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
+        <div className="mt-8 text-base leading-relaxed text-foreground whitespace-pre-wrap">
+          {work.description}
         </div>
 
         {work.external_link && (
@@ -126,15 +145,21 @@ export default function WorkDetailPage() {
             <Button asChild className="bg-primary text-primary-foreground hover:opacity-90">
               <a href={work.external_link} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-1.5 h-4 w-4" />
-                查看项目
+                {work.work_type === "website" ? "访问网站" : "查看项目"}
               </a>
             </Button>
           </div>
         )}
 
-        {isAdmin && (
+        {(isAdmin || work.author_id === user?.id) && (
           <div className="mt-8 flex gap-2 border-t border-border pt-6">
-            <Button variant="outline" size="sm" onClick={handleDelete}>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/works/edit?id=${work.id}`}>
+                <Pencil className="mr-1.5 h-4 w-4" />
+                编辑
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDelete} className="text-destructive hover:bg-destructive/10">
               <Trash2 className="mr-1.5 h-4 w-4" />
               删除
             </Button>
