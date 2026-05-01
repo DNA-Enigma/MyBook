@@ -16,14 +16,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录或登录已过期" }, { status: 401 });
     }
 
-    // 仅管理员可上传资源
-    const { data: profile } = await getSupabaseAdmin()
-      .from("profiles")
-      .select("role")
-      .eq("id", userData.user.id)
-      .single();
-    if (!profile || profile.role !== "admin") {
-      return NextResponse.json({ error: "无权上传，仅管理员可操作" }, { status: 403 });
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    if (!file) {
+      return NextResponse.json({ error: "未提供文件" }, { status: 400 });
+    }
+
+    const isImage = file.type.startsWith("image/");
+
+    // 图片允许所有登录用户上传（用于头像），其他文件仅管理员可上传
+    if (!isImage) {
+      const { data: profile } = await getSupabaseAdmin()
+        .from("profiles")
+        .select("role")
+        .eq("id", userData.user.id)
+        .single();
+      if (!profile || profile.role !== "admin") {
+        return NextResponse.json({ error: "无权上传，仅管理员可操作" }, { status: 403 });
+      }
     }
 
     // 速率限制：每个用户每分钟最多 10 次上传
@@ -34,12 +44,6 @@ export async function POST(request: NextRequest) {
         { error: `上传过于频繁，请${rateCheck.retryAfter}秒后重试` },
         { status: 429 }
       );
-    }
-
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-    if (!file) {
-      return NextResponse.json({ error: "未提供文件" }, { status: 400 });
     }
 
     // 文件安全检查

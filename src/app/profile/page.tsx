@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, Mail, Github, Globe, Linkedin, Save, X } from "lucide-react";
+import { Pencil, Mail, Github, Globe, Linkedin, Save, X, Upload, User } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -35,6 +35,8 @@ export default function ProfilePage() {
   const [editGithub, setEditGithub] = useState("");
   const [editWebsite, setEditWebsite] = useState("");
   const [editLinkedin, setEditLinkedin] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
 
   useEffect(() => {
     if (!user?.id) {
@@ -62,13 +64,26 @@ export default function ProfilePage() {
   const handleSave = async () => {
     if (!user?.id) return;
     setSaving(true);
+    let avatarUrl = editAvatar;
+    if (avatarFile) {
+      const formData = new FormData();
+      formData.append("file", avatarFile);
+      const uploadRes = await fetch(`/api/upload`, { method: "POST", body: formData });
+      if (!uploadRes.ok) {
+        setSaving(false);
+        alert("头像上传失败");
+        return;
+      }
+      const uploadData = await uploadRes.json();
+      avatarUrl = uploadData.publicUrl || uploadData.url || "";
+    }
     const res = await fetch(`/api/profile`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: editName,
         bio: editBio,
-        avatar_url: editAvatar,
+        avatar_url: avatarUrl,
         contact_email: editContactEmail,
         github_url: editGithub,
         website_url: editWebsite,
@@ -80,6 +95,8 @@ export default function ProfilePage() {
       const data = await res.json();
       setProfile(data.profile);
       setEditing(false);
+      setAvatarFile(null);
+      setAvatarPreview("");
     } else {
       alert("保存失败");
     }
@@ -146,13 +163,45 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">头像 URL</label>
-              <Input
-                value={editAvatar}
-                onChange={(e) => setEditAvatar(e.target.value)}
-                placeholder="https://..."
-                className="mt-1 bg-muted border-none rounded-md"
-              />
+              <label className="text-sm font-medium">头像</label>
+              <div className="mt-2 flex items-center gap-4">
+                <div className="relative h-16 w-16 overflow-hidden rounded-full border border-border bg-muted">
+                  {(avatarPreview || editAvatar) ? (
+                    <img
+                      src={avatarPreview || editAvatar}
+                      alt="头像预览"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                      <User className="h-8 w-8" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/80 transition-colors">
+                    <Upload className="h-4 w-4" />
+                    选择图片
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setAvatarFile(file);
+                          const reader = new FileReader();
+                          reader.onloadend = () => setAvatarPreview(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                  {avatarFile && (
+                    <span className="text-xs text-muted-foreground">{avatarFile.name}</span>
+                  )}
+                </div>
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium">简介</label>
