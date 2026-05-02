@@ -20,6 +20,8 @@ export async function PUT(request: NextRequest) {
         name: body.name,
         bio: body.bio,
         avatar_url: body.avatar_url,
+        role: body.role,
+        skills: body.skills,
         contact_email: body.contact_email,
         github_url: body.github_url,
         website_url: body.website_url,

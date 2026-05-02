@@ -11,8 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Save, X, Upload, Link as LinkIcon, Image as ImageIcon, Code } from "lucide-react";
 
-const categories = ["设计", "开发", "摄影", "写作", "项目", "其他"];
-const workTypes = [
+const defaultCategories = ["设计", "开发", "摄影", "写作", "项目", "其他"];
+const defaultWorkTypes = [
   { value: "project", label: "项目介绍", icon: Code },
   { value: "website", label: "网址链接", icon: LinkIcon },
   { value: "photography", label: "摄影集", icon: ImageIcon },
@@ -43,6 +43,8 @@ function WorkEditPage() {
   const [coverPreview, setCoverPreview] = useState("");
   const [techStack, setTechStack] = useState<string[]>([]);
   const [techInput, setTechInput] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
+  const [customWorkType, setCustomWorkType] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -106,14 +108,16 @@ function WorkEditPage() {
       const finalCover = await uploadCover();
       const url = workId ? `/api/works/${workId}` : "/api/works";
       const method = workId ? "PUT" : "POST";
+      const finalCategory = category === "__custom__" ? customCategory.trim() || "其他" : category;
+      const finalWorkType = workType === "__custom__" ? customWorkType.trim() || "project" : workType;
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
           description,
-          category,
-          work_type: workType,
+          category: finalCategory,
+          work_type: finalWorkType,
           external_link: externalLink || null,
           cover_image_url: finalCover || null,
           tech_stack: techStack,
@@ -173,29 +177,51 @@ function WorkEditPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="category">分类</Label>
-            <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="mt-1.5 w-full rounded-md bg-muted px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+            <div className="mt-1.5 flex gap-2">
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => { setCategory(e.target.value); if (e.target.value !== "__custom__") setCustomCategory(""); }}
+                className="flex-1 rounded-md bg-muted px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                {defaultCategories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+                <option value="__custom__">自定义...</option>
+              </select>
+            </div>
+            {category === "__custom__" && (
+              <Input
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="输入自定义分类"
+                className="mt-2 bg-muted border-none rounded-md"
+              />
+            )}
           </div>
           <div>
             <Label htmlFor="workType">作品类型</Label>
-            <select
-              id="workType"
-              value={workType}
-              onChange={(e) => setWorkType(e.target.value)}
-              className="mt-1.5 w-full rounded-md bg-muted px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
-            >
-              {workTypes.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
+            <div className="mt-1.5 flex gap-2">
+              <select
+                id="workType"
+                value={workType}
+                onChange={(e) => { setWorkType(e.target.value); if (e.target.value !== "__custom__") setCustomWorkType(""); }}
+                className="flex-1 rounded-md bg-muted px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                {defaultWorkTypes.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+                <option value="__custom__">自定义...</option>
+              </select>
+            </div>
+            {workType === "__custom__" && (
+              <Input
+                value={customWorkType}
+                onChange={(e) => setCustomWorkType(e.target.value)}
+                placeholder="输入自定义类型"
+                className="mt-2 bg-muted border-none rounded-md"
+              />
+            )}
           </div>
         </div>
 

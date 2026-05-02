@@ -14,6 +14,7 @@ interface Profile {
   bio: string;
   avatar_url: string;
   role: string;
+  skills: string[];
   contact_email: string;
   github_url: string;
   website_url: string;
@@ -35,6 +36,9 @@ export default function ProfilePage() {
   const [editGithub, setEditGithub] = useState("");
   const [editWebsite, setEditWebsite] = useState("");
   const [editLinkedin, setEditLinkedin] = useState("");
+  const [editRole, setEditRole] = useState("");
+  const [editSkills, setEditSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
 
@@ -55,6 +59,8 @@ export default function ProfilePage() {
           setEditGithub(d.user.github_url || "");
           setEditWebsite(d.user.website_url || "");
           setEditLinkedin(d.user.linkedin_url || "");
+          setEditRole(d.user.role || "");
+          setEditSkills(Array.isArray(d.user.skills) ? d.user.skills : []);
         }
         setLoading(false);
       })
@@ -84,6 +90,8 @@ export default function ProfilePage() {
         name: editName,
         bio: editBio,
         avatar_url: avatarUrl,
+        role: editRole,
+        skills: editSkills,
         contact_email: editContactEmail,
         github_url: editGithub,
         website_url: editWebsite,
@@ -102,10 +110,9 @@ export default function ProfilePage() {
     }
   };
 
-  const skills = [
-    "React", "TypeScript", "Node.js", "Next.js", "UI 设计",
-    "摄影", "Tailwind CSS", "PostgreSQL", "Docker", "Go"
-  ];
+  const defaultSkills = ["React", "TypeScript", "Node.js", "Next.js", "UI 设计", "摄影", "Tailwind CSS", "PostgreSQL", "Docker", "Go"];
+
+  const displaySkills = profile?.skills?.length ? profile.skills : defaultSkills;
 
   if (loading) {
     return (
@@ -125,17 +132,24 @@ export default function ProfilePage() {
     <div className="mx-auto max-w-4xl px-6 py-10">
       {/* Header */}
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-        <img
-          src={profile?.avatar_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face"}
-          alt="头像"
-          className="h-24 w-24 rounded-full object-cover shadow-float"
-        />
+        {profile?.avatar_url ? (
+          <img
+            src={profile.avatar_url}
+            alt="头像"
+            className="h-24 w-24 rounded-full object-cover shadow-float"
+            onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face"; }}
+          />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted shadow-float">
+            <User className="h-12 w-12 text-muted-foreground" />
+          </div>
+        )}
         <div className="flex-1 text-center sm:text-left">
           <h1 className="font-serif text-3xl font-bold text-primary">
             {profile?.name || "创作者"}
           </h1>
           <p className="mt-1 text-muted-foreground">
-            {isAdmin ? "管理员 / 全栈开发者" : "用户"}
+            {profile?.role === "admin" ? "管理员" : profile?.role || "用户"}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             加入于 {profile?.created_at ? new Date(profile.created_at).toLocaleDateString("zh-CN") : "-"}
@@ -221,6 +235,44 @@ export default function ProfilePage() {
                 className="mt-1 bg-muted border-none rounded-md"
               />
             </div>
+            <div>
+              <label className="text-sm font-medium">身份标签</label>
+              <Input
+                value={editRole}
+                onChange={(e) => setEditRole(e.target.value)}
+                placeholder="如：全栈开发者 / 设计师 / 摄影师"
+                className="mt-1 bg-muted border-none rounded-md"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">技术栈 / 技能</label>
+              <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-muted px-3 py-2">
+                {editSkills.map((s) => (
+                  <span key={s} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                    {s}
+                    <button type="button" onClick={() => setEditSkills((prev) => prev.filter((x) => x !== s))}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+                <input
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const val = skillInput.trim();
+                      if (val && !editSkills.includes(val)) {
+                        setEditSkills([...editSkills, val]);
+                        setSkillInput("");
+                      }
+                    }
+                  }}
+                  placeholder="输入后按回车添加"
+                  className="min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
+                />
+              </div>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">GitHub</label>
@@ -293,7 +345,7 @@ export default function ProfilePage() {
       <div className="mt-10 border-t border-border pt-10">
         <h2 className="mb-4 font-serif text-xl font-semibold text-primary">技术栈</h2>
         <div className="flex flex-wrap gap-2">
-          {skills.map((skill) => (
+          {displaySkills.map((skill) => (
             <span
               key={skill}
               className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     const { data: profile } = await client
       .from("profiles")
-      .select("id, email, name, role, avatar_url, bio, contact_email, github_url, website_url, linkedin_url, created_at")
+      .select("id, email, name, role, avatar_url, bio, skills, contact_email, github_url, website_url, linkedin_url, created_at")
       .eq("id", userData.user.id)
       .maybeSingle();
 
@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       role: "user",
       avatar_url: null,
       bio: null,
+      skills: null,
       contact_email: null,
       github_url: null,
       website_url: null,

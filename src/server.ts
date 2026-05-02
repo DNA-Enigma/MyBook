@@ -12,13 +12,14 @@ const cspImgSrc = [
   'blob:',
   'https://images.unsplash.com',
   'https://*.supabase.co',
+  'https://*.supabase2.aidap-global.cn-beijing.volces.com',
   'https://s3.amazonaws.com',
   'https://*.s3.amazonaws.com',
 ].join(' ');
 
 const securityHeaders: Record<string, string> = {
   'Content-Security-Policy':
-    `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'; img-src ${cspImgSrc}; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';`,
+    `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.supabase2.aidap-global.cn-beijing.volces.com; img-src ${cspImgSrc}; media-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';`,
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
