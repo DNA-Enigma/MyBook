@@ -308,9 +308,9 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       return;
     }
 
-    // 前端预检文件大小（500MB）
-    if (file && file.size > 500 * 1024 * 1024) {
-      setErrorMsg(`文件过大（${formatSize(file.size)}），最大支持 500MB`);
+    // 前端预检文件大小（2GB）
+    if (file && file.size > 2 * 1024 * 1024 * 1024) {
+      setErrorMsg(`文件过大（${formatSize(file.size)}），最大支持 2GB`);
       return;
     }
 
@@ -421,7 +421,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                   {file.name} ({formatSize(file.size)})
                 </p>
               )}
-              <p className="mt-1 text-xs text-muted-foreground/60">支持最大 500MB 文件</p>
+              <p className="mt-1 text-xs text-muted-foreground/60">支持最大 2GB 文件</p>
             </div>
           )}
           {uploading && (
