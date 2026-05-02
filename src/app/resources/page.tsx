@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Upload, Download, Copy, FileText, Image, Box, Package, Archive, FileCode, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Search, Upload, Download, Copy, FileText, Image, Box, Package, Archive, FileCode } from "lucide-react";
+import * as tus from "tus-js-client";
 
 interface Resource {
   id: string;
@@ -226,6 +227,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [progressText, setProgressText] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const abortRef = useRef(false);
+  const tusUploadRef = useRef<tus.Upload | null>(null);
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -235,6 +237,10 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
 
   const handleCancel = () => {
     abortRef.current = true;
+    if (tusUploadRef.current) {
+      tusUploadRef.current.abort();
+      tusUploadRef.current = null;
+    }
     setUploading(false);
     setProgress(0);
     setProgressText("");
@@ -264,73 +270,76 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     let fileKey = null as string | null;
     if (file && category !== "Docker镜像") {
       try {
-        const CHUNK_SIZE = 8 * 1024 * 1024; // 8MB per chunk — well under proxy body size limit
-        const totalSize = file.size;
-        const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
-
-        // Step 1: Initialize chunked upload
-        setProgressText("初始化上传...");
-        const initRes = await fetch("/api/upload/chunk-init", {
+        // 获取 TUS 上传参数
+        setProgressText("准备上传...");
+        const paramsRes = await fetch("/api/upload/tus-params", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             fileName: file.name,
-            fileSize: totalSize,
             contentType: file.type || "application/octet-stream",
-            totalChunks,
           }),
         });
-        if (!initRes.ok) {
-          const d = await initRes.json();
-          throw new Error(d.error || "初始化上传失败");
+        if (!paramsRes.ok) {
+          const d = await paramsRes.json();
+          throw new Error(d.error || "获取上传参数失败");
         }
-        const { uploadId } = await initRes.json();
+        const { tusEndpoint, accessToken, bucketName, filePath, contentType } = await paramsRes.json();
 
-        // Step 2: Upload each chunk
-        for (let i = 0; i < totalChunks; i++) {
-          if (abortRef.current) throw new Error("上传已取消");
-
-          const start = i * CHUNK_SIZE;
-          const end = Math.min(start + CHUNK_SIZE, totalSize);
-          const chunk = file.slice(start, end);
-
-          setProgressText(`上传分片 ${i + 1}/${totalChunks}...`);
-
-          const formData = new FormData();
-          formData.append("uploadId", uploadId);
-          formData.append("chunkIndex", String(i));
-          formData.append("chunk", chunk);
-
-          const chunkRes = await fetch("/api/upload/chunk", {
-            method: "POST",
-            body: formData,
+        // 使用 TUS 协议直传 Supabase Storage
+        setProgressText("上传中...");
+        await new Promise<void>((resolve, reject) => {
+          const upload = new tus.Upload(file, {
+            endpoint: tusEndpoint,
+            retryDelays: [0, 3000, 5000, 10000],
+            headers: {
+              authorization: `Bearer ${accessToken}`,
+              "x-upsert": "true",
+            },
+            uploadDataDuringCreation: true,
+            removeFingerprintOnSuccess: true,
+            metadata: {
+              bucketName,
+              objectName: filePath,
+              contentType,
+              cacheControl: "3600",
+            },
+            chunkSize: 6 * 1024 * 1024, // 6MB per chunk
+            onError: (error) => {
+              tusUploadRef.current = null;
+              reject(new Error(`上传失败: ${error.message || error}`));
+            },
+            onProgress: (bytesUploaded, bytesTotal) => {
+              const pct = Math.round((bytesUploaded / bytesTotal) * 95);
+              setProgress(pct);
+              setProgressText(`已上传 ${formatSize(bytesUploaded)} / ${formatSize(bytesTotal)}`);
+            },
+            onSuccess: () => {
+              tusUploadRef.current = null;
+              resolve();
+            },
           });
-          if (!chunkRes.ok) {
-            const d = await chunkRes.json();
-            throw new Error(d.error || `分片 ${i + 1} 上传失败`);
-          }
 
-          // Update progress: chunk upload progress
-          const pct = Math.round(((i + 1) / totalChunks) * 95); // 95% for upload, 5% for merge
-          setProgress(pct);
-          setProgressText(`已上传 ${formatSize(end)} / ${formatSize(totalSize)}`);
-        }
+          tusUploadRef.current = upload;
 
-        // Step 3: Complete upload — merge chunks and upload to Supabase Storage
-        setProgressText("合并上传中...");
-        setProgress(96);
-        const completeRes = await fetch("/api/upload/chunk-complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uploadId }),
+          // 检查是否支持 TUS
+          upload.findPreviousUploads().then(() => {
+            upload.start();
+          }).catch(() => {
+            upload.start();
+          });
         });
-        if (!completeRes.ok) {
-          const d = await completeRes.json();
-          throw new Error(d.error || "合并上传失败");
+
+        // 上传成功后获取公开 URL
+        const publicUrlRes = await fetch(
+          `/api/upload/public-url?filePath=${encodeURIComponent(filePath)}`
+        );
+        if (!publicUrlRes.ok) {
+          throw new Error("获取文件地址失败");
         }
-        const { publicUrl, key } = await completeRes.json();
+        const { publicUrl } = await publicUrlRes.json();
         fileUrl = publicUrl;
-        fileKey = key;
+        fileKey = filePath;
 
         setProgress(100);
         setProgressText("保存资源信息...");

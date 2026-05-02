@@ -1,51 +1,71 @@
-# 优化迭代计划
+# 大文件上传修复计划
 
 ## 概述
 
-基于已上线的个人综合服务门户，进行性能、安全、测试和 SEO 四个维度的深度优化。核心改动包括：首页服务端组件化、图片域名白名单收紧、测试用例覆盖、全站 SEO 元数据与错误边界补充。
+修复资源库大文件（>50MB）上传失败的问题。根因是 Supabase Storage 单文件大小限制（免费版 50MB），92MB 的文件在 chunk-complete 合并后调用 `uploadFile` 上传到 Supabase Storage 时被拒绝（"The object exceeded the maximum allowed size"）。需要将合并后的文件分段上传到 Supabase Storage（使用 Multipart Upload / TUS 协议），或改用分段上传后不合并直接存储分片。
 
 ## 技术方案
 
 | 维度 | 选择 | 理由 |
 |------|------|------|
-| 测试框架 | Vitest + React Testing Library + MSW | 轻量快速，与 Next.js 生态兼容好，支持 API Mock |
-| 服务端数据获取 | Drizzle ORM 直连 + `unstable_cache` | 避免二次 HTTP 请求，提升首屏速度，支持 ISR |
-| 图片限制 | `images.remotePatterns` 白名单 | 防止恶意图片外链、减少 CDN 被滥用风险 |
-| SEO | Next.js `metadata` API + Open Graph | 原生支持，无需额外库，各页面独立配置 |
+| 大文件上传策略 | Supabase Storage Multipart Upload | Supabase 支持 S3 兼容的分段上传 API，单段最大 5GB，总分段最多 10000，可突破 50MB 限制 |
+| 分段大小 | 5MB/段 | Supabase Multipart Upload 要求每段 5MB~5GB，5MB 适配代理层限制 |
+| 小文件兼容 | ≤50MB 继续用现有 uploadFile | 避免不必要的改动，小文件走现有流程 |
+| 文件大小限制提示 | 前端提示最大支持文件大小 | 避免用户上传超限文件后才知道失败 |
+
+## 根因分析
+
+```
+用户上传 92MB Steam.zip
+  → chunk-init: 创建分片会话 ✅
+  → chunk x10: 每片 10MB 上传到 /tmp ✅
+  → chunk-complete: 合并所有分片为 92MB Buffer ✅
+  → uploadFile(buffer) 上传到 Supabase Storage ❌ "The object exceeded the maximum allowed size"
+```
+
+**关键**：分片上传绕过了代理层 body size 限制，但最终合并后整个文件仍以单个对象上传到 Supabase Storage，受限于 Supabase 的单对象大小上限。
+
+## 解决方案
+
+使用 Supabase Storage 的 S3 兼容 Multipart Upload API：
+
+1. **chunk-complete 不再合并所有分片为单个 Buffer**
+2. 改为：
+   - 调用 `createMultipartUpload` 初始化分段上传，获取 `uploadId`
+   - 逐段读取分片文件，调用 `uploadPart` 上传每个分段到 Supabase Storage
+   - 所有分段上传完成后，调用 `completeMultipartUpload` 合并
+3. 每段 ≤50MB（实际用 5MB 更安全），绕过单对象大小限制
 
 ## 功能模块
 
-### 1. 首页服务端组件化
-- 移除 `"use client"` 和 `useEffect` 数据获取
-- 使用 Drizzle ORM 在服务端直接查询 `notes` 表（`is_public = true LIMIT 3`）
-- 使用 `unstable_cache` 缓存笔记列表（30 秒 revalidate）
-- 模块卡片保持静态渲染，笔记列表部分用 `Suspense` 包裹
+### 1. Supabase Multipart Upload 工具函数（storage.ts）
 
-### 2. 图片域名收紧
-- `next.config.ts`：`images.remotePatterns` 从 `hostname: '*'` 改为具体白名单：`images.unsplash.com`, `avatars.githubusercontent.com`, `*.supabase.co`
-- CSP 头 `img-src` 同步收紧为相同白名单 + `self` + `data:`
+新增函数：
+- `createMultipartUpload(bucket, key, contentType)` → 返回 `{ uploadId, key }`
+- `uploadPart(bucket, key, uploadId, partNumber, body)` → 返回 `{ ETag, partNumber }`
+- `completeMultipartUpload(bucket, key, uploadId, parts)` → 返回 `{ key }`
 
-### 3. 测试用例
-- **API 测试**：注册/登录/笔记 CRUD/文件上传下载，覆盖成功和失败场景
-- **安全测试**：密码弱校验、速率限制触发、未授权访问拒绝、路径遍历防护
-- **组件测试**：Navbar 登录状态渲染、笔记卡片展示
+### 2. chunk-complete 路由改造
 
-### 4. SEO + 错误边界
-- 为所有页面添加独立 `metadata`（title/description/openGraph）
-- 添加 `robots.ts`（已存在，验证配置）
-- 添加 `sitemap.ts` 自动生成站点地图
-- 添加 `not-found.tsx` 和 `error.tsx` 全局错误边界
+改造逻辑：
+- 读取 meta.json 获取文件信息
+- 判断文件大小：≤50MB 走原流程（合并→uploadFile）；>50MB 走 Multipart Upload
+- Multipart Upload 流程：
+  1. `createMultipartUpload`
+  2. 循环每个分片：读取 chunk_N 文件 → `uploadPart`（每段就是一个分片，但需要确保 ≥5MB，最后一段可以 <5MB）
+  3. `completeMultipartUpload`
+- 返回 publicUrl 和 key
+
+### 3. 前端上传限制提示
+
+- 前端已有"支持最大3GB文件"提示，保持不变（Supabase Pro 支持更大文件）
 
 ## 是否有原型设计
 
-否。本次为纯代码优化迭代，无 UI 改动。
+否 — 本次为后端逻辑修复，不涉及页面/UI 改动。
 
 ## 实施步骤
 
-1. **首页服务端组件化 + 缓存策略** — 将 `src/app/page.tsx` 从客户端组件改为服务端组件，使用 Drizzle 直连查询，引入 `unstable_cache` 和 `Suspense`。
-2. **收紧图片域名与 CSP** — 修改 `next.config.ts` 的 `images.remotePatterns` 为白名单，同步收紧 CSP 的 `img-src` 指令。
-3. **搭建测试框架 + API 安全测试** — 安装 Vitest + MSW，编写认证、笔记、上传下载、安全防护的接口测试用例。
-4. **组件单元测试** — 测试 Navbar 登录态渲染、笔记卡片展示等核心 UI 组件。
-5. **全站 SEO 元数据 + 站点地图** — 为每个 page 添加 `metadata`，创建 `sitemap.ts` 和 `robots.ts`。
-6. **错误边界页面** — 创建 `not-found.tsx` 和 `error.tsx`，提供友好的 404 和 500 页面。
-7. **代码检查与验证** — 运行 `pnpm lint`、`pnpm ts-check` 和全量接口/单元测试，确保零回归。
+1. **在 storage.ts 中新增 Multipart Upload 工具函数** — `src/lib/storage.ts`
+2. **改造 chunk-complete 路由，>50MB 文件走 Multipart Upload** — `src/app/api/upload/chunk-complete/route.ts`
+3. **验证测试** — 静态检查 + 接口测试 + 日志检查

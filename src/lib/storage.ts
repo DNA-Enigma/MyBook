@@ -2,6 +2,9 @@ import { getSupabaseAdmin } from "./supabase";
 
 const BUCKET_NAME = process.env.COZE_BUCKET_NAME || "uploads";
 
+/**
+ * 小文件上传（≤50MB）：使用 Supabase SDK 标准 upload
+ */
 export async function uploadFile(
   fileBuffer: Buffer,
   fileName: string,
