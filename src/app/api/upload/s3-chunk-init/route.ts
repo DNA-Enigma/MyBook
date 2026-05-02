@@ -19,6 +19,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "缺少必要参数" }, { status: 400 });
     }
 
+    // 获取用户信息
+    const { supabaseAdmin } = await import("@/lib/supabase");
+    const { data: { user } } = await supabaseAdmin.auth.getUser(tokenMatch[1]);
+    if (!user) {
+      return NextResponse.json({ error: "无效的登录凭证" }, { status: 401 });
+    }
+
     const uploadId = `s3_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     // 将上传会话信息存到 /tmp
@@ -33,6 +40,7 @@ export async function POST(request: NextRequest) {
         contentType: contentType || "application/octet-stream",
         totalChunks,
         uploadId,
+        userId: user.id,
       })
     );
 
