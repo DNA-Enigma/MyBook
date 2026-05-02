@@ -32,14 +32,16 @@ export async function PUT(request: NextRequest) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("[PROFILE UPDATE ERROR]", JSON.stringify(error, null, 2));
+      return NextResponse.json(
+        { error: error.message || "更新失败", details: error },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ profile: data });
   } catch (err) {
-    console.error("[PROFILE UPDATE ERROR]", {
-      error: err instanceof Error ? err.message : String(err),
-      stack: err instanceof Error ? err.stack : undefined,
-      errorType: typeof err,
-    });
+    console.error("[PROFILE UPDATE CATCH]", err instanceof Error ? err.message : JSON.stringify(err));
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "更新失败" },
       { status: 500 }

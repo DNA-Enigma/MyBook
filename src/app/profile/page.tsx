@@ -148,7 +148,12 @@ export default function ProfilePage() {
       setAvatarFile(null);
       setAvatarPreview("");
     } else {
-      alert("保存失败");
+      try {
+        const err = await res.json();
+        alert(err.error || "保存失败");
+      } catch {
+        alert("保存失败");
+      }
     }
   };
 
