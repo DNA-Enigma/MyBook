@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { sessionId } = body;
+    const { sessionId: sessionIdFromBody, uploadId } = body;
+    const sessionId = sessionIdFromBody || uploadId;
 
     if (!sessionId) {
       return NextResponse.json({ error: "缺少 sessionId" }, { status: 400 });

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData();
-    const sessionId = formData.get("sessionId") as string;
+    const sessionId = (formData.get("sessionId") || formData.get("uploadId")) as string;
     const chunkIndex = formData.get("chunkIndex") as string;
     const chunk = formData.get("chunk") as File;
 
