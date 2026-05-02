@@ -244,15 +244,22 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     setErrorMsg("");
   };
 
-  const uploadWithProgress = (file: File): Promise<{ publicUrl: string; key: string; originalName: string; size: number; success: boolean }> => {
+  const uploadDirectWithProgress = (
+    file: File,
+    presignData: { supabaseUrl: string; bucketName: string; filePath: string; accessToken: string }
+  ): Promise<{ publicUrl: string; key: string }> => {
     return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append("file", file);
-
       const xhr = new XMLHttpRequest();
       setXhrRef(xhr);
-      xhr.open("POST", "/api/upload");
-      xhr.timeout = 5 * 60 * 1000; // 5 分钟超时
+
+      const url = `${presignData.supabaseUrl}/storage/v1/object/${presignData.bucketName}/${presignData.filePath}`;
+      xhr.open("POST", url);
+      xhr.timeout = 30 * 60 * 1000; // 30 分钟超时（大文件）
+
+      // Supabase Storage 上传所需的 Header
+      xhr.setRequestHeader("Authorization", `Bearer ${presignData.accessToken}`);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      xhr.setRequestHeader("x-upsert", "true");
 
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
@@ -265,15 +272,14 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       xhr.onload = () => {
         setXhrRef(null);
         if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            resolve(JSON.parse(xhr.responseText));
-          } catch {
-            reject(new Error("解析响应失败"));
-          }
+          resolve({
+            publicUrl: `${presignData.supabaseUrl}/storage/v1/object/public/${presignData.bucketName}/${presignData.filePath}`,
+            key: presignData.filePath,
+          });
         } else {
           try {
             const errData = JSON.parse(xhr.responseText);
-            reject(new Error(errData.error || "上传失败"));
+            reject(new Error(errData.error || errData.message || "上传失败"));
           } catch {
             reject(new Error(`上传失败 (${xhr.status})`));
           }
@@ -292,8 +298,55 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
 
       xhr.onerror = () => {
         setXhrRef(null);
-        reject(new Error("网络错误，请检查网络连接后重试"));
+        // XHR status=0 通常是 CORS 或网络层面错误，尝试服务端中转回退
+        reject(new Error("DIRECT_UPLOAD_CORS_ERROR"));
       };
+
+      xhr.send(file);
+    });
+  };
+
+  /** 回退方案：通过 Next.js 服务端中转上传（仅适用于小文件） */
+  const uploadViaServer = (file: File): Promise<{ publicUrl: string; key: string }> => {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const xhr = new XMLHttpRequest();
+      setXhrRef(xhr);
+      xhr.open("POST", "/api/upload");
+      xhr.timeout = 5 * 60 * 1000;
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          setProgress(pct);
+          setProgressText(`${formatSize(e.loaded)} / ${formatSize(e.total)}`);
+        }
+      };
+
+      xhr.onload = () => {
+        setXhrRef(null);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            resolve({ publicUrl: data.publicUrl || data.key, key: data.key });
+          } catch {
+            reject(new Error("解析响应失败"));
+          }
+        } else {
+          try {
+            const errData = JSON.parse(xhr.responseText);
+            reject(new Error(errData.error || "上传失败"));
+          } catch {
+            reject(new Error(`上传失败 (${xhr.status})`));
+          }
+        }
+      };
+
+      xhr.ontimeout = () => { setXhrRef(null); reject(new Error("上传超时")); };
+      xhr.onabort = () => { setXhrRef(null); reject(new Error("上传已取消")); };
+      xhr.onerror = () => { setXhrRef(null); reject(new Error("网络错误，请检查网络连接后重试")); };
 
       xhr.send(formData);
     });
@@ -322,10 +375,45 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     let fileKey = null as string | null;
     if (file && category !== "Docker镜像") {
       try {
-        setProgressText("准备上传...");
-        const uploadData = await uploadWithProgress(file);
-        fileUrl = uploadData.publicUrl || uploadData.key;
-        fileKey = uploadData.key;
+        setProgressText("获取上传凭证...");
+
+        // 第一步：获取直传参数
+        const presignRes = await fetch("/api/upload/presign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileSize: file.size,
+            contentType: file.type || "application/octet-stream",
+          }),
+        });
+
+        if (!presignRes.ok) {
+          const errData = await presignRes.json();
+          throw new Error(errData.error || "获取上传凭证失败");
+        }
+
+        const presignData = await presignRes.json();
+        setProgressText("上传中...");
+
+        // 第二步：直传 Supabase Storage
+        try {
+          const result = await uploadDirectWithProgress(file, presignData);
+          fileUrl = result.publicUrl;
+          fileKey = result.key;
+        } catch (directErr) {
+          // 如果直传因 CORS 等原因失败，回退到服务端中转（仅适合小文件）
+          if (directErr instanceof Error && directErr.message === "DIRECT_UPLOAD_CORS_ERROR") {
+            setProgressText("直传失败，尝试服务端中转...");
+            setProgress(0);
+            const fallbackResult = await uploadViaServer(file);
+            fileUrl = fallbackResult.publicUrl;
+            fileKey = fallbackResult.key;
+          } else {
+            throw directErr;
+          }
+        }
+
         setProgressText("保存资源信息...");
       } catch (err) {
         setUploading(false);
