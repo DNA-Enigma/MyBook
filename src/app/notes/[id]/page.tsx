@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, Trash2, Lock, Globe, Download } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, Lock, Globe, Download, List } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -22,6 +22,14 @@ interface Note {
   profiles?: { name: string; avatar_url?: string };
 }
 
+interface TocItem {
+  id: string;
+  text: string;
+  level: number;
+}
+
+const MAX_DISPLAY_CHARS = 1000;
+
 export default function NoteDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -29,6 +37,8 @@ export default function NoteDetailPage() {
   const [note, setNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [showToc, setShowToc] = useState(true);
+  const [activeHeading, setActiveHeading] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -40,6 +50,63 @@ export default function NoteDetailPage() {
       })
       .catch(() => setLoading(false));
   }, [id]);
+
+  // Extract TOC from markdown headings
+  const tocItems: TocItem[] = useMemo(() => {
+    if (!note?.content) return [];
+    const headingRegex = /^(#{1,3})\s+(.+)$/gm;
+    const items: TocItem[] = [];
+    let match;
+    while ((match = headingRegex.exec(note.content)) !== null) {
+      const level = match[1].length;
+      const text = match[2].trim();
+      const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, "-").replace(/^-|-$/g, "");
+      items.push({ id, text, level });
+    }
+    return items;
+  }, [note?.content]);
+
+  // Intersection observer for active heading tracking
+  useEffect(() => {
+    if (tocItems.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveHeading(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -60% 0px" }
+    );
+    // Observe after ReactMarkdown renders
+    const timer = setTimeout(() => {
+      tocItems.forEach((item) => {
+        const el = document.getElementById(item.id);
+        if (el) observer.observe(el);
+      });
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [tocItems]);
+
+  // Inject ids into rendered headings
+  useEffect(() => {
+    if (tocItems.length === 0) return;
+    const timer = setTimeout(() => {
+      const proseEl = document.querySelector(".note-content");
+      if (!proseEl) return;
+      const headings = proseEl.querySelectorAll("h1, h2, h3");
+      headings.forEach((heading) => {
+        const text = heading.textContent?.trim() || "";
+        const generatedId = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, "-").replace(/^-|-$/g, "");
+        heading.id = generatedId;
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [tocItems]);
 
   const handleDelete = async () => {
     if (!confirm("确定要删除这篇笔记吗？此操作不可恢复。")) return;
@@ -67,6 +134,14 @@ export default function NoteDetailPage() {
     a.download = `${note.title.replace(/[^\w\u4e00-\u9fa5]/g, "_")}.md`;
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleTocClick = (tocId: string) => {
+    const el = document.getElementById(tocId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setActiveHeading(tocId);
+    }
   };
 
   const isAdmin = user?.role === "admin";
@@ -97,8 +172,10 @@ export default function NoteDetailPage() {
     );
   }
 
+  const isLongContent = note.content.length > MAX_DISPLAY_CHARS;
+
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
+    <div className="mx-auto max-w-5xl px-6 py-10">
       <Link
         href="/notes"
         className="mb-6 inline-flex items-center text-sm text-foreground/80 hover:text-primary"
@@ -159,8 +236,92 @@ export default function NoteDetailPage() {
         </Button>
       </div>
 
-      <div className="prose prose-stone mt-8 max-w-none dark:prose-invert [&_p]:whitespace-pre-wrap">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
+      {/* Content with TOC sidebar */}
+      <div className="mt-8 flex gap-8">
+        {/* TOC Sidebar */}
+        {tocItems.length > 0 && showToc && (
+          <nav className="hidden lg:block w-56 shrink-0">
+            <div className="sticky top-24">
+              <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-primary">
+                <List className="h-4 w-4" />
+                目录
+              </div>
+              <ul className="space-y-1 border-l border-border pl-3">
+                {tocItems.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => handleTocClick(item.id)}
+                      className={`block w-full text-left text-sm py-1 transition-colors hover:text-primary ${
+                        item.level === 2 ? "pl-2" : item.level === 3 ? "pl-4" : ""
+                      } ${
+                        activeHeading === item.id
+                          ? "text-primary font-medium"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {item.text}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </nav>
+        )}
+
+        {/* TOC toggle for mobile / small screens */}
+        {tocItems.length > 0 && (
+          <button
+            onClick={() => setShowToc(!showToc)}
+            className="lg:hidden fixed bottom-6 right-6 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-float hover:bg-primary/90"
+            title={showToc ? "隐藏目录" : "显示目录"}
+          >
+            <List className="h-5 w-5" />
+          </button>
+        )}
+
+        {/* Mobile TOC dropdown */}
+        {tocItems.length > 0 && showToc && (
+          <div className="lg:hidden fixed bottom-20 right-6 z-40 w-56 rounded-xl bg-card p-3 shadow-float border border-border">
+            <div className="flex items-center gap-2 mb-2 text-sm font-semibold text-primary">
+              <List className="h-4 w-4" />
+              目录
+            </div>
+            <ul className="space-y-1 max-h-60 overflow-y-auto">
+              {tocItems.map((item) => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => { handleTocClick(item.id); setShowToc(false); }}
+                    className={`block w-full text-left text-sm py-1 transition-colors hover:text-primary ${
+                      item.level === 2 ? "pl-2" : item.level === 3 ? "pl-4" : ""
+                    } ${
+                      activeHeading === item.id
+                        ? "text-primary font-medium"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {item.text}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Content area with scroll limit */}
+        <div className="flex-1 min-w-0">
+          <div
+            className={`note-content prose prose-stone max-w-none dark:prose-invert [&_p]:whitespace-pre-wrap ${
+              isLongContent ? "max-h-[600px] overflow-y-auto pr-2" : ""
+            }`}
+          >
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
+          </div>
+          {isLongContent && (
+            <div className="mt-2 text-center text-xs text-muted-foreground">
+              内容较长，已启用滚动浏览 · 共 {note.content.length} 字
+            </div>
+          )}
+        </div>
       </div>
 
       {note.tags?.length > 0 && (

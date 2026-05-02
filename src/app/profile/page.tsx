@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, Mail, Github, Globe, Linkedin, Save, X, Upload, User } from "lucide-react";
+import { Pencil, Mail, Github, Globe, Linkedin, Save, X, Upload, User, Crop } from "lucide-react";
+import Cropper from "react-easy-crop";
+import type { Area } from "react-easy-crop";
 
 interface Profile {
   id: string;
@@ -20,6 +22,36 @@ interface Profile {
   website_url: string;
   linkedin_url: string;
   created_at: string;
+}
+
+function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
+  const image = new Image();
+  image.src = imageSrc;
+  return new Promise((resolve, reject) => {
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = pixelCrop.width;
+      canvas.height = pixelCrop.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject(new Error("No canvas context"));
+      ctx.drawImage(
+        image,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        pixelCrop.width,
+        pixelCrop.height
+      );
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("Canvas toBlob failed"));
+      }, "image/png");
+    };
+    image.onerror = reject;
+  });
 }
 
 export default function ProfilePage() {
@@ -39,8 +71,15 @@ export default function ProfilePage() {
   const [editRole, setEditRole] = useState("");
   const [editSkills, setEditSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
+
+  // Avatar crop states
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState("");
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   useEffect(() => {
     if (!user?.id) {
@@ -71,6 +110,8 @@ export default function ProfilePage() {
     if (!user?.id) return;
     setSaving(true);
     let avatarUrl = editAvatar;
+
+    // Upload cropped avatar if we have one
     if (avatarFile) {
       const formData = new FormData();
       formData.append("file", avatarFile);
@@ -83,6 +124,7 @@ export default function ProfilePage() {
       const uploadData = await uploadRes.json();
       avatarUrl = uploadData.publicUrl || uploadData.url || "";
     }
+
     const res = await fetch(`/api/profile`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -110,15 +152,45 @@ export default function ProfilePage() {
     }
   };
 
-  const defaultSkills = ["React", "TypeScript", "Node.js", "Next.js", "UI 设计", "摄影", "Tailwind CSS", "PostgreSQL", "Docker", "Go"];
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCropSrc(reader.result as string);
+        setCropModalOpen(true);
+        setZoom(1);
+        setCrop({ x: 0, y: 0 });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  const displaySkills = profile?.skills?.length ? profile.skills : defaultSkills;
+  const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const handleCropConfirm = async () => {
+    if (!cropSrc || !croppedAreaPixels) return;
+    try {
+      const blob = await getCroppedImg(cropSrc, croppedAreaPixels);
+      const file = new File([blob], "avatar.png", { type: "image/png" });
+      setAvatarFile(file);
+      const previewUrl = URL.createObjectURL(blob);
+      setAvatarPreview(previewUrl);
+      setCropModalOpen(false);
+    } catch {
+      alert("裁剪失败，请重试");
+    }
+  };
+
+  const displaySkills = profile?.skills?.length ? profile.skills : [];
 
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-6 py-10">
         <div className="flex items-center gap-6">
-          <div className="h-24 w-24 animate-pulse rounded-full bg-muted" />
+          <div className="h-32 w-32 animate-pulse rounded-full bg-muted" />
           <div className="space-y-2">
             <div className="h-8 w-40 animate-pulse rounded bg-muted" />
             <div className="h-4 w-32 animate-pulse rounded bg-muted" />
@@ -130,26 +202,66 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
+      {/* Crop Modal */}
+      {cropModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="relative w-full max-w-lg rounded-xl bg-card p-4 shadow-float">
+            <h3 className="mb-3 text-center font-semibold text-primary">裁剪头像</h3>
+            <div className="relative h-80 w-full rounded-lg bg-black">
+              <Cropper
+                image={cropSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+                cropShape="round"
+              />
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">缩放:</span>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="flex-1"
+              />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setCropModalOpen(false)}>
+                取消
+              </Button>
+              <Button size="sm" onClick={handleCropConfirm} className="bg-primary text-primary-foreground">
+                确认裁剪
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
         {profile?.avatar_url ? (
           <img
             src={profile.avatar_url}
             alt="头像"
-            className="h-24 w-24 rounded-full object-cover shadow-float"
-            onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face"; }}
+            className="h-32 w-32 rounded-full object-cover shadow-float"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}
           />
-        ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted shadow-float">
-            <User className="h-12 w-12 text-muted-foreground" />
-          </div>
-        )}
+        ) : null}
+        <div className={`flex h-32 w-32 items-center justify-center rounded-full bg-muted shadow-float ${profile?.avatar_url ? "hidden" : ""}`}>
+          <User className="h-16 w-16 text-muted-foreground" />
+        </div>
         <div className="flex-1 text-center sm:text-left">
           <h1 className="font-serif text-3xl font-bold text-primary">
             {profile?.name || "创作者"}
           </h1>
           <p className="mt-1 text-muted-foreground">
-            {profile?.role === "admin" ? "管理员" : profile?.role || "用户"}
+            {profile?.role || "用户"}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             加入于 {profile?.created_at ? new Date(profile.created_at).toLocaleDateString("zh-CN") : "-"}
@@ -179,7 +291,7 @@ export default function ProfilePage() {
             <div>
               <label className="text-sm font-medium">头像</label>
               <div className="mt-2 flex items-center gap-4">
-                <div className="relative h-16 w-16 overflow-hidden rounded-full border border-border bg-muted">
+                <div className="relative h-24 w-24 overflow-hidden rounded-full border border-border bg-muted">
                   {(avatarPreview || editAvatar) ? (
                     <img
                       src={avatarPreview || editAvatar}
@@ -188,31 +300,23 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                      <User className="h-8 w-8" />
+                      <User className="h-12 w-12" />
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/80 transition-colors">
-                    <Upload className="h-4 w-4" />
-                    选择图片
+                    <Crop className="h-4 w-4" />
+                    选择并裁剪图片
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setAvatarFile(file);
-                          const reader = new FileReader();
-                          reader.onloadend = () => setAvatarPreview(reader.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
+                      onChange={handleFileSelect}
                     />
                   </label>
                   {avatarFile && (
-                    <span className="text-xs text-muted-foreground">{avatarFile.name}</span>
+                    <span className="text-xs text-muted-foreground">已裁剪，点击可重新裁剪</span>
                   )}
                 </div>
               </div>
@@ -323,38 +427,27 @@ export default function ProfilePage() {
           {profile?.bio ? (
             profile.bio.split("\n\n").map((p, i) => <p key={i}>{p}</p>)
           ) : (
-            <>
-              <p>
-                我是一名热爱技术与设计的全栈开发者，专注于构建优雅、高性能的 Web 应用。
-                多年来，我始终坚持将工程化思维与美学设计相结合，追求技术与艺术的完美平衡。
-              </p>
-              <p>
-                在开发过程中，我注重代码质量与用户体验，善于运用现代化的技术栈解决复杂问题。
-                同时，我也热衷于分享技术心得，通过写作与开源贡献回馈社区。
-              </p>
-              <p>
-                工作之余，我喜欢摄影、阅读和探索新技术。我相信持续学习与跨界思考
-                是保持创造力的关键。
-              </p>
-            </>
+            <p className="text-muted-foreground">暂无简介</p>
           )}
         </div>
       </div>
 
       {/* Skills */}
-      <div className="mt-10 border-t border-border pt-10">
-        <h2 className="mb-4 font-serif text-xl font-semibold text-primary">技术栈</h2>
-        <div className="flex flex-wrap gap-2">
-          {displaySkills.map((skill) => (
-            <span
-              key={skill}
-              className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-            >
-              {skill}
-            </span>
-          ))}
+      {displaySkills.length > 0 && (
+        <div className="mt-10 border-t border-border pt-10">
+          <h2 className="mb-4 font-serif text-xl font-semibold text-primary">技术栈</h2>
+          <div className="flex flex-wrap gap-2">
+            {displaySkills.map((skill) => (
+              <span
+                key={skill}
+                className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Contact */}
       <div className="mt-10 border-t border-border pt-10">

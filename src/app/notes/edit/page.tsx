@@ -206,15 +206,22 @@ function NoteEditPage() {
         </div>
 
         <div>
-          <Label htmlFor="content">内容（支持 Markdown）</Label>
-          <Textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="在这里写下你的思考..."
-            rows={20}
-            className="mt-1.5 bg-muted border-none rounded-md font-mono text-sm leading-relaxed"
-          />
+          <div className="flex items-center justify-between">
+            <Label htmlFor="content">内容（支持 Markdown）</Label>
+            <span className="text-xs text-muted-foreground">
+              {content.length} 字
+            </span>
+          </div>
+          <div className="mt-1.5 max-h-[500px] overflow-y-auto rounded-md bg-muted">
+            <Textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="在这里写下你的思考..."
+              rows={20}
+              className="border-none bg-transparent rounded-md font-mono text-sm leading-relaxed resize-none min-h-[300px]"
+            />
+          </div>
         </div>
 
         <div className="flex justify-end gap-3">
