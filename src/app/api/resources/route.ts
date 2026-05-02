@@ -135,6 +135,7 @@ export async function POST(request: NextRequest) {
         status: isAdmin ? "approved" : "pending",
         docker_pull_cmd: body.docker_pull_cmd || null,
         is_public: body.is_public ?? true,
+        storage_type: body.storage_type || "supabase",
       })
       .select()
       .single();

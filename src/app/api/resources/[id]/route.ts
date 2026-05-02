@@ -134,15 +134,20 @@ export async function DELETE(
     // 获取资源信息以便删除存储文件
     const { data: existing } = await getSupabaseAdmin()
       .from("resources")
-      .select("file_key")
+      .select("file_key, storage_type")
       .eq("id", id)
       .maybeSingle();
 
     // 删除存储文件
     if (existing?.file_key) {
       try {
-        const { deleteFile } = await import("@/lib/storage");
-        await deleteFile(existing.file_key);
+        if (existing.storage_type === "s3") {
+          const { s3Storage } = await import("@/lib/s3-storage");
+          await s3Storage.deleteFile({ fileKey: existing.file_key });
+        } else {
+          const { deleteFile } = await import("@/lib/storage");
+          await deleteFile(existing.file_key);
+        }
       } catch {
         // 存储文件删除失败不阻塞数据库记录删除
       }

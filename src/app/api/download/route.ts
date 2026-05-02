@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSignedDownloadUrl } from "@/lib/storage";
+import { s3Storage } from "@/lib/s3-storage";
 import { checkRateLimit } from "@/lib/security";
 
 export async function GET(request: NextRequest) {
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
+    const storageType = searchParams.get("storage_type") || "supabase";
 
     if (!key) {
       return NextResponse.json({ error: "缺少文件 key" }, { status: 400 });
@@ -38,7 +40,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const url = await getSignedDownloadUrl(key, 300);
+    let url: string;
+
+    if (storageType === "s3") {
+      // S3 对象存储：生成预签名 URL
+      url = await s3Storage.generatePresignedUrl({ key, expireTime: 300 });
+    } else {
+      // Supabase Storage：生成签名下载链接
+      url = await getSignedDownloadUrl(key, 300);
+    }
 
     return NextResponse.json({ url });
   } catch (err) {
