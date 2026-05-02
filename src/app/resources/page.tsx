@@ -222,6 +222,52 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [category, setCategory] = useState("软件");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressText, setProgressText] = useState("");
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  };
+
+  const uploadWithProgress = (file: File): Promise<{ publicUrl: string; key: string; originalName: string; size: number; success: boolean }> => {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/upload");
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          setProgress(pct);
+          setProgressText(`${formatSize(e.loaded)} / ${formatSize(e.total)}`);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch {
+            reject(new Error("解析响应失败"));
+          }
+        } else {
+          try {
+            const errData = JSON.parse(xhr.responseText);
+            reject(new Error(errData.error || "上传失败"));
+          } catch {
+            reject(new Error(`上传失败 (${xhr.status})`));
+          }
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("网络错误"));
+      xhr.send(formData);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,21 +276,25 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       return;
     }
     setUploading(true);
+    setProgress(0);
+    setProgressText("");
 
     let fileUrl = "";
     let fileKey = null as string | null;
     if (file && category !== "Docker镜像") {
-      const formData = new FormData();
-      formData.append("file", file);
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!uploadRes.ok) {
+      try {
+        setProgressText("准备上传...");
+        const uploadData = await uploadWithProgress(file);
+        fileUrl = uploadData.publicUrl || uploadData.key;
+        fileKey = uploadData.key;
+        setProgressText("保存资源信息...");
+      } catch (err) {
         setUploading(false);
-        alert("上传失败");
+        setProgress(0);
+        setProgressText("");
+        alert(err instanceof Error ? err.message : "上传失败");
         return;
       }
-      const uploadData = await uploadRes.json();
-      fileUrl = uploadData.publicUrl || uploadData.key;
-      fileKey = uploadData.key;
     } else {
       fileUrl = name;
     }
@@ -265,6 +315,8 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     });
 
     setUploading(false);
+    setProgress(0);
+    setProgressText("");
     if (res.ok) {
       onSuccess();
       onClose();
@@ -317,14 +369,33 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
                 className="mt-1 bg-muted border-none rounded-md"
               />
+              {file && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {file.name} ({formatSize(file.size)})
+                </p>
+              )}
+            </div>
+          )}
+          {uploading && (
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{progressText || "上传中..."}</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
           )}
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" type="button" onClick={onClose}>
+            <Button variant="outline" type="button" onClick={onClose} disabled={uploading}>
               取消
             </Button>
             <Button type="submit" disabled={uploading} className="bg-primary text-primary-foreground">
-              {uploading ? "上传中..." : "确认上传"}
+              {uploading ? `上传中 ${progress}%` : "确认上传"}
             </Button>
           </div>
         </form>

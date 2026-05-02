@@ -92,14 +92,20 @@ const ALLOWED_FILE_TYPES: Record<string, string[]> = {
     "application/x-tar",
     "application/gzip",
     "application/x-gzip",
+    "application/x-rar-compressed",
+    "application/vnd.rar",
+    "application/x-7z-compressed",
+    "application/octet-stream",
   ],
 };
 
 const ALLOWED_EXTENSIONS = [
   ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg",
   ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".md",
-  ".zip", ".tar", ".gz", ".tgz",
-  ".dockerfile", ".yml", ".yaml", ".json",
+  ".zip", ".tar", ".gz", ".tgz", ".rar", ".7z",
+  ".exe", ".msi", ".dmg", ".deb", ".rpm", ".apk",
+  ".dockerfile", ".yml", ".yaml", ".json", ".iso",
+  ".ppt", ".pptx", ".csv",
 ];
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB

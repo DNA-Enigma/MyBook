@@ -22,20 +22,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未提供文件" }, { status: 400 });
     }
 
-    const isImage = file.type.startsWith("image/");
-
-    // 图片允许所有登录用户上传（用于头像），其他文件仅管理员可上传
-    if (!isImage) {
-      const { data: profile } = await getSupabaseAdmin()
-        .from("profiles")
-        .select("role")
-        .eq("id", userData.user.id)
-        .single();
-      if (!profile || profile.role !== "admin") {
-        return NextResponse.json({ error: "无权上传，仅管理员可操作" }, { status: 403 });
-      }
-    }
-
     // 速率限制：每个用户每分钟最多 10 次上传
     const rateKey = `upload:${userData.user.id}`;
     const rateCheck = checkRateLimit(rateKey, 10, 60000);
