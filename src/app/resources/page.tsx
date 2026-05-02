@@ -246,7 +246,8 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
 
   const uploadDirectWithProgress = (
     file: File,
-    presignData: { supabaseUrl: string; bucketName: string; filePath: string; accessToken: string }
+    presignData: { supabaseUrl: string; bucketName: string; filePath: string; accessToken: string },
+    attempt: number = 1
   ): Promise<{ publicUrl: string; key: string }> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -276,10 +277,13 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             publicUrl: `${presignData.supabaseUrl}/storage/v1/object/public/${presignData.bucketName}/${presignData.filePath}`,
             key: presignData.filePath,
           });
+        } else if ((xhr.status === 0 || xhr.status === 413) && attempt < 3) {
+          // 网络层错误或 Payload too large 时自动重试（重新获取 presign 凭证）
+          reject(new Error("RETRY_NEEDED"));
         } else {
           try {
             const errData = JSON.parse(xhr.responseText);
-            reject(new Error(errData.error || errData.message || "上传失败"));
+            reject(new Error(errData.error || errData.message || `上传失败 (${xhr.status})`));
           } catch {
             reject(new Error(`上传失败 (${xhr.status})`));
           }
@@ -298,57 +302,15 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
 
       xhr.onerror = () => {
         setXhrRef(null);
-        // XHR status=0 通常是 CORS 或网络层面错误，尝试服务端中转回退
-        reject(new Error("DIRECT_UPLOAD_CORS_ERROR"));
+        // XHR status=0 通常是 CORS 或网络层面错误，自动重试
+        if (attempt < 3) {
+          reject(new Error("RETRY_NEEDED"));
+        } else {
+          reject(new Error("网络连接失败，请检查网络后重试"));
+        }
       };
 
       xhr.send(file);
-    });
-  };
-
-  /** 回退方案：通过 Next.js 服务端中转上传（仅适用于小文件） */
-  const uploadViaServer = (file: File): Promise<{ publicUrl: string; key: string }> => {
-    return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const xhr = new XMLHttpRequest();
-      setXhrRef(xhr);
-      xhr.open("POST", "/api/upload");
-      xhr.timeout = 5 * 60 * 1000;
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const pct = Math.round((e.loaded / e.total) * 100);
-          setProgress(pct);
-          setProgressText(`${formatSize(e.loaded)} / ${formatSize(e.total)}`);
-        }
-      };
-
-      xhr.onload = () => {
-        setXhrRef(null);
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const data = JSON.parse(xhr.responseText);
-            resolve({ publicUrl: data.publicUrl || data.key, key: data.key });
-          } catch {
-            reject(new Error("解析响应失败"));
-          }
-        } else {
-          try {
-            const errData = JSON.parse(xhr.responseText);
-            reject(new Error(errData.error || "上传失败"));
-          } catch {
-            reject(new Error(`上传失败 (${xhr.status})`));
-          }
-        }
-      };
-
-      xhr.ontimeout = () => { setXhrRef(null); reject(new Error("上传超时")); };
-      xhr.onabort = () => { setXhrRef(null); reject(new Error("上传已取消")); };
-      xhr.onerror = () => { setXhrRef(null); reject(new Error("网络错误，请检查网络连接后重试")); };
-
-      xhr.send(formData);
     });
   };
 
@@ -396,20 +358,39 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         const presignData = await presignRes.json();
         setProgressText("上传中...");
 
-        // 第二步：直传 Supabase Storage
-        try {
-          const result = await uploadDirectWithProgress(file, presignData);
-          fileUrl = result.publicUrl;
-          fileKey = result.key;
-        } catch (directErr) {
-          // 如果直传因 CORS 等原因失败，回退到服务端中转（仅适合小文件）
-          if (directErr instanceof Error && directErr.message === "DIRECT_UPLOAD_CORS_ERROR") {
-            setProgressText("直传失败，尝试服务端中转...");
-            setProgress(0);
-            const fallbackResult = await uploadViaServer(file);
-            fileUrl = fallbackResult.publicUrl;
-            fileKey = fallbackResult.key;
-          } else {
+        // 第二步：直传 Supabase Storage（带自动重试）
+        let uploadSuccess = false;
+        for (let attempt = 1; attempt <= 3 && !uploadSuccess; attempt++) {
+          try {
+            if (attempt > 1) {
+              setProgressText(`重试上传（第${attempt}次）...`);
+              setProgress(0);
+              // 重新获取 presign 凭证（token 可能已过期）
+              const retryPresignRes = await fetch("/api/upload/presign", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  fileName: file.name,
+                  fileSize: file.size,
+                  contentType: file.type || "application/octet-stream",
+                }),
+              });
+              if (retryPresignRes.ok) {
+                const retryData = await retryPresignRes.json();
+                presignData.supabaseUrl = retryData.supabaseUrl;
+                presignData.bucketName = retryData.bucketName;
+                presignData.filePath = retryData.filePath;
+                presignData.accessToken = retryData.accessToken;
+              }
+            }
+            const result = await uploadDirectWithProgress(file, presignData, attempt);
+            fileUrl = result.publicUrl;
+            fileKey = result.key;
+            uploadSuccess = true;
+          } catch (directErr) {
+            if (directErr instanceof Error && directErr.message === "RETRY_NEEDED" && attempt < 3) {
+              continue; // 自动重试
+            }
             throw directErr;
           }
         }
