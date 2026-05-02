@@ -190,7 +190,7 @@ export default function ProfilePage() {
     return (
       <div className="mx-auto max-w-4xl px-6 py-10">
         <div className="flex items-center gap-6">
-          <div className="h-32 w-32 animate-pulse rounded-full bg-muted" />
+          <div className="h-32 w-32 animate-pulse rounded-xl bg-muted" />
           <div className="space-y-2">
             <div className="h-8 w-40 animate-pulse rounded bg-muted" />
             <div className="h-4 w-32 animate-pulse rounded bg-muted" />
@@ -216,7 +216,7 @@ export default function ProfilePage() {
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
-                cropShape="round"
+                cropShape="rect"
               />
             </div>
             <div className="mt-3 flex items-center gap-3">
@@ -249,11 +249,11 @@ export default function ProfilePage() {
           <img
             src={profile.avatar_url}
             alt="头像"
-            className="h-32 w-32 rounded-full object-cover shadow-float"
+            className="h-32 w-32 rounded-xl object-cover shadow-float"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden"); }}
           />
         ) : null}
-        <div className={`flex h-32 w-32 items-center justify-center rounded-full bg-muted shadow-float ${profile?.avatar_url ? "hidden" : ""}`}>
+        <div className={`flex h-32 w-32 items-center justify-center rounded-xl bg-muted shadow-float ${profile?.avatar_url ? "hidden" : ""}`}>
           <User className="h-16 w-16 text-muted-foreground" />
         </div>
         <div className="flex-1 text-center sm:text-left">

@@ -35,6 +35,11 @@ export async function PUT(request: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ profile: data });
   } catch (err) {
+    console.error("[PROFILE UPDATE ERROR]", {
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      errorType: typeof err,
+    });
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "更新失败" },
       { status: 500 }
