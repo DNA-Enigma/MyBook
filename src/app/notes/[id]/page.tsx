@@ -56,17 +56,67 @@ export default function NoteDetailPage() {
     if (!note?.content) return [];
     const headingRegex = /^(#{1,3})\s+(.+)$/gm;
     const items: TocItem[] = [];
+    const usedIds = new Set<string>();
     let match;
     while ((match = headingRegex.exec(note.content)) !== null) {
       const level = match[1].length;
       const text = match[2].trim();
-      const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, "-").replace(/^-|-$/g, "");
-      items.push({ id, text, level });
+      // Generate stable id: use index-based suffix to guarantee uniqueness
+      let baseId = text
+        .toLowerCase()
+        .replace(/[^\w\u4e00-\u9fa5]+/g, "-")
+        .replace(/^-|-$/g, "");
+      // Ensure non-empty id for Chinese-only headings
+      if (!baseId) {
+        baseId = `heading-${items.length}`;
+      }
+      // Deduplicate ids
+      let finalId = baseId;
+      let counter = 1;
+      while (usedIds.has(finalId)) {
+        finalId = `${baseId}-${counter}`;
+        counter++;
+      }
+      usedIds.add(finalId);
+      items.push({ id: finalId, text, level });
     }
     return items;
   }, [note?.content]);
 
-  // Intersection observer for active heading tracking
+  // Inject ids into rendered headings and keep a map of text→id
+  const headingIdMap = useMemo(() => {
+    const map = new Map<string, string>();
+    tocItems.forEach((item) => {
+      map.set(item.text, item.id);
+    });
+    return map;
+  }, [tocItems]);
+
+  useEffect(() => {
+    if (tocItems.length === 0) return;
+    const timer = setTimeout(() => {
+      const proseEl = document.querySelector(".note-content");
+      if (!proseEl) return;
+      const headings = proseEl.querySelectorAll("h1, h2, h3");
+      headings.forEach((heading) => {
+        const text = heading.textContent?.trim() || "";
+        const mappedId = headingIdMap.get(text);
+        if (mappedId) {
+          heading.id = mappedId;
+        } else {
+          // Fallback: generate id same way as tocItems
+          const generatedId = text
+            .toLowerCase()
+            .replace(/[^\w\u4e00-\u9fa5]+/g, "-")
+            .replace(/^-|-$/g, "") || `heading-${Math.random().toString(36).slice(2, 8)}`;
+          heading.id = generatedId;
+        }
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [tocItems, headingIdMap]);
+
+  // Intersection observer for active heading tracking — observe within the scroll container
   useEffect(() => {
     if (tocItems.length === 0) return;
     const observer = new IntersectionObserver(
@@ -77,35 +127,21 @@ export default function NoteDetailPage() {
           }
         }
       },
-      { rootMargin: "-80px 0px -60% 0px" }
+      {
+        root: document.querySelector(".note-content") || null,
+        rootMargin: "-10px 0px -60% 0px",
+      }
     );
-    // Observe after ReactMarkdown renders
     const timer = setTimeout(() => {
       tocItems.forEach((item) => {
         const el = document.getElementById(item.id);
         if (el) observer.observe(el);
       });
-    }, 300);
+    }, 600);
     return () => {
       clearTimeout(timer);
       observer.disconnect();
     };
-  }, [tocItems]);
-
-  // Inject ids into rendered headings
-  useEffect(() => {
-    if (tocItems.length === 0) return;
-    const timer = setTimeout(() => {
-      const proseEl = document.querySelector(".note-content");
-      if (!proseEl) return;
-      const headings = proseEl.querySelectorAll("h1, h2, h3");
-      headings.forEach((heading) => {
-        const text = heading.textContent?.trim() || "";
-        const generatedId = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, "-").replace(/^-|-$/g, "");
-        heading.id = generatedId;
-      });
-    }, 300);
-    return () => clearTimeout(timer);
   }, [tocItems]);
 
   const handleDelete = async () => {
@@ -138,8 +174,13 @@ export default function NoteDetailPage() {
 
   const handleTocClick = (tocId: string) => {
     const el = document.getElementById(tocId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const container = document.querySelector(".note-content");
+    if (el && container) {
+      // Scroll within the content container, not the document
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const scrollOffset = elRect.top - containerRect.top + container.scrollTop;
+      container.scrollTo({ top: scrollOffset - 10, behavior: "smooth" });
       setActiveHeading(tocId);
     }
   };
@@ -246,7 +287,7 @@ export default function NoteDetailPage() {
                 <List className="h-4 w-4" />
                 目录
               </div>
-              <ul className="space-y-1 border-l border-border pl-3">
+              <ul className="space-y-1 border-l border-border pl-3 max-h-[580px] overflow-y-auto pr-1 scrollbar-thin">
                 {tocItems.map((item) => (
                   <li key={item.id}>
                     <button
@@ -286,7 +327,7 @@ export default function NoteDetailPage() {
               <List className="h-4 w-4" />
               目录
             </div>
-            <ul className="space-y-1 max-h-60 overflow-y-auto">
+            <ul className="space-y-1 max-h-60 overflow-y-auto pr-1">
               {tocItems.map((item) => (
                 <li key={item.id}>
                   <button
