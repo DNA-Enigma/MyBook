@@ -12,16 +12,16 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData();
-    const sessionId = (formData.get("sessionId") || formData.get("uploadId")) as string;
+    const uploadId = (formData.get("uploadId") || formData.get("sessionId")) as string;
     const chunkIndex = formData.get("chunkIndex") as string;
     const chunk = formData.get("chunk") as File;
 
-    if (!sessionId || chunkIndex === null || !chunk) {
+    if (!uploadId || chunkIndex === null || !chunk) {
       return NextResponse.json({ error: "缺少必要参数" }, { status: 400 });
     }
 
     const fs = await import("fs/promises");
-    const tmpDir = `/tmp/chunks/${sessionId}`;
+    const tmpDir = `/tmp/chunks/${uploadId}`;
 
     // 检查会话是否存在
     try {

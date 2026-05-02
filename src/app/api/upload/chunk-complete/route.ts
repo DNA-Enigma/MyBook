@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
-import { getBucketName } from "@/lib/storage";
+import { uploadFile, getPublicUrl } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 600; // 大文件拼装上传需要时间
@@ -14,15 +13,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { sessionId: sessionIdFromBody, uploadId } = body;
-    const sessionId = sessionIdFromBody || uploadId;
+    const uploadId = body.uploadId || body.sessionId;
 
-    if (!sessionId) {
-      return NextResponse.json({ error: "缺少 sessionId" }, { status: 400 });
+    if (!uploadId) {
+      return NextResponse.json({ error: "缺少 uploadId" }, { status: 400 });
     }
 
     const fs = await import("fs/promises");
-    const tmpDir = `/tmp/chunks/${sessionId}`;
+    const tmpDir = `/tmp/chunks/${uploadId}`;
 
     // 读取元信息
     let meta: {
@@ -30,7 +28,7 @@ export async function POST(request: NextRequest) {
       fileSize: number;
       contentType: string;
       totalChunks: number;
-      sessionId: string;
+      uploadId: string;
       userId: string;
     };
     try {
@@ -60,36 +58,21 @@ export async function POST(request: NextRequest) {
     }
     const fileBuffer = Buffer.concat(chunks, meta.fileSize);
 
-    // 构建 Supabase Storage 文件路径
-    const bucketName = getBucketName();
+    // 构建 Supabase Storage 文件路径（与原有 upload 路由保持一致）
     const ext = meta.fileName.includes(".") ? meta.fileName.split(".").pop() : "";
-    const uniqueName = ext
+    const safeName = ext
       ? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
       : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const filePath = `uploads/${meta.userId}/${uniqueName}`;
+    const key = `uploads/${meta.userId}/${safeName}`;
 
     // 上传到 Supabase Storage
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from(bucketName)
-      .upload(filePath, fileBuffer, {
-        contentType: meta.contentType || "application/octet-stream",
-        upsert: true,
-      });
+    const uploadKey = await uploadFile(
+      fileBuffer,
+      key,
+      meta.contentType || "application/octet-stream"
+    );
 
-    if (uploadError) {
-      console.error("[chunk-complete] Supabase upload error:", uploadError);
-      return NextResponse.json(
-        { error: `存储上传失败: ${uploadError.message}` },
-        { status: 500 }
-      );
-    }
-
-    // 获取公开 URL
-    const { data: urlData } = supabaseAdmin.storage
-      .from(bucketName)
-      .getPublicUrl(filePath);
-
-    const publicUrl = urlData?.publicUrl || "";
+    const publicUrl = await getPublicUrl(uploadKey);
 
     // 清理临时文件
     try {
@@ -98,10 +81,11 @@ export async function POST(request: NextRequest) {
       // 忽略清理错误
     }
 
+    // 返回格式与前端期望一致
     return NextResponse.json({
       success: true,
-      url: publicUrl,
-      filePath,
+      publicUrl,
+      key: uploadKey,
       fileName: meta.fileName,
       fileSize: meta.fileSize,
     });
