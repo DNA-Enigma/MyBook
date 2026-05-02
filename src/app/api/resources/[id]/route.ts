@@ -126,14 +126,25 @@ export async function DELETE(
       .maybeSingle();
     const isAdmin = profile?.role === "admin";
 
+    // 仅管理员可删除资源
     if (!isAdmin) {
-      const { data: existing } = await getSupabaseAdmin()
-        .from("resources")
-        .select("author_id")
-        .eq("id", id)
-        .maybeSingle();
-      if (existing?.author_id !== userData.user.id) {
-        return NextResponse.json({ error: "权限不足" }, { status: 403 });
+      return NextResponse.json({ error: "仅管理员可删除资源" }, { status: 403 });
+    }
+
+    // 获取资源信息以便删除存储文件
+    const { data: existing } = await getSupabaseAdmin()
+      .from("resources")
+      .select("file_key")
+      .eq("id", id)
+      .maybeSingle();
+
+    // 删除存储文件
+    if (existing?.file_key) {
+      try {
+        const { deleteFile } = await import("@/lib/storage");
+        await deleteFile(existing.file_key);
+      } catch {
+        // 存储文件删除失败不阻塞数据库记录删除
       }
     }
 

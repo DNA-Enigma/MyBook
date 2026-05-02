@@ -19,6 +19,21 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
 
+    // 检查是否为管理员
+    const accessToken = request.cookies.get("sb-access-token")?.value;
+    let isAdmin = false;
+    if (accessToken) {
+      const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
+      if (userData.user) {
+        const { data: profile } = await getSupabaseAdmin()
+          .from("profiles")
+          .select("role")
+          .eq("id", userData.user.id)
+          .maybeSingle();
+        isAdmin = profile?.role === "admin";
+      }
+    }
+
     let query = getSupabaseAdmin()
       .from("resources")
       .select("*")
@@ -30,7 +45,15 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query;
     if (error) throw error;
-    return NextResponse.json({ resources: (data || []).filter((r: Record<string, unknown>) => r.status === "approved") });
+
+    // 过滤逻辑：只显示 approved 且（公开 或 管理员可见所有）
+    const resources = (data || []).filter((r: Record<string, unknown>) => {
+      if (r.status !== "approved") return false;
+      if (!r.is_public && !isAdmin) return false;
+      return true;
+    });
+
+    return NextResponse.json({ resources });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "查询失败" },

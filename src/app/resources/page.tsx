@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Upload, Download, Copy, FileText, Image, Box, Package, Archive, FileCode } from "lucide-react";
+import { Search, Upload, Download, Copy, FileText, Image, Box, Package, Archive, FileCode, Trash2, Eye, EyeOff } from "lucide-react";
 import * as tus from "tus-js-client";
 
 interface Resource {
@@ -18,6 +18,7 @@ interface Resource {
   file_type: string;
   docker_pull_cmd: string | null;
   download_count: number;
+  is_public: boolean;
   created_at: string;
 }
 
@@ -86,6 +87,32 @@ export default function ResourcesPage() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     alert("已复制到剪贴板");
+  };
+
+  const handleDelete = async (resource: Resource) => {
+    if (!confirm(`确定删除资源「${resource.name}」吗？此操作不可恢复。`)) return;
+    const res = await fetch(`/api/resources/${resource.id}`, { method: "DELETE" });
+    if (res.ok) {
+      fetchResources();
+    } else {
+      const data = await res.json();
+      alert(data.error || "删除失败");
+    }
+  };
+
+  const handleTogglePublic = async (resource: Resource) => {
+    const newPublic = !resource.is_public;
+    const res = await fetch(`/api/resources/${resource.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_public: newPublic }),
+    });
+    if (res.ok) {
+      fetchResources();
+    } else {
+      const data = await res.json();
+      alert(data.error || "操作失败");
+    }
   };
 
   return (
@@ -164,7 +191,12 @@ export default function ResourcesPage() {
                       <div className="flex items-center gap-3">
                         <Icon className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <p className="font-medium text-primary">{resource.name}</p>
+                          <p className="font-medium text-primary">
+                            {resource.name}
+                            {isAdmin && !resource.is_public && (
+                              <span className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-xs font-normal text-primary">私密</span>
+                            )}
+                          </p>
                           <p className="text-xs text-muted-foreground">{resource.description}</p>
                           {resource.category === "Docker镜像" && (
                             <code className="mt-1 block rounded bg-muted px-2 py-0.5 text-xs font-mono text-muted-foreground">
@@ -182,7 +214,7 @@ export default function ResourcesPage() {
                     <td className="px-4 py-3 text-muted-foreground">{resource.file_size ? `${(resource.file_size / 1024 / 1024).toFixed(1)} MB` : "-"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{resource.download_count || 0}</td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         {resource.category === "Docker镜像" ? (
                           <Button
                             variant="outline"
@@ -201,6 +233,27 @@ export default function ResourcesPage() {
                             <Download className="mr-1 h-3.5 w-3.5" />
                             下载
                           </Button>
+                        )}
+                        {isAdmin && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleTogglePublic(resource)}
+                              title={resource.is_public ? "设为私密" : "设为公开"}
+                              className={resource.is_public ? "text-muted-foreground" : "text-primary"}
+                            >
+                              {resource.is_public ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(resource)}
+                              className="text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </>
                         )}
                       </div>
                     </td>
