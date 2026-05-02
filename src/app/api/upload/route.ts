@@ -3,6 +3,10 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { uploadFile, getPublicUrl } from "@/lib/storage";
 import { validateUploadFile, generateSafeFileName, checkRateLimit } from "@/lib/security";
 
+// 支持大文件上传：最长 5 分钟，最大 500MB
+export const maxDuration = 300;
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const accessToken = request.cookies.get("sb-access-token")?.value;

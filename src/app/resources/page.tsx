@@ -224,11 +224,24 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [xhrRef, setXhrRef] = useState<XMLHttpRequest | null>(null);
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  };
+
+  const handleCancel = () => {
+    if (xhrRef) {
+      xhrRef.abort();
+      setXhrRef(null);
+    }
+    setUploading(false);
+    setProgress(0);
+    setProgressText("");
+    setErrorMsg("");
   };
 
   const uploadWithProgress = (file: File): Promise<{ publicUrl: string; key: string; originalName: string; size: number; success: boolean }> => {
@@ -237,7 +250,9 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       formData.append("file", file);
 
       const xhr = new XMLHttpRequest();
+      setXhrRef(xhr);
       xhr.open("POST", "/api/upload");
+      xhr.timeout = 5 * 60 * 1000; // 5 分钟超时
 
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
@@ -248,6 +263,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       };
 
       xhr.onload = () => {
+        setXhrRef(null);
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             resolve(JSON.parse(xhr.responseText));
@@ -264,17 +280,40 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         }
       };
 
-      xhr.onerror = () => reject(new Error("网络错误"));
+      xhr.ontimeout = () => {
+        setXhrRef(null);
+        reject(new Error("上传超时，文件可能过大，请重试"));
+      };
+
+      xhr.onabort = () => {
+        setXhrRef(null);
+        reject(new Error("上传已取消"));
+      };
+
+      xhr.onerror = () => {
+        setXhrRef(null);
+        reject(new Error("网络错误，请检查网络连接后重试"));
+      };
+
       xhr.send(formData);
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg("");
+
     if (!file && category !== "Docker镜像") {
-      alert("请选择文件");
+      setErrorMsg("请选择文件");
       return;
     }
+
+    // 前端预检文件大小（500MB）
+    if (file && file.size > 500 * 1024 * 1024) {
+      setErrorMsg(`文件过大（${formatSize(file.size)}），最大支持 500MB`);
+      return;
+    }
+
     setUploading(true);
     setProgress(0);
     setProgressText("");
@@ -292,7 +331,10 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         setUploading(false);
         setProgress(0);
         setProgressText("");
-        alert(err instanceof Error ? err.message : "上传失败");
+        const msg = err instanceof Error ? err.message : "上传失败";
+        if (msg !== "上传已取消") {
+          setErrorMsg(msg);
+        }
         return;
       }
     } else {
@@ -321,7 +363,12 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       onSuccess();
       onClose();
     } else {
-      alert("保存失败");
+      try {
+        const errData = await res.json();
+        setErrorMsg(errData.error || "保存失败");
+      } catch {
+        setErrorMsg("保存失败");
+      }
     }
   };
 
@@ -334,7 +381,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             <label className="text-sm font-medium">名称</label>
             <Input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); setErrorMsg(""); }}
               placeholder="资源名称"
               required
               className="mt-1 bg-muted border-none rounded-md"
@@ -344,7 +391,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             <label className="text-sm font-medium">描述</label>
             <Input
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => { setDescription(e.target.value); setErrorMsg(""); }}
               placeholder="简短描述"
               className="mt-1 bg-muted border-none rounded-md"
             />
@@ -366,7 +413,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               <label className="text-sm font-medium">文件</label>
               <Input
                 type="file"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                onChange={(e) => { setFile(e.target.files?.[0] || null); setErrorMsg(""); }}
                 className="mt-1 bg-muted border-none rounded-md"
               />
               {file && (
@@ -374,6 +421,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                   {file.name} ({formatSize(file.size)})
                 </p>
               )}
+              <p className="mt-1 text-xs text-muted-foreground/60">支持最大 500MB 文件</p>
             </div>
           )}
           {uploading && (
@@ -390,10 +438,21 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               </div>
             </div>
           )}
+          {errorMsg && (
+            <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {errorMsg}
+            </div>
+          )}
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" type="button" onClick={onClose} disabled={uploading}>
-              取消
-            </Button>
+            {uploading ? (
+              <Button variant="outline" type="button" onClick={handleCancel} className="text-destructive hover:bg-destructive/10">
+                取消上传
+              </Button>
+            ) : (
+              <Button variant="outline" type="button" onClick={onClose}>
+                取消
+              </Button>
+            )}
             <Button type="submit" disabled={uploading} className="bg-primary text-primary-foreground">
               {uploading ? `上传中 ${progress}%` : "确认上传"}
             </Button>

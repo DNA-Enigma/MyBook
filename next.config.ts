@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["*.dev.coze.site"],
+  // 增大 API 请求体大小限制，支持大文件上传
+  serverExternalPackages: [],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "500mb",
+    },
+  },
   images: {
     remotePatterns: [
       {
