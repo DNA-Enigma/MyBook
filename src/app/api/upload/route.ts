@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { uploadFile, getPublicUrl } from "@/lib/storage";
 import { validateUploadFile, generateSafeFileName, checkRateLimit } from "@/lib/security";
 
-// 支持大文件上传：最长 10 分钟，最大 2GB
+// 支持大文件上传：最长 10 分钟，最大 3GB
 export const maxDuration = 600;
 export const dynamic = "force-dynamic";
 

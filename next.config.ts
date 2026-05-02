@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [],
   experimental: {
     serverActions: {
-      bodySizeLimit: "2gb",
+      bodySizeLimit: "3gb",
     },
   },
   images: {

@@ -15,6 +15,7 @@ interface Work {
   work_type?: string;
   tech_stack: string[];
   cover_image_url: string;
+  images?: { url: string; isCover?: boolean }[] | null;
   external_link: string;
   created_at: string;
   author_id: string | null;
@@ -132,10 +133,15 @@ export default function WorksPage() {
             >
               <div className="relative aspect-[16/10] overflow-hidden">
                 <img
-                  src={work.cover_image_url || "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=600&h=400&fit=crop"}
+                  src={work.cover_image_url || work.images?.find((img) => img.isCover)?.url || work.images?.[0]?.url || "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=600&h=400&fit=crop"}
                   alt={work.title}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                {work.images && work.images.length > 1 && (
+                  <div className="absolute bottom-2 right-2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
+                    {work.images.length} 张图片
+                  </div>
+                )}
               </div>
               <div className="flex flex-1 flex-col p-5">
                 <div className="mb-2 flex items-center gap-2">

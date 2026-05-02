@@ -3,10 +3,10 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 5000;
-const ALLOWED_CATEGORIES = ["设计", "开发", "摄影", "写作"];
+const ALLOWED_CATEGORIES = ["设计", "开发", "摄影", "写作", "项目", "其他"];
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function requireAdmin(request: NextRequest) {
+async function requireAuth(request: NextRequest) {
   const accessToken = request.cookies.get("sb-access-token")?.value;
   if (!accessToken) return { error: "未登录", status: 401 };
   const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
@@ -16,8 +16,7 @@ async function requireAdmin(request: NextRequest) {
     .select("role")
     .eq("id", userData.user.id)
     .maybeSingle();
-  if (profile?.role !== "admin") return { error: "权限不足", status: 403 };
-  return { user: userData.user };
+  return { user: userData.user, isAdmin: profile?.role === "admin" };
 }
 
 export async function GET(
@@ -63,9 +62,21 @@ export async function PUT(
       return NextResponse.json({ error: "无效的作品ID" }, { status: 400 });
     }
 
-    const auth = await requireAdmin(request);
+    const auth = await requireAuth(request);
     if ("error" in auth) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
+    // 非管理员只能编辑自己的作品
+    if (!auth.isAdmin) {
+      const { data: existing } = await getSupabaseAdmin()
+        .from("works")
+        .select("author_id")
+        .eq("id", id)
+        .maybeSingle();
+      if (existing?.author_id !== auth.user.id) {
+        return NextResponse.json({ error: "权限不足" }, { status: 403 });
+      }
     }
 
     const body = await request.json();
@@ -101,7 +112,9 @@ export async function PUT(
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     if (body.cover_image_url !== undefined) updateData.cover_image_url = body.cover_image_url;
+    if (body.images !== undefined) updateData.images = body.images;
     if (body.category !== undefined) updateData.category = body.category;
+    if (body.work_type !== undefined) updateData.work_type = body.work_type;
     if (body.tech_stack !== undefined) updateData.tech_stack = body.tech_stack;
     if (body.external_link !== undefined) updateData.external_link = body.external_link;
     if (body.is_public !== undefined) updateData.is_public = body.is_public;
@@ -134,9 +147,21 @@ export async function DELETE(
       return NextResponse.json({ error: "无效的作品ID" }, { status: 400 });
     }
 
-    const auth = await requireAdmin(request);
+    const auth = await requireAuth(request);
     if ("error" in auth) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
+    }
+
+    // 非管理员只能删除自己的作品
+    if (!auth.isAdmin) {
+      const { data: existing } = await getSupabaseAdmin()
+        .from("works")
+        .select("author_id")
+        .eq("id", id)
+        .maybeSingle();
+      if (existing?.author_id !== auth.user.id) {
+        return NextResponse.json({ error: "权限不足" }, { status: 403 });
+      }
     }
 
     const { error } = await getSupabaseAdmin().from("works").delete().eq("id", id);

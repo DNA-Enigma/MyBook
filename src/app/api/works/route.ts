@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
         title: works.title,
         description: works.description,
         cover_image_url: works.cover_image_url,
+        images: works.images,
         category: works.category,
         work_type: works.work_type,
         tech_stack: works.tech_stack,
@@ -106,16 +107,19 @@ export async function POST(request: NextRequest) {
 
     // 作品类型验证
     const workType = body.work_type || "project";
-    if (!ALLOWED_WORK_TYPES.includes(workType)) {
-      return NextResponse.json({ error: "无效的作品类型" }, { status: 400 });
-    }
+
+    // 图片列表
+    const images = Array.isArray(body.images) ? body.images : [];
+    // 封面图取第一张
+    const coverImageUrl = body.cover_image_url || (images.length > 0 ? images[0].url || images[0] : null);
 
     const { data, error } = await getSupabaseAdmin()
       .from("works")
       .insert({
         title,
         description,
-        cover_image_url: body.cover_image_url || null,
+        cover_image_url: coverImageUrl,
+        images,
         category,
         work_type: workType,
         tech_stack: Array.isArray(body.tech_stack) ? body.tech_stack : [],

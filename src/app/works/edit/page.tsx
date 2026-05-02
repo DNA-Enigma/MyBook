@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,7 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Save, X, Upload, Link as LinkIcon, Image as ImageIcon, Code } from "lucide-react";
+import { ArrowLeft, Save, X, Upload, Link as LinkIcon, Image as ImageIcon, Code, GripVertical, Star } from "lucide-react";
+
+interface ImageItem {
+  url: string;
+  file?: File;
+  isCover: boolean;
+}
 
 const defaultCategories = ["设计", "开发", "摄影", "写作", "项目", "其他"];
 const defaultWorkTypes = [
@@ -32,15 +38,14 @@ function WorkEditPage() {
   const searchParams = useSearchParams();
   const workId = searchParams.get("id");
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("开发");
   const [workType, setWorkType] = useState("project");
   const [externalLink, setExternalLink] = useState("");
-  const [coverUrl, setCoverUrl] = useState("");
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState("");
+  const [images, setImages] = useState<ImageItem[]>([]);
   const [techStack, setTechStack] = useState<string[]>([]);
   const [techInput, setTechInput] = useState("");
   const [customCategory, setCustomCategory] = useState("");
@@ -49,6 +54,7 @@ function WorkEditPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [forbidden, setForbidden] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   useEffect(() => {
     if (!workId) return;
@@ -69,8 +75,16 @@ function WorkEditPage() {
           setCategory(d.work.category || "开发");
           setWorkType(d.work.work_type || "project");
           setExternalLink(d.work.external_link || "");
-          setCoverUrl(d.work.cover_image_url || "");
-          setCoverPreview(d.work.cover_image_url || "");
+          // Load images from database
+          const dbImages = Array.isArray(d.work.images) ? d.work.images : [];
+          if (dbImages.length > 0) {
+            setImages(dbImages.map((img: { url?: string } | string, i: number) => ({
+              url: typeof img === "string" ? img : img.url || "",
+              isCover: i === 0,
+            })));
+          } else if (d.work.cover_image_url) {
+            setImages([{ url: d.work.cover_image_url, isCover: true }]);
+          }
           setTechStack(Array.isArray(d.work.tech_stack) ? d.work.tech_stack : []);
           setIsPublic(d.work.is_public ?? true);
         }
@@ -79,23 +93,66 @@ function WorkEditPage() {
       .catch(() => setLoading(false));
   }, [workId, user?.id]);
 
-  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCoverFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setCoverPreview(reader.result as string);
-    reader.readAsDataURL(file);
+  const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newImages: ImageItem[] = [];
+    Array.from(files).forEach((file) => {
+      const url = URL.createObjectURL(file);
+      newImages.push({ url, file, isCover: false });
+    });
+    setImages((prev) => {
+      const updated = [...prev, ...newImages];
+      // If no cover, set first as cover
+      if (!updated.some((img) => img.isCover) && updated.length > 0) {
+        updated[0].isCover = true;
+      }
+      return updated;
+    });
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const uploadCover = async (): Promise<string> => {
-    if (!coverFile) return coverUrl;
-    const formData = new FormData();
-    formData.append("file", coverFile);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!res.ok) throw new Error("封面上传失败");
-    const data = await res.json();
-    return data.publicUrl || data.url || "";
+  const handleSetCover = (index: number) => {
+    setImages((prev) => prev.map((img, i) => ({ ...img, isCover: i === index })));
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+      // If removed cover, set first as cover
+      if (!updated.some((img) => img.isCover) && updated.length > 0) {
+        updated[0].isCover = true;
+      }
+      return updated;
+    });
+  };
+
+  const handleMoveImage = (from: number, to: number) => {
+    if (to < 0 || to >= images.length) return;
+    setImages((prev) => {
+      const updated = [...prev];
+      const [moved] = updated.splice(from, 1);
+      updated.splice(to, 0, moved);
+      return updated;
+    });
+  };
+
+  const uploadAllImages = async (): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+    for (const img of images) {
+      if (img.file) {
+        const formData = new FormData();
+        formData.append("file", img.file);
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        if (!res.ok) throw new Error("图片上传失败");
+        const data = await res.json();
+        uploadedUrls.push(data.publicUrl || data.url || "");
+      } else {
+        uploadedUrls.push(img.url);
+      }
+    }
+    return uploadedUrls;
   };
 
   const handleSave = async () => {
@@ -104,8 +161,14 @@ function WorkEditPage() {
       return;
     }
     setSaving(true);
+    setUploadingImages(true);
     try {
-      const finalCover = await uploadCover();
+      const uploadedUrls = await uploadAllImages();
+      setUploadingImages(false);
+
+      const imagePayload = uploadedUrls.map((url, i) => ({ url, isCover: images[i]?.isCover || i === 0 }));
+      const coverUrl = imagePayload.find((img) => img.isCover)?.url || imagePayload[0]?.url || null;
+
       const url = workId ? `/api/works/${workId}` : "/api/works";
       const method = workId ? "PUT" : "POST";
       const finalCategory = category === "__custom__" ? customCategory.trim() || "其他" : category;
@@ -119,7 +182,8 @@ function WorkEditPage() {
           category: finalCategory,
           work_type: finalWorkType,
           external_link: externalLink || null,
-          cover_image_url: finalCover || null,
+          cover_image_url: coverUrl,
+          images: imagePayload,
           tech_stack: techStack,
           is_public: isPublic,
         }),
@@ -135,6 +199,7 @@ function WorkEditPage() {
     } catch (err) {
       alert(err instanceof Error ? err.message : "保存失败");
       setSaving(false);
+      setUploadingImages(false);
     }
   };
 
@@ -238,50 +303,95 @@ function WorkEditPage() {
           </div>
         )}
 
+        {/* Multiple Images Section */}
         <div>
-          <Label>封面图</Label>
-          <div className="mt-1.5 flex items-center gap-4">
-            <div
-              className="relative h-24 w-24 rounded-lg border border-border bg-muted overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/30"
-              onClick={() => document.getElementById("cover-upload")?.click()}
-            >
-              {coverPreview ? (
-                <img src={coverPreview} alt="预览" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                  <Upload className="h-6 w-6" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
+          <Label>作品图片 <span className="text-muted-foreground font-normal text-xs">（第一张为封面图）</span></Label>
+          <div className="mt-2 space-y-3">
+            {/* Image Grid */}
+            {images.length > 0 && (
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {images.map((img, index) => (
+                  <div
+                    key={index}
+                    className={`group relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
+                      img.isCover ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <img src={img.url} alt={`图片 ${index + 1}`} className="h-full w-full object-cover" />
+                    {/* Cover badge */}
+                    {img.isCover && (
+                      <div className="absolute top-1 left-1 rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                        封面
+                      </div>
+                    )}
+                    {/* Actions overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                      {!img.isCover && (
+                        <button
+                          type="button"
+                          onClick={() => handleSetCover(index)}
+                          className="rounded bg-primary p-1.5 text-primary-foreground transition-colors hover:bg-primary/80"
+                          title="设为封面"
+                        >
+                          <Star className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleMoveImage(index, index - 1)}
+                          className="rounded bg-muted p-1.5 text-foreground transition-colors hover:bg-muted/80"
+                          title="左移"
+                        >
+                          <GripVertical className="h-3.5 w-3.5" style={{ transform: "scaleX(-1)" }} />
+                        </button>
+                      )}
+                      {index < images.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleMoveImage(index, index + 1)}
+                          className="rounded bg-muted p-1.5 text-foreground transition-colors hover:bg-muted/80"
+                          title="右移"
+                        >
+                          <GripVertical className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="rounded bg-destructive p-1.5 text-destructive-foreground transition-colors hover:bg-destructive/80"
+                        title="删除"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add Image Button */}
+            <div className="flex items-center gap-3">
               <input
-                id="cover-upload"
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 className="hidden"
-                onChange={handleCoverChange}
+                onChange={handleImageAdd}
               />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => document.getElementById("cover-upload")?.click()}
+                onClick={() => fileInputRef.current?.click()}
               >
-                <Upload className="mr-1 h-4 w-4" />
-                选择图片
+                <Upload className="mr-1.5 h-4 w-4" />
+                添加图片
               </Button>
-              {coverPreview && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="ml-2 text-destructive"
-                  onClick={() => { setCoverFile(null); setCoverPreview(""); setCoverUrl(""); }}
-                >
-                  <X className="mr-1 h-4 w-4" />
-                  清除
-                </Button>
-              )}
+              <span className="text-xs text-muted-foreground">
+                支持 jpg/png/gif/webp，第一张为封面图
+              </span>
             </div>
           </div>
         </div>
@@ -341,7 +451,7 @@ function WorkEditPage() {
           </Button>
           <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Save className="mr-2 h-4 w-4" />
-            {saving ? "保存中..." : "保存"}
+            {saving ? (uploadingImages ? "上传图片中..." : "保存中...") : "保存"}
           </Button>
         </div>
       </div>

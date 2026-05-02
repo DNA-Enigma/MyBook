@@ -57,6 +57,7 @@ export const works = pgTable(
     title: varchar("title", { length: 255 }).notNull(),
     description: text("description"),
     cover_image_url: text("cover_image_url"),
+    images: jsonb("images"),
     category: varchar("category", { length: 50 }).notNull().default("开发"),
     work_type: varchar("work_type", { length: 30 }).notNull().default("project"),
     tech_stack: jsonb("tech_stack"),
