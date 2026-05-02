@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Save, X } from "lucide-react";
+import { ArrowLeft, Save, X, FileUp } from "lucide-react";
 
 const categories = ["技术", "生活", "设计", "随笔"];
 
@@ -101,6 +101,53 @@ function NoteEditPage() {
       alert(err.error || "保存失败");
       setSaving(false);
     }
+  };
+
+  const handleMdImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith(".md") && !file.name.endsWith(".markdown") && !file.name.endsWith(".txt")) {
+      alert("请选择 .md 或 .txt 文件");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      if (!text) return;
+
+      // Parse frontmatter if present
+      const fmMatch = text.match(/^---\n([\s\S]*?)\n---\n\n?([\s\S]*)$/);
+      if (fmMatch) {
+        const fm = fmMatch[1];
+        const body = fmMatch[2].trim();
+        const titleMatch = fm.match(/^title:\s*"?([^"\n]+)"?$/m);
+        const categoryMatch = fm.match(/^category:\s*(.+)$/m);
+        const tagsMatch = fm.match(/^tags:\s*\[(.*?)\]$/m);
+
+        if (titleMatch && !title) setTitle(titleMatch[1].trim());
+        if (categoryMatch) setCategory(categoryMatch[1].trim());
+        if (tagsMatch) {
+          const parsedTags = tagsMatch[1]
+            .split(",")
+            .map((t: string) => t.trim().replace(/^"|"$/g, ""))
+            .filter(Boolean);
+          if (parsedTags.length > 0) setTags(parsedTags);
+        }
+        setContent(body);
+      } else {
+        // No frontmatter — try to use first heading as title
+        const headingMatch = text.match(/^#\s+(.+)$/m);
+        if (headingMatch && !title) {
+          setTitle(headingMatch[1].trim());
+          setContent(text.replace(/^#\s+.+\n*/, "").trim());
+        } else {
+          setContent(text.trim());
+        }
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so re-selecting the same file works
+    e.target.value = "";
   };
 
   if (loading) {
@@ -208,9 +255,21 @@ function NoteEditPage() {
         <div>
           <div className="flex items-center justify-between">
             <Label htmlFor="content">内容（支持 Markdown）</Label>
-            <span className="text-xs text-muted-foreground">
-              {content.length} 字
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">
+                {content.length} 字
+              </span>
+              <label className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">
+                <FileUp className="h-3.5 w-3.5" />
+                导入 .md
+                <input
+                  type="file"
+                  accept=".md,.markdown,.txt"
+                  onChange={handleMdImport}
+                  className="hidden"
+                />
+              </label>
+            </div>
           </div>
           <div className="mt-1.5 max-h-[500px] overflow-y-auto rounded-md bg-muted">
             <Textarea

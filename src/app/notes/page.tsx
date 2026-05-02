@@ -68,17 +68,16 @@ function NotesContent() {
   }, [search, activeCategory, activeTag, activeAuthor]);
 
   const handleExportAll = async () => {
-    const res = await fetch("/api/notes/export?format=json");
+    const res = await fetch("/api/notes/export?format=markdown");
     if (!res.ok) {
       alert("导出失败");
       return;
     }
-    const data = await res.json();
-    const blob = new Blob([JSON.stringify(data.notes, null, 2)], { type: "application/json" });
+    const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `notes_export_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `notes_export_${new Date().toISOString().slice(0, 10)}.md`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -126,6 +125,22 @@ function NotesContent() {
     } finally {
       setImporting(false);
     }
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith(".md") && !file.name.endsWith(".markdown") && !file.name.endsWith(".txt") && !file.name.endsWith(".json")) {
+      alert("请选择 .md / .txt / .json 文件");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      if (text) setImportText(text);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   };
 
   // 提取所有热门标签和创作者
@@ -353,11 +368,24 @@ function NotesContent() {
             <p className="mb-4 text-sm text-muted-foreground">
               支持导入 Markdown 文件（带 frontmatter）或 JSON 数组。JSON 格式: {"[{"}title, content, category, tags{"}]"}
             </p>
+            <div className="mb-3">
+              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-muted px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">
+                <Upload className="h-4 w-4" />
+                选择文件导入
+                <input
+                  type="file"
+                  accept=".md,.markdown,.txt,.json"
+                  onChange={handleImportFile}
+                  className="hidden"
+                />
+              </label>
+              <span className="ml-2 text-xs text-muted-foreground">.md / .txt / .json</span>
+            </div>
             <textarea
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
               placeholder={'---\ntitle: "笔记标题"\ncategory: 技术\ntags: ["React", "前端"]\ndate: 2024-01-01\n---\n\n笔记内容...'}
-              rows={12}
+              rows={10}
               className="w-full rounded-md bg-muted px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 font-mono"
             />
             <div className="mt-4 flex justify-end gap-2">
