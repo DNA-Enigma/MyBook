@@ -37,7 +37,7 @@ function WorkEditPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const workId = searchParams.get("id");
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
@@ -57,7 +57,7 @@ function WorkEditPage() {
   const [uploadingImages, setUploadingImages] = useState(false);
 
   useEffect(() => {
-    if (!workId) return;
+    if (!workId || authLoading) return;
     setForbidden(false);
     setLoading(true);
     fetch(`/api/works/${workId}`)
@@ -91,7 +91,7 @@ function WorkEditPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [workId, user?.id]);
+  }, [workId, user?.id, user?.role, authLoading]);
 
   const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

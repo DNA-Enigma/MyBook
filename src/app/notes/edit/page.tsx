@@ -25,7 +25,7 @@ function NoteEditPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const noteId = searchParams.get("id");
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -38,7 +38,7 @@ function NoteEditPage() {
   const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
-    if (!noteId) return;
+    if (!noteId || authLoading) return;
     setForbidden(false);
     setLoading(true);
     fetch(`/api/notes/${noteId}`)
@@ -60,7 +60,7 @@ function NoteEditPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [noteId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [noteId, user?.id, user?.role, authLoading]);
 
   if (forbidden) {
     return (
