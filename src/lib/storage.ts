@@ -38,6 +38,10 @@ export async function getSignedDownloadUrl(fileName: string, expiresIn = 300): P
   return data.signedUrl;
 }
 
+export function getBucketName(): string {
+  return BUCKET_NAME;
+}
+
 export async function deleteFile(fileName: string): Promise<void> {
   const { error } = await getSupabaseAdmin().storage.from(BUCKET_NAME).remove([fileName]);
   if (error) {

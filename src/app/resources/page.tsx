@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -225,7 +225,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const [xhrRef, setXhrRef] = useState<XMLHttpRequest | null>(null);
+  const abortRef = useRef(false);
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -234,84 +234,11 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   };
 
   const handleCancel = () => {
-    if (xhrRef) {
-      xhrRef.abort();
-      setXhrRef(null);
-    }
+    abortRef.current = true;
     setUploading(false);
     setProgress(0);
     setProgressText("");
     setErrorMsg("");
-  };
-
-  const uploadDirectWithProgress = (
-    file: File,
-    presignData: { supabaseUrl: string; bucketName: string; filePath: string; accessToken: string },
-    attempt: number = 1
-  ): Promise<{ publicUrl: string; key: string }> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      setXhrRef(xhr);
-
-      const url = `${presignData.supabaseUrl}/storage/v1/object/${presignData.bucketName}/${presignData.filePath}`;
-      xhr.open("POST", url);
-      xhr.timeout = 30 * 60 * 1000; // 30 分钟超时（大文件）
-
-      // Supabase Storage 上传所需的 Header
-      xhr.setRequestHeader("Authorization", `Bearer ${presignData.accessToken}`);
-      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-      xhr.setRequestHeader("x-upsert", "true");
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const pct = Math.round((e.loaded / e.total) * 100);
-          setProgress(pct);
-          setProgressText(`${formatSize(e.loaded)} / ${formatSize(e.total)}`);
-        }
-      };
-
-      xhr.onload = () => {
-        setXhrRef(null);
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve({
-            publicUrl: `${presignData.supabaseUrl}/storage/v1/object/public/${presignData.bucketName}/${presignData.filePath}`,
-            key: presignData.filePath,
-          });
-        } else if ((xhr.status === 0 || xhr.status === 413) && attempt < 3) {
-          // 网络层错误或 Payload too large 时自动重试（重新获取 presign 凭证）
-          reject(new Error("RETRY_NEEDED"));
-        } else {
-          try {
-            const errData = JSON.parse(xhr.responseText);
-            reject(new Error(errData.error || errData.message || `上传失败 (${xhr.status})`));
-          } catch {
-            reject(new Error(`上传失败 (${xhr.status})`));
-          }
-        }
-      };
-
-      xhr.ontimeout = () => {
-        setXhrRef(null);
-        reject(new Error("上传超时，文件可能过大，请重试"));
-      };
-
-      xhr.onabort = () => {
-        setXhrRef(null);
-        reject(new Error("上传已取消"));
-      };
-
-      xhr.onerror = () => {
-        setXhrRef(null);
-        // XHR status=0 通常是 CORS 或网络层面错误，自动重试
-        if (attempt < 3) {
-          reject(new Error("RETRY_NEEDED"));
-        } else {
-          reject(new Error("网络连接失败，请检查网络后重试"));
-        }
-      };
-
-      xhr.send(file);
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -323,13 +250,13 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       return;
     }
 
-    // 前端预检文件大小（3GB）
     if (file && file.size > 3 * 1024 * 1024 * 1024) {
       setErrorMsg(`文件过大（${formatSize(file.size)}），最大支持 3GB`);
       return;
     }
 
     setUploading(true);
+    abortRef.current = false;
     setProgress(0);
     setProgressText("");
 
@@ -337,64 +264,75 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     let fileKey = null as string | null;
     if (file && category !== "Docker镜像") {
       try {
-        setProgressText("获取上传凭证...");
+        const CHUNK_SIZE = 8 * 1024 * 1024; // 8MB per chunk — well under proxy body size limit
+        const totalSize = file.size;
+        const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
 
-        // 第一步：获取直传参数
-        const presignRes = await fetch("/api/upload/presign", {
+        // Step 1: Initialize chunked upload
+        setProgressText("初始化上传...");
+        const initRes = await fetch("/api/upload/chunk-init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             fileName: file.name,
-            fileSize: file.size,
+            fileSize: totalSize,
             contentType: file.type || "application/octet-stream",
+            totalChunks,
           }),
         });
-
-        if (!presignRes.ok) {
-          const errData = await presignRes.json();
-          throw new Error(errData.error || "获取上传凭证失败");
+        if (!initRes.ok) {
+          const d = await initRes.json();
+          throw new Error(d.error || "初始化上传失败");
         }
+        const { uploadId } = await initRes.json();
 
-        const presignData = await presignRes.json();
-        setProgressText("上传中...");
+        // Step 2: Upload each chunk
+        for (let i = 0; i < totalChunks; i++) {
+          if (abortRef.current) throw new Error("上传已取消");
 
-        // 第二步：直传 Supabase Storage（带自动重试）
-        let uploadSuccess = false;
-        for (let attempt = 1; attempt <= 3 && !uploadSuccess; attempt++) {
-          try {
-            if (attempt > 1) {
-              setProgressText(`重试上传（第${attempt}次）...`);
-              setProgress(0);
-              // 重新获取 presign 凭证（token 可能已过期）
-              const retryPresignRes = await fetch("/api/upload/presign", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  fileName: file.name,
-                  fileSize: file.size,
-                  contentType: file.type || "application/octet-stream",
-                }),
-              });
-              if (retryPresignRes.ok) {
-                const retryData = await retryPresignRes.json();
-                presignData.supabaseUrl = retryData.supabaseUrl;
-                presignData.bucketName = retryData.bucketName;
-                presignData.filePath = retryData.filePath;
-                presignData.accessToken = retryData.accessToken;
-              }
-            }
-            const result = await uploadDirectWithProgress(file, presignData, attempt);
-            fileUrl = result.publicUrl;
-            fileKey = result.key;
-            uploadSuccess = true;
-          } catch (directErr) {
-            if (directErr instanceof Error && directErr.message === "RETRY_NEEDED" && attempt < 3) {
-              continue; // 自动重试
-            }
-            throw directErr;
+          const start = i * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, totalSize);
+          const chunk = file.slice(start, end);
+
+          setProgressText(`上传分片 ${i + 1}/${totalChunks}...`);
+
+          const formData = new FormData();
+          formData.append("uploadId", uploadId);
+          formData.append("chunkIndex", String(i));
+          formData.append("chunk", chunk);
+
+          const chunkRes = await fetch("/api/upload/chunk", {
+            method: "POST",
+            body: formData,
+          });
+          if (!chunkRes.ok) {
+            const d = await chunkRes.json();
+            throw new Error(d.error || `分片 ${i + 1} 上传失败`);
           }
+
+          // Update progress: chunk upload progress
+          const pct = Math.round(((i + 1) / totalChunks) * 95); // 95% for upload, 5% for merge
+          setProgress(pct);
+          setProgressText(`已上传 ${formatSize(end)} / ${formatSize(totalSize)}`);
         }
 
+        // Step 3: Complete upload — merge chunks and upload to Supabase Storage
+        setProgressText("合并上传中...");
+        setProgress(96);
+        const completeRes = await fetch("/api/upload/chunk-complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uploadId }),
+        });
+        if (!completeRes.ok) {
+          const d = await completeRes.json();
+          throw new Error(d.error || "合并上传失败");
+        }
+        const { publicUrl, key } = await completeRes.json();
+        fileUrl = publicUrl;
+        fileKey = key;
+
+        setProgress(100);
         setProgressText("保存资源信息...");
       } catch (err) {
         setUploading(false);
