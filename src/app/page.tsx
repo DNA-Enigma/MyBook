@@ -15,42 +15,58 @@ import {
 import { Button } from "@/components/ui/button";
 
 async function getOwnerProfile() {
-  const profile = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.role, "admin"))
-    .limit(1);
-  return profile[0] || null;
+  try {
+    const profile = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.role, "admin"))
+      .limit(1);
+    return profile[0] || null;
+  } catch {
+    return null;
+  }
 }
 
 async function getRecentNotes() {
-  return db
-    .select()
-    .from(notes)
-    .where(eq(notes.is_public, true))
-    .orderBy(desc(notes.created_at))
-    .limit(6);
+  try {
+    return await db
+      .select()
+      .from(notes)
+      .where(eq(notes.is_public, true))
+      .orderBy(desc(notes.created_at))
+      .limit(6);
+  } catch {
+    return [];
+  }
 }
 
 async function getRecentWorks() {
-  return db
-    .select()
-    .from(works)
-    .orderBy(desc(works.created_at))
-    .limit(6);
+  try {
+    return await db
+      .select()
+      .from(works)
+      .orderBy(desc(works.created_at))
+      .limit(6);
+  } catch {
+    return [];
+  }
 }
 
 async function getStats() {
-  const [noteCount, workCount, resourceCount] = await Promise.all([
-    db.select({ count: sql<number>`count(*)` }).from(notes).where(eq(notes.is_public, true)),
-    db.select({ count: sql<number>`count(*)` }).from(works),
-    db.select({ count: sql<number>`count(*)` }).from(resources).where(eq(resources.is_public, true)),
-  ]);
-  return {
-    notes: noteCount[0]?.count || 0,
-    works: workCount[0]?.count || 0,
-    resources: resourceCount[0]?.count || 0,
-  };
+  try {
+    const [noteCount, workCount, resourceCount] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(notes).where(eq(notes.is_public, true)),
+      db.select({ count: sql<number>`count(*)` }).from(works),
+      db.select({ count: sql<number>`count(*)` }).from(resources).where(eq(resources.is_public, true)),
+    ]);
+    return {
+      notes: noteCount[0]?.count || 0,
+      works: workCount[0]?.count || 0,
+      resources: resourceCount[0]?.count || 0,
+    };
+  } catch {
+    return { notes: 0, works: 0, resources: 0 };
+  }
 }
 
 export default async function HomePage() {

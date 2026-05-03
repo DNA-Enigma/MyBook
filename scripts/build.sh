@@ -5,6 +5,9 @@ COZE_WORKSPACE_PATH="${COZE_WORKSPACE_PATH:-$(pwd)}"
 
 cd "${COZE_WORKSPACE_PATH}"
 
+echo "Cleaning build cache..."
+rm -rf .next dist
+
 echo "Installing dependencies..."
 pnpm install --prefer-frozen-lockfile --prefer-offline --loglevel debug --reporter=append-only
 
