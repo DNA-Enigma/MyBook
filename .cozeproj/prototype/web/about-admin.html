@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 字体（按需，系统字体时省略；只能用 Google 字体，CSS 地址前缀：https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google） -->
+  <!-- <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/> -->
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary:              #6B4226;
+      --color-primary-container:    #E8E4DC;
+      --color-on-primary:           #FFFFFF;
+      --color-background:           #F4F1EA;
+      --color-surface-container-lowest: #FFFFFF;
+      --color-surface:              #FFFFFF;
+      --color-surface-container:    #E8E4DC;
+      --color-surface-container-high:   #D8D1C4;
+      --color-surface-container-highest: #CFC8BA;
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      --color-success:  #22c55e;
+      --color-error:    #B3403A;
+      --color-warning:  #f59e0b;
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #D8D1C4;
+      --radius-sm:   0.25rem;
+      --radius-md:   0.375rem;
+      --radius-lg:   0.5rem;
+      --radius-xl:   0.75rem;
+      --radius-2xl:  1rem;
+      --radius-full: 9999px;
+      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.10);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      --font-sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- @nav:start 导航组件，不需要的页面则不要复制此段（从 @nav:start 到 @nav:end） -->
+  <header class="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="home.html" class="flex items-center gap-2.5">
+          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+            <i data-lucide="bookmark" class="w-5 h-5 text-on-primary"></i>
+          </div>
+          <span class="font-semibold text-lg text-primary tracking-tight">Enigma 空间站</span>
+        </a>
+        <nav class="hidden md:flex items-center gap-1">
+          <a href="home.html" class="px-4 py-2 text-sm font-medium text-on-surface rounded-lg hover:bg-surface-container transition-colors">首页</a>
+          <a href="notes.html" class="px-4 py-2 text-sm font-medium text-on-surface-variant rounded-lg hover:bg-surface-container transition-colors">博客</a>
+          <a href="works.html" class="px-4 py-2 text-sm font-medium text-on-surface-variant rounded-lg hover:bg-surface-container transition-colors">作品</a>
+          <a href="resources.html" class="px-4 py-2 text-sm font-medium text-on-surface-variant rounded-lg hover:bg-surface-container transition-colors">资源库</a>
+          <a href="profile.html" class="px-4 py-2 text-sm font-medium text-on-surface-variant rounded-lg hover:bg-surface-container transition-colors">个人中心</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  <!-- @nav:end 导航组件，不需要的页面则不要复制此段 -->
+
+  <!-- @main-content:start -->
+  <main class="max-w-4xl mx-auto py-10 px-4 sm:px-6">
+
+    <!-- 返回按钮 -->
+    <div class="mb-6">
+      <a id="btn-back" href="home.html" class="inline-flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>返回首页
+      </a>
+    </div>
+
+    <!-- 个人资料头部卡片 -->
+    <div class="bg-surface rounded-xl shadow-card p-8 text-center mb-6">
+      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" alt="年轻男性管理员头像" data-category="人物" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-primary/20">
+      <h1 class="text-2xl font-bold text-on-surface mb-2">林远航</h1>
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-3">站长</span>
+      <p class="text-sm text-on-surface-variant italic max-w-md mx-auto">"用代码构建理想，以文字记录时光，在技术与艺术的交汇处寻找平衡"</p>
+    </div>
+
+    <!-- 技能标签区块 -->
+    <div class="bg-surface rounded-xl shadow-card p-6 mb-6">
+      <h2 class="text-base font-semibold text-on-surface mb-4 flex items-center gap-2">
+        <i data-lucide="zap" class="w-4 h-4 text-primary"></i>技能标签
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        <!-- 技能-JavaScript -->
+        <span class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-primary/10 text-primary">JavaScript</span>
+        <!-- 技能-TypeScript -->
+        <span class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-primary/10 text-primary">TypeScript</span>
+        <!-- 技能-React -->
+        <span class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-primary/10 text-primary">React</span>
+        <!-- 技能-Node.js -->
+        <span class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-primary/10 text-primary">Node.js</span>
+        <!-- 技能-UI设计 -->
+        <span class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-primary/10 text-primary">UI 设计</span>
+        <!-- 技能-摄影 -->
+        <span class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-primary/10 text-primary">摄影</span>
+        <!-- 技能-技术写作 -->
+        <span class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-primary/10 text-primary">技术写作</span>
+      </div>
+    </div>
+
+    <!-- 联系方式区块 -->
+    <div class="bg-surface rounded-xl shadow-card p-6 mb-6">
+      <h2 class="text-base font-semibold text-on-surface mb-4 flex items-center gap-2">
+        <i data-lucide="link" class="w-4 h-4 text-primary"></i>联系方式
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- 联系方式-邮箱 -->
+        <a id="contact-email" href="mailto:admin@enigma.space" class="flex items-center gap-3 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <i data-lucide="mail" class="w-5 h-5 text-primary"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-on-surface-variant">电子邮箱</p>
+            <p class="text-sm font-medium text-on-surface truncate">admin@enigma.space</p>
+          </div>
+        </a>
+        <!-- 联系方式-GitHub -->
+        <a id="contact-github" href="https://github.com/enigma" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <i data-lucide="github" class="w-5 h-5 text-primary"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-on-surface-variant">GitHub</p>
+            <p class="text-sm font-medium text-on-surface truncate">github.com/enigma</p>
+          </div>
+        </a>
+        <!-- 联系方式-个人网站 -->
+        <a id="contact-website" href="https://enigma.space" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <i data-lucide="globe" class="w-5 h-5 text-primary"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-on-surface-variant">个人网站</p>
+            <p class="text-sm font-medium text-on-surface truncate">enigma.space</p>
+          </div>
+        </a>
+        <!-- 联系方式-LinkedIn -->
+        <a id="contact-linkedin" href="https://linkedin.com/in/enigma" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <i data-lucide="linkedin" class="w-5 h-5 text-primary"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs text-on-surface-variant">LinkedIn</p>
+            <p class="text-sm font-medium text-on-surface truncate">linkedin.com/in/enigma</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 个人简介区块 -->
+    <div class="bg-surface rounded-xl shadow-card p-6 mb-6">
+      <h2 class="text-base font-semibold text-on-surface mb-4 flex items-center gap-2">
+        <i data-lucide="user" class="w-4 h-4 text-primary"></i>个人简介
+      </h2>
+      <div class="space-y-3 text-sm text-on-surface-variant leading-relaxed">
+        <p>你好，我是林远航，Enigma 空间站的创建者与维护者。我是一名全栈开发者，同时也热衷于摄影和技术写作。</p>
+        <p>在过去的十年里，我专注于 Web 技术与用户体验的交叉领域，相信优秀的技术应当服务于人，而不仅仅是功能的堆砌。我创建这个空间的初衷，是建立一个集知识分享、资源沉淀与个人表达于一体的小站。</p>
+        <p>工作之余，我喜欢背着相机游走于城市的角落，用镜头捕捉那些被日常忽略的美好瞬间。我也习惯将学习过程中的思考与踩坑经验记录下来，希望通过文字与更多志同道合的朋友交流。</p>
+        <p>如果你对我的项目感兴趣，或者只是想聊聊技术与生活，欢迎通过上方的联系方式找到我。</p>
+      </div>
+    </div>
+
+    <!-- 底部加入时间 -->
+    <div class="text-center pt-2 pb-8">
+      <div class="inline-flex items-center gap-2 text-xs text-on-surface-variant/60">
+        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+        <span>2022年3月15日加入 Enigma 空间站</span>
+      </div>
+    </div>
+
+  </main>
+  <!-- @main-content:end -->
+
+  <script>
+    $(function() {
+      // 联系方式点击日志（原型阶段）
+      $('#contact-email, #contact-github, #contact-website, #contact-linkedin').on('click', function(e) {
+        const label = $(this).find('p:last').text();
+        console.log('打开联系方式:', label);
+      });
+
+      // 返回按钮点击日志（原型阶段）
+      $('#btn-back').on('click', function(e) {
+        console.log('返回首页');
+      });
+    });
+  </script>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

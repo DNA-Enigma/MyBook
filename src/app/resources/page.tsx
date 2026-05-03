@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Upload, Download, Copy, FileText, Image, Box, Package, Archive, FileCode, Trash2, Eye, EyeOff } from "lucide-react";
+import { Search, Upload, Download, Copy, FileText, Image, Box, Package, Archive, FileCode, Trash2, Eye, EyeOff, Link as LinkIcon, ExternalLink } from "lucide-react";
 import * as tus from "tus-js-client";
 
 interface Resource {
@@ -17,13 +17,14 @@ interface Resource {
   file_size: number | null;
   file_type: string;
   storage_type: string;
+  resource_type: string;
   docker_pull_cmd: string | null;
   download_count: number;
   is_public: boolean;
   created_at: string;
 }
 
-const categories = ["全部", "软件", "文档", "图片媒体", "Docker镜像", "安装包", "压缩包", "源码", "其他"];
+const categories = ["全部", "软件", "文档", "图片媒体", "Docker镜像", "安装包", "压缩包", "源码", "网站链接", "其他"];
 
 const categoryIcons: Record<string, typeof Package> = {
   软件: Package,
@@ -33,6 +34,7 @@ const categoryIcons: Record<string, typeof Package> = {
   安装包: Package,
   压缩包: Archive,
   源码: FileCode,
+  网站链接: LinkIcon,
   其他: Package,
 };
 
@@ -213,7 +215,13 @@ export default function ResourcesPage() {
                         {resource.category}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{resource.file_size ? `${(resource.file_size / 1024 / 1024).toFixed(1)} MB` : "-"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {resource.resource_type === "link"
+                        ? "链接"
+                        : resource.file_size
+                          ? `${(resource.file_size / 1024 / 1024).toFixed(1)} MB`
+                          : "-"}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{resource.download_count || 0}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -225,6 +233,17 @@ export default function ResourcesPage() {
                           >
                             <Copy className="mr-1 h-3.5 w-3.5" />
                             复制
+                          </Button>
+                        ) : resource.resource_type === "link" ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <a href={resource.file_url} target="_blank" rel="noopener noreferrer">
+                              <LinkIcon className="mr-1 h-3.5 w-3.5" />
+                              打开
+                            </a>
                           </Button>
                         ) : (
                           <Button
@@ -273,10 +292,12 @@ export default function ResourcesPage() {
 }
 
 function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [activeTab, setActiveTab] = useState<"file" | "link">("file");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("软件");
   const [file, setFile] = useState<File | null>(null);
+  const [url, setUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
@@ -306,6 +327,46 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     e.preventDefault();
     setErrorMsg("");
 
+    if (activeTab === "link") {
+      if (!url.trim()) {
+        setErrorMsg("请输入链接地址");
+        return;
+      }
+      try {
+        new URL(url);
+      } catch {
+        setErrorMsg("链接格式不正确");
+        return;
+      }
+
+      setUploading(true);
+      const res = await fetch("/api/resources", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          description,
+          category: category === "软件" ? "网站链接" : category,
+          url,
+          resource_type: "link",
+        }),
+      });
+      setUploading(false);
+      if (res.ok) {
+        onSuccess();
+        onClose();
+      } else {
+        try {
+          const errData = await res.json();
+          setErrorMsg(errData.error || "保存失败");
+        } catch {
+          setErrorMsg("保存失败");
+        }
+      }
+      return;
+    }
+
+    // === 文件上传 ===
     if (!file && category !== "Docker镜像") {
       setErrorMsg("请选择文件");
       return;
@@ -496,6 +557,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         file_size: file ? file.size : null,
         file_type: file?.type || "docker",
         storage_type: storageType,
+        resource_type: "file",
         docker_pull_cmd: category === "Docker镜像" ? `docker pull ${name}` : null,
       }),
     });
@@ -519,7 +581,24 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div className="w-full max-w-lg rounded-xl bg-card p-6 shadow-float">
-        <h2 className="mb-4 font-serif text-xl font-bold text-primary">上传资源</h2>
+        {/* Tabs */}
+        <div className="mb-4 flex gap-1 rounded-lg bg-muted p-1">
+          <button
+            type="button"
+            onClick={() => { setActiveTab("file"); setErrorMsg(""); }}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === "file" ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            上传文件
+          </button>
+          <button
+            type="button"
+            onClick={() => { setActiveTab("link"); setErrorMsg(""); }}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === "link" ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            添加链接
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-sm font-medium">名称</label>
@@ -552,22 +631,38 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               ))}
             </select>
           </div>
-          {category !== "Docker镜像" && (
+
+          {activeTab === "link" ? (
             <div>
-              <label className="text-sm font-medium">文件</label>
+              <label className="text-sm font-medium">链接地址</label>
               <Input
-                type="file"
-                onChange={(e) => { setFile(e.target.files?.[0] || null); setErrorMsg(""); }}
+                type="url"
+                value={url}
+                onChange={(e) => { setUrl(e.target.value); setErrorMsg(""); }}
+                placeholder="https://example.com"
+                required
                 className="mt-1 bg-muted border-none rounded-md"
               />
-              {file && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {file.name} ({formatSize(file.size)})
-                </p>
-              )}
-              <p className="mt-1 text-xs text-muted-foreground/60">支持最大 3GB 文件</p>
             </div>
+          ) : (
+            category !== "Docker镜像" && (
+              <div>
+                <label className="text-sm font-medium">文件</label>
+                <Input
+                  type="file"
+                  onChange={(e) => { setFile(e.target.files?.[0] || null); setErrorMsg(""); }}
+                  className="mt-1 bg-muted border-none rounded-md"
+                />
+                {file && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {file.name} ({formatSize(file.size)})
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-muted-foreground/60">支持最大 3GB 文件</p>
+              </div>
+            )
           )}
+
           {uploading && (
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-muted-foreground">
@@ -598,7 +693,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               </Button>
             )}
             <Button type="submit" disabled={uploading} className="bg-primary text-primary-foreground">
-              {uploading ? `上传中 ${progress}%` : "确认上传"}
+              {uploading ? `上传中 ${progress}%` : (activeTab === "link" ? "确认添加" : "确认上传")}
             </Button>
           </div>
         </form>
