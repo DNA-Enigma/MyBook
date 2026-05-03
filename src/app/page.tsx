@@ -89,12 +89,10 @@ export default async function HomePage() {
               <span className="text-sm font-medium text-primary">欢迎来访</span>
             </div>
             <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              {profile?.name ? `${profile.name}的个人空间` : "个人综合服务门户"}
+              个人综合服务门户
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground md:text-xl">
-              {profile?.bio
-                ? profile.bio
-                : "在这里记录技术笔记、展示作品成果、分享实用资源，与你一起成长。"}
+              在这里记录技术笔记、展示作品成果、分享实用资源，与你一起成长。
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button asChild size="lg" className="gap-2">
