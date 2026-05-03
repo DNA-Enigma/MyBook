@@ -33,9 +33,9 @@ export function getSupabaseAnon(): SupabaseClient {
 export const supabaseAdmin = new Proxy({} as SupabaseClient, {
   get(_, prop) {
     const client = getSupabaseAdmin();
-    const value = (client as any)[prop];
+    const value = (client as unknown as Record<string | symbol, unknown>)[prop];
     if (typeof value === "function") {
-      return value.bind(client);
+      return (value as (...args: unknown[]) => unknown).bind(client);
     }
     return value;
   },
@@ -44,9 +44,9 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient, {
 export const supabaseAnon = new Proxy({} as SupabaseClient, {
   get(_, prop) {
     const client = getSupabaseAnon();
-    const value = (client as any)[prop];
+    const value = (client as unknown as Record<string | symbol, unknown>)[prop];
     if (typeof value === "function") {
-      return value.bind(client);
+      return (value as (...args: unknown[]) => unknown).bind(client);
     }
     return value;
   },

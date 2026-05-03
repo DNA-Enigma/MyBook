@@ -48,6 +48,16 @@ export default function WorkDetailPage() {
   const [currentImage, setCurrentImage] = useState(0);
   const [imageLoaded, setImageLoaded] = useState<Set<number>>(new Set());
 
+  const getImages = (w: Work): ImageItem[] => {
+    if (Array.isArray(w.images) && w.images.length > 0) {
+      return w.images;
+    }
+    if (w.cover_image_url) {
+      return [{ url: w.cover_image_url, isCover: true }];
+    }
+    return [];
+  };
+
   useEffect(() => {
     fetch(`/api/works/${workId}`)
       .then((r) => r.json())
@@ -65,16 +75,6 @@ export default function WorkDetailPage() {
       })
       .catch(() => setLoading(false));
   }, [workId]);
-
-  const getImages = (w: Work): ImageItem[] => {
-    if (Array.isArray(w.images) && w.images.length > 0) {
-      return w.images;
-    }
-    if (w.cover_image_url) {
-      return [{ url: w.cover_image_url, isCover: true }];
-    }
-    return [];
-  };
 
   const handleDelete = async () => {
     if (!confirm("确定要删除这个作品吗？")) return;

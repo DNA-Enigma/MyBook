@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,7 +52,7 @@ export default function NoteDetailPage() {
   }, [id]);
 
   // Extract TOC from markdown headings
-  const tocItems: TocItem[] = useMemo(() => {
+  const tocItems: TocItem[] = (() => {
     if (!note?.content) return [];
     const headingRegex = /^(#{1,3})\s+(.+)$/gm;
     const items: TocItem[] = [];
@@ -61,16 +61,13 @@ export default function NoteDetailPage() {
     while ((match = headingRegex.exec(note.content)) !== null) {
       const level = match[1].length;
       const text = match[2].trim();
-      // Generate stable id: use index-based suffix to guarantee uniqueness
       let baseId = text
         .toLowerCase()
         .replace(/[^\w\u4e00-\u9fa5]+/g, "-")
         .replace(/^-|-$/g, "");
-      // Ensure non-empty id for Chinese-only headings
       if (!baseId) {
         baseId = `heading-${items.length}`;
       }
-      // Deduplicate ids
       let finalId = baseId;
       let counter = 1;
       while (usedIds.has(finalId)) {
@@ -81,16 +78,13 @@ export default function NoteDetailPage() {
       items.push({ id: finalId, text, level });
     }
     return items;
-  }, [note?.content]);
+  })();
 
   // Inject ids into rendered headings and keep a map of text→id
-  const headingIdMap = useMemo(() => {
-    const map = new Map<string, string>();
-    tocItems.forEach((item) => {
-      map.set(item.text, item.id);
-    });
-    return map;
-  }, [tocItems]);
+  const headingIdMap = new Map<string, string>();
+  tocItems.forEach((item) => {
+    headingIdMap.set(item.text, item.id);
+  });
 
   useEffect(() => {
     if (tocItems.length === 0) return;
