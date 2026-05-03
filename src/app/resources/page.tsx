@@ -432,7 +432,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                 contentType,
                 cacheControl: "3600",
               },
-              chunkSize: 6 * 1024 * 1024,
+              chunkSize: 512 * 1024, // 512KB：Supabase TUS 服务端对单块大小限制约 5-6MB，留安全余量
               onError: (error) => {
                 tusUploadRef.current = null;
                 reject(new Error(`上传失败: ${error.message || error}`));
