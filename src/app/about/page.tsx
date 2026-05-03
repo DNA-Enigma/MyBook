@@ -1,7 +1,6 @@
 import { db } from "@/lib/db";
 import { profiles, notes, works, resources } from "@/storage/database/shared/schema";
 import { eq, sql } from "drizzle-orm";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Github, Globe, Mail, Linkedin, FileText, ImageIcon, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,11 +69,9 @@ export default async function AboutPage() {
             <div className="relative shrink-0">
               <div className="h-32 w-32 overflow-hidden border-4 border-background shadow-lg md:h-40 md:w-40">
                 {profile.avatar_url ? (
-                  <Image
+                  <img
                     src={profile.avatar_url}
                     alt={profile.name || profile.email}
-                    width={160}
-                    height={160}
                     className="h-full w-full object-cover"
                   />
                 ) : (

@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -232,15 +231,10 @@ function BlogContent({ blogId }: { blogId: string }) {
           </h1>
           <div className="mt-4 flex items-center gap-3">
             {blog.author?.avatar_url ? (
-              <Image
+              <img
                 src={blog.author.avatar_url}
                 alt={blog.author.name || ""}
-                width={40}
-                height={40}
                 className="h-10 w-10 object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
               />
             ) : (
               <div className="flex h-10 w-10 items-center justify-center bg-muted">
@@ -275,14 +269,10 @@ function BlogContent({ blogId }: { blogId: string }) {
         {/* Cover */}
         {blog.cover_image_url && (
           <div className="relative mb-10 aspect-video overflow-hidden rounded-xl bg-muted">
-            <Image
+            <img
               src={blog.cover_image_url}
               alt={blog.title}
-              fill
-              className="object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
+              className="h-full w-full object-cover"
             />
           </div>
         )}
@@ -351,15 +341,10 @@ function BlogContent({ blogId }: { blogId: string }) {
                 <div key={comment.id} className="rounded-xl bg-card p-5 shadow-card">
                   <div className="flex items-start gap-3">
                     {comment.author_avatar ? (
-                      <Image
+                      <img
                         src={comment.author_avatar}
                         alt={comment.author_name || ""}
-                        width={36}
-                        height={36}
                         className="h-9 w-9 shrink-0 object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
                       />
                     ) : (
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-muted">
@@ -417,15 +402,10 @@ function BlogContent({ blogId }: { blogId: string }) {
                         >
                           <div className="flex items-start gap-2">
                             {reply.author_avatar ? (
-                              <Image
+                              <img
                                 src={reply.author_avatar}
                                 alt={reply.author_name || ""}
-                                width={28}
-                                height={28}
                                 className="h-7 w-7 shrink-0 object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = "none";
-                                }}
                               />
                             ) : (
                               <div className="flex h-7 w-7 shrink-0 items-center justify-center bg-muted">

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,14 +133,10 @@ export default function BlogsPage() {
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                   {blog.cover_image_url ? (
-                    <Image
+                    <img
                       src={blog.cover_image_url}
                       alt={blog.title}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
@@ -167,15 +162,10 @@ export default function BlogsPage() {
                   </p>
                   <div className="mt-4 flex items-center gap-2">
                     {blog.author?.avatar_url ? (
-                      <Image
+                      <img
                         src={blog.author.avatar_url}
                         alt={blog.author.name || ""}
-                        width={24}
-                        height={24}
                         className="h-6 w-6 object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
                       />
                     ) : (
                       <User className="h-5 w-5 text-muted-foreground" />

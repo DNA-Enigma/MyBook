@@ -21,6 +21,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "*.supabase2.aidap-global.cn-beijing.volces.com",
+      },
+      {
+        protocol: "https",
         hostname: "s3.amazonaws.com",
       },
       {

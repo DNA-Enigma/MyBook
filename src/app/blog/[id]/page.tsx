@@ -61,6 +61,7 @@ export default function ProfilePage() {
   const [works, setWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   const isOwner = user?.id === id;
 
@@ -130,17 +131,13 @@ export default function ProfilePage() {
         <div className="mb-10 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
           {/* Square Avatar */}
           <div className="relative shrink-0">
-            {profile.avatar_url ? (
+            {profile.avatar_url && !avatarError ? (
               <div className="h-28 w-28 overflow-hidden border-4 border-background shadow-lg sm:h-36 sm:w-36">
-                <Image
+                <img
                   src={profile.avatar_url}
                   alt={profile.name || ""}
-                  width={144}
-                  height={144}
                   className="h-full w-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
+                  onError={() => setAvatarError(true)}
                 />
               </div>
             ) : (
@@ -343,14 +340,10 @@ function ScrollList({ items, type }: { items: (Note | Work)[]; type: "note" | "w
               <div className="flex items-center gap-3">
                 {(item as Work).cover_image_url ? (
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden bg-muted">
-                    <Image
+                    <img
                       src={(item as Work).cover_image_url!}
                       alt={item.title}
-                      fill
-                      className="object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
+                      className="h-full w-full object-cover"
                     />
                   </div>
                 ) : (

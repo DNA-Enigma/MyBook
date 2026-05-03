@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { db } from "@/lib/db";
 import { notes, works, resources, profiles } from "@/storage/database/shared/schema";
 import { eq, desc, sql, count } from "drizzle-orm";
@@ -250,11 +249,9 @@ export default async function HomePage() {
                   className="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-md"
                 >
                   <div className="aspect-video w-full overflow-hidden bg-muted">
-                    <Image
+                    <img
                       src={work.cover_image_url || "/placeholder-work.png"}
                       alt={work.title}
-                      width={400}
-                      height={225}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
