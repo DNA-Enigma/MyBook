@@ -48,6 +48,17 @@ export function Navbar() {
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <>
+              <Link
+                href={`/blog/${user.id}`}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  isActive(`/blog/${user.id}`)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <User className="h-4 w-4" />
+                个人主页
+              </Link>
               <span className="text-sm text-muted-foreground">
                 {user.name || user.email}
                 {isAdmin && (
@@ -101,13 +112,27 @@ export function Navbar() {
           </nav>
           <div className="mt-3 border-t border-border pt-3">
             {user ? (
-              <button
-                onClick={() => { logout(); setMobileOpen(false); }}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
-              >
-                <LogOut className="h-4 w-4" />
-                退出登录
-              </button>
+              <>
+                <Link
+                  href={`/blog/${user.id}`}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                    isActive(`/blog/${user.id}`)
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <User className="h-4 w-4" />
+                  个人主页
+                </Link>
+                <button
+                  onClick={() => { logout(); setMobileOpen(false); }}
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
+                >
+                  <LogOut className="h-4 w-4" />
+                  退出登录
+                </button>
+              </>
             ) : (
               <Link
                 href="/login"
