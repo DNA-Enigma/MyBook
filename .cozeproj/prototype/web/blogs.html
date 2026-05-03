@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary:              #111111;
+      --color-primary_container:    #EAE6DD;
+      --color-on-primary:           #F4F1EA;
+      --color-background:           #F4F1EA;
+      --color-surface-container-lowest: #FAF9F6;
+      --color-surface:              #F4F1EA;
+      --color-surface-container:    #EAE6DD;
+      --color-surface-container-high: #E2DDD3;
+      --color-surface-container-highest: #D8D1C4;
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      --color-success:  #2D5A3D;
+      --color-error:    #8B3A3A;
+      --color-warning:  #7A5C2E;
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #EAE6DD;
+      --radius-sm:   0rem;
+      --radius-md:   0rem;
+      --radius-lg:   0rem;
+      --radius-xl:   0rem;
+      --radius-2xl:  0rem;
+      --radius-full: 9999px;
+      --shadow-card:   0 1px 2px rgba(0,0,0,0.04);
+      --shadow-float:  0 4px 8px rgba(0,0,0,0.04);
+      --shadow-dialog: 0 8px 16px rgba(0,0,0,0.06);
+      --font-sans: "Noto Serif SC", Georgia, "Songti SC", serif;
+      --font-serif: "Playfair Display", Georgia, serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23EAE6DD"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%236B665E" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans antialiased">
+
+  <!-- @nav:start 导航组件 -->
+  <header class="sticky top-0 z-40 border-b border-outline/20 bg-background/95 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
+      <a href="home.html" class="flex items-center gap-2">
+        <span class="font-serif text-xl font-bold tracking-tight text-on-surface">个人门户</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-1">
+        <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">首页</a>
+        <a href="blogs.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10" aria-current="page">博客</a>
+        <a href="notes.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">笔记</a>
+        <a href="works.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">作品</a>
+        <a href="resources.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">资源库</a>
+        <a href="about.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">关于站长</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="profile.html" class="text-sm text-on-surface-variant hover:text-on-surface transition-colors">个人主页</a>
+        <a href="login.html" class="text-sm px-4 py-2 bg-primary text-on-primary hover:opacity-90 transition-opacity">登录</a>
+      </div>
+    </div>
+  </header>
+  <!-- @nav:end 导航组件 -->
+
+  <main class="max-w-7xl mx-auto w-full">
+    <!-- @main-content:start -->
+    <div class="px-6 py-16 md:py-20">
+
+      <!-- 页面大标题区 -->
+      <div class="text-center mb-16 md:mb-20">
+        <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-on-surface mb-5 tracking-tight">博客</h1>
+        <p class="text-base md:text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
+          记录技术探索的足迹、问题思考的脉络与生活随笔的感悟，在这里与志同道合的朋友分享成长的点滴
+        </p>
+      </div>
+
+      <!-- 分类筛选栏 -->
+      <div class="flex justify-center mb-14">
+        <div class="inline-flex items-center gap-1 p-1 bg-surface-container" id="category-filter">
+          <button id="filter-all" class="filter-btn px-4 py-2 text-sm font-medium bg-primary text-on-primary transition-colors" data-category="all">全部</button>
+          <button id="filter-tech" class="filter-btn px-4 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" data-category="tech">技术分享</button>
+          <button id="filter-discuss" class="filter-btn px-4 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" data-category="discuss">问题讨论</button>
+          <button id="filter-exp" class="filter-btn px-4 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" data-category="exp">经验总结</button>
+          <button id="filter-essay" class="filter-btn px-4 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" data-category="essay">随笔</button>
+        </div>
+      </div>
+
+      <!-- 博客卡片列表 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10" id="blog-list">
+
+        <!-- 列表-博客1：技术分享 -->
+        <article class="blog-card group cursor-pointer bg-surface shadow-card hover:shadow-float transition-all duration-300" id="blog-card-1" data-category="tech" data-blog-id="blog-001">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80" alt="笔记本电脑屏幕显示代码编辑器界面" data-category="商业科技" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          </div>
+          <div class="p-6">
+            <h2 class="font-serif text-xl font-semibold text-on-surface mb-3 leading-snug group-hover:text-primary transition-colors">深入理解 React Server Components 的工作原理</h2>
+            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3 mb-5">React Server Components 是 React 生态中的一项重要创新，它允许组件在服务端渲染，从而减少客户端 JavaScript 的体积。本文将深入探讨其底层实现机制与最佳实践，帮助你更好地理解这项技术的价值所在。</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="年轻男性开发者头像" data-category="人物" class="w-8 h-8 object-cover">
+              <span class="text-sm font-medium text-on-surface">陈明远</span>
+              <span class="text-xs text-on-surface-variant">2024年12月15日</span>
+              <span class="ml-auto text-xs px-2 py-0.5 bg-primary/10 text-primary font-medium">技术分享</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- 列表-博客2：问题讨论 -->
+        <article class="blog-card group cursor-pointer bg-surface shadow-card hover:shadow-float transition-all duration-300" id="blog-card-2" data-category="discuss" data-blog-id="blog-002">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80" alt="数据中心服务器机房走廊" data-category="商业科技" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          </div>
+          <div class="p-6">
+            <h2 class="font-serif text-xl font-semibold text-on-surface mb-3 leading-snug group-hover:text-primary transition-colors">微服务架构真的适合你的团队吗？</h2>
+            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3 mb-5">近几年微服务架构被过度推崇，很多初创团队在没有充分评估的情况下盲目拆分服务，最终导致运维复杂度指数级上升。我们在实践中踩过哪些坑，又该如何理性看待这项技术决策。</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="年轻女性产品经理头像" data-category="人物" class="w-8 h-8 object-cover">
+              <span class="text-sm font-medium text-on-surface">林思涵</span>
+              <span class="text-xs text-on-surface-variant">2024年12月10日</span>
+              <span class="ml-auto text-xs px-2 py-0.5 bg-primary/10 text-primary font-medium">问题讨论</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- 列表-博客3：经验总结 -->
+        <article class="blog-card group cursor-pointer bg-surface shadow-card hover:shadow-float transition-all duration-300" id="blog-card-3" data-category="exp" data-blog-id="blog-003">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800&q=80" alt="笔记本电脑与咖啡杯工作场景" data-category="商业科技" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          </div>
+          <div class="p-6">
+            <h2 class="font-serif text-xl font-semibold text-on-surface mb-3 leading-snug group-hover:text-primary transition-colors">前端性能优化的十个实战经验</h2>
+            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3 mb-5">经过三年多的项目打磨，我总结出一套可落地的前端性能优化方案。从资源加载、渲染路径到运行时效率，这些经验帮助我们将首屏加载时间从 3.2 秒降低到 0.8 秒。</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="年轻男性开发者头像" data-category="人物" class="w-8 h-8 object-cover">
+              <span class="text-sm font-medium text-on-surface">陈明远</span>
+              <span class="text-xs text-on-surface-variant">2024年12月5日</span>
+              <span class="ml-auto text-xs px-2 py-0.5 bg-primary/10 text-primary font-medium">经验总结</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- 列表-博客4：随笔 -->
+        <article class="blog-card group cursor-pointer bg-surface shadow-card hover:shadow-float transition-all duration-300" id="blog-card-4" data-category="essay" data-blog-id="blog-004">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80" alt="咖啡杯与笔记本俯拍静物" data-category="食物" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          </div>
+          <div class="p-6">
+            <h2 class="font-serif text-xl font-semibold text-on-surface mb-3 leading-snug group-hover:text-primary transition-colors">程序员与咖啡：一段长达十年的陪伴</h2>
+            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3 mb-5">从大学图书馆里的速溶咖啡，到如今工作台旁的手冲壶，咖啡已经成为我编程生涯中不可或缺的伙伴。它不仅是提神的饮品，更是一种仪式感，标记着每一天深度工作的开始。</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80" alt="年轻女性设计师头像" data-category="人物" class="w-8 h-8 object-cover">
+              <span class="text-sm font-medium text-on-surface">王小雨</span>
+              <span class="text-xs text-on-surface-variant">2024年11月28日</span>
+              <span class="ml-auto text-xs px-2 py-0.5 bg-primary/10 text-primary font-medium">随笔</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- 列表-博客5：技术分享 -->
+        <article class="blog-card group cursor-pointer bg-surface shadow-card hover:shadow-float transition-all duration-300" id="blog-card-5" data-category="tech" data-blog-id="blog-005">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80" alt="手持笔记本电脑工作场景" data-category="商业科技" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          </div>
+          <div class="p-6">
+            <h2 class="font-serif text-xl font-semibold text-on-surface mb-3 leading-snug group-hover:text-primary transition-colors">TypeScript 高级类型体操完全指南</h2>
+            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3 mb-5">条件类型、映射类型、模板字面量类型... TypeScript 的类型系统远比想象中强大。本文通过一系列实际案例，带你从入门到精通，写出更加类型安全的代码。</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" alt="年轻男性工程师头像" data-category="人物" class="w-8 h-8 object-cover">
+              <span class="text-sm font-medium text-on-surface">张逸轩</span>
+              <span class="text-xs text-on-surface-variant">2024年11月20日</span>
+              <span class="ml-auto text-xs px-2 py-0.5 bg-primary/10 text-primary font-medium">技术分享</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- 列表-博客6：经验总结 -->
+        <article class="blog-card group cursor-pointer bg-surface shadow-card hover:shadow-float transition-all duration-300" id="blog-card-6" data-category="exp" data-blog-id="blog-006">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80" alt="白色桌面上打开的笔记本与绿植" data-category="商业科技" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          </div>
+          <div class="p-6">
+            <h2 class="font-serif text-xl font-semibold text-on-surface mb-3 leading-snug group-hover:text-primary transition-colors">打造高效远程团队的五个关键习惯</h2>
+            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3 mb-5">远程工作三年，团队从 5 人扩展到 30 人，我们摸索出了一套行之有效的异步协作模式。透明沟通、文档优先、结果导向，这些原则让分布在三个时区的团队依然高效运转。</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="年轻女性产品经理头像" data-category="人物" class="w-8 h-8 object-cover">
+              <span class="text-sm font-medium text-on-surface">林思涵</span>
+              <span class="text-xs text-on-surface-variant">2024年11月15日</span>
+              <span class="ml-auto text-xs px-2 py-0.5 bg-primary/10 text-primary font-medium">经验总结</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- 列表-博客7：问题讨论 -->
+        <article class="blog-card group cursor-pointer bg-surface shadow-card hover:shadow-float transition-all duration-300" id="blog-card-7" data-category="discuss" data-blog-id="blog-007">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80" alt="人工智能神经网络可视化概念图" data-category="商业科技" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          </div>
+          <div class="p-6">
+            <h2 class="font-serif text-xl font-semibold text-on-surface mb-3 leading-snug group-hover:text-primary transition-colors">AI 编程助手会取代程序员吗？</h2>
+            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3 mb-5">GitHub Copilot、ChatGPT 等 AI 工具正在深刻改变编程方式。有人认为程序员即将被取代，也有人认为这只是一次效率工具的升级。作为一个重度使用者，我想谈谈我的观察和思考。</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" alt="年轻男性工程师头像" data-category="人物" class="w-8 h-8 object-cover">
+              <span class="text-sm font-medium text-on-surface">张逸轩</span>
+              <span class="text-xs text-on-surface-variant">2024年11月8日</span>
+              <span class="ml-auto text-xs px-2 py-0.5 bg-primary/10 text-primary font-medium">问题讨论</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- 列表-博客8：随笔 -->
+        <article class="blog-card group cursor-pointer bg-surface shadow-card hover:shadow-float transition-all duration-300" id="blog-card-8" data-category="essay" data-blog-id="blog-008">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80" alt="层峦叠嶂的山脉自然风光" data-category="自然风景" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          </div>
+          <div class="p-6">
+            <h2 class="font-serif text-xl font-semibold text-on-surface mb-3 leading-snug group-hover:text-primary transition-colors">逃离屏幕：一次改变认知的山间徒步</h2>
+            <p class="text-sm text-on-surface-variant leading-relaxed line-clamp-3 mb-5">连续加班三个月后，我决定关掉所有电子设备，独自前往皖南山区徒步三天。没有网络、没有代码、没有邮件，只有山路、溪流和星空。这次经历让我重新思考了工作与生活的边界。</p>
+            <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/20">
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80" alt="年轻女性设计师头像" data-category="人物" class="w-8 h-8 object-cover">
+              <span class="text-sm font-medium text-on-surface">王小雨</span>
+              <span class="text-xs text-on-surface-variant">2024年10月30日</span>
+              <span class="ml-auto text-xs px-2 py-0.5 bg-primary/10 text-primary font-medium">随笔</span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+    </div>
+    <!-- @main-content:end -->
+  </main>
+
+  <script>
+    $(function() {
+      // 分类筛选交互
+      $('#category-filter').on('click', '.filter-btn', function() {
+        const category = $(this).data('category');
+
+        // 重置所有按钮为未选中态
+        $('.filter-btn').removeClass('bg-primary text-on-primary')
+          .addClass('text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high');
+
+        // 设置当前按钮为选中态
+        $(this).removeClass('text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high')
+          .addClass('bg-primary text-on-primary');
+
+        // 筛选博客卡片
+        if (category === 'all') {
+          $('.blog-card').fadeIn(200);
+        } else {
+          $('.blog-card').hide();
+          $('.blog-card[data-category="' + category + '"]').fadeIn(200);
+        }
+      });
+
+      // 博客卡片点击跳转至详情页
+      $('#blog-list').on('click', '.blog-card', function() {
+        const blogId = $(this).data('blog-id');
+        window.location.href = 'blog-detail.html?id=' + blogId;
+      });
+    });
+  </script>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

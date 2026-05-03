@@ -5,49 +5,41 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
 
   <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
-  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide.1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
   <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
 
   <style type="text/tailwindcss">
     @theme {
-      /* === 品牌色 === */
       --color-primary:              #111111;
       --color-primary-container:    #EAE6DD;
       --color-on-primary:           #F4F1EA;
-      /* === 背景 / 表面 === */
-      --color-background:                 #F4F1EA;
-      --color-surface-container-lowest:   #FFFFFF;
-      --color-surface:                    #FFFFFF;
-      --color-surface-container:          #EAE6DD;
-      --color-surface-container-high:     #DEDAD0;
-      --color-surface-container-highest:  #D8D1C4;
-      /* === 文字 === */
+      --color-background:           #F4F1EA;
+      --color-surface-container-lowest: #FAF9F6;
+      --color-surface:              #F4F1EA;
+      --color-surface-container:    #EAE6DD;
+      --color-surface-container-high: #E2DDD3;
+      --color-surface-container-highest: #D8D1C4;
       --color-on-surface:           #111111;
       --color-on-surface-variant:   #6B665E;
-      /* === 功能色 === */
-      --color-success:  #5A8A5E;
-      --color-error:    #A63D3D;
-      --color-warning:  #8A6D3B;
-      /* === 边框 === */
+      --color-success:  #2D5A3D;
+      --color-error:    #8B3A3A;
+      --color-warning:  #7A5C2E;
       --color-outline:          #D8D1C4;
-      --color-outline-variant:  #E5E0D6;
-      /* === 圆角 === */
-      --radius-sm:   0.0625rem;
-      --radius-md:   0.0625rem;
-      --radius-lg:   0.0625rem;
-      --radius-xl:   0.0625rem;
-      --radius-2xl:  0.0625rem;
+      --color-outline-variant:  #EAE6DD;
+      --radius-sm:   0rem;
+      --radius-md:   0rem;
+      --radius-lg:   0rem;
+      --radius-xl:   0rem;
+      --radius-2xl:  0rem;
       --radius-full: 9999px;
-      /* === 阴影（杂志风禁止使用阴影，保留极淡的层级区分） === */
-      --shadow-card:   0 1px 2px rgba(0,0,0,0.03);
-      --shadow-float:  0 2px 4px rgba(0,0,0,0.04);
-      --shadow-dialog: 0 4px 12px rgba(0,0,0,0.06);
-      /* === 字体 === */
-      --font-serif: "Playfair Display", "Noto Serif SC", Georgia, serif;
-      --font-sans: "Noto Serif SC", Georgia, "Times New Roman", serif;
+      --shadow-card:   0 1px 2px rgba(0,0,0,0.04);
+      --shadow-float:  0 4px 8px rgba(0,0,0,0.04);
+      --shadow-dialog: 0 8px 16px rgba(0,0,0,0.06);
+      --font-sans: "Noto Serif SC", Georgia, "Songti SC", serif;
+      --font-serif: "Playfair Display", Georgia, serif;
     }
   </style>
 
@@ -70,397 +62,454 @@
   </script>
 
   <style>
-    /* Marquee 自动垂直滚动动画 */
-    @keyframes marquee-scroll {
+    @keyframes scroll-loop {
       0% { transform: translateY(0); }
       100% { transform: translateY(-50%); }
     }
-    .marquee-track {
-      animation: marquee-scroll 20s linear infinite;
+    .scroll-animate {
+      animation: scroll-loop 24s linear infinite;
     }
-    .marquee-container:hover .marquee-track {
+    .scroll-animate:hover {
       animation-play-state: paused;
     }
   </style>
 </head>
 
-<body class="bg-background text-on-surface font-sans">
+<body class="bg-background text-on-surface font-sans antialiased">
 
   <!-- @nav:start 导航组件 -->
-  <header class="border-b border-outline-variant/20 bg-background">
-    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-      <a href="home.html" class="font-serif text-xl font-semibold tracking-tight text-on-surface">个人门户</a>
-      <nav class="hidden md:flex items-center gap-8">
-        <a href="home.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">首页</a>
-        <a href="blog.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">博客</a>
-        <a href="works.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">作品</a>
-        <a href="resources.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">资源库</a>
-        <a href="about.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">关于</a>
+  <header class="sticky top-0 z-40 border-b border-outline/20 bg-background/95 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
+      <a href="profile.html" class="flex items-center gap-2">
+        <span class="font-serif text-xl font-bold tracking-tight text-on-surface">个人门户</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-1">
+        <a href="profile.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 transition-colors" aria-current="page">个人主页</a>
+        <a href="blogs.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">博客</a>
       </nav>
-      <div class="flex items-center gap-4">
-        <a href="profile.html" class="text-sm tracking-wide text-on-surface hover:text-on-surface transition-colors font-semibold" aria-current="page">个人主页</a>
-        <button class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors">退出</button>
+      <div class="flex items-center gap-3">
+        <a href="profile.html" class="text-sm text-on-surface-variant hover:text-on-surface transition-colors">个人主页</a>
       </div>
     </div>
   </header>
   <!-- @nav:end 导航组件 -->
 
-  <main class="max-w-6xl mx-auto px-6 py-12">
-    <!-- @main-content:start -->
+  <!-- @main-content:start -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-10">
 
-    <!-- 顶部用户信息区 -->
-    <section id="profile-header" class="flex items-start justify-between gap-8 mb-10">
-      <!-- 左侧：头像 + 基本信息 -->
-      <div class="flex items-start gap-6">
-        <!-- 方形头像 120x120 -->
-        <div id="avatar-wrapper" class="w-[120px] h-[120px] shrink-0 overflow-hidden bg-surface-container">
-          <img
-            id="profile-avatar"
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=faces"
-            alt="孙典章的头像照片"
-            data-category="人物"
-            class="w-full h-full object-cover"
-          />
-        </div>
-        <div class="flex flex-col gap-2 pt-1">
-          <h1 id="profile-name" class="font-serif text-3xl font-semibold tracking-tight text-on-surface">孙典章</h1>
-          <span id="profile-role" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium tracking-wide bg-primary text-on-primary w-fit">管理员</span>
-          <p id="profile-bio" class="text-sm text-on-surface-variant leading-relaxed mt-1">热爱技术，乐于分享</p>
-        </div>
+    <!-- 顶部返回区域 -->
+    <div class="mb-8">
+      <a href="blogs.html" id="btn-back" class="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-on-surface transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>返回博客</span>
+      </a>
+    </div>
+
+    <!-- 个人信息区 -->
+    <section class="flex flex-col md:flex-row gap-8 mb-12">
+      <!-- 方形头像 -->
+      <div class="shrink-0">
+        <img id="profile-avatar"
+             src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"
+             alt="个人头像" data-category="人物"
+             class="w-32 h-32 object-cover border-none" />
       </div>
-      <!-- 右侧：编辑按钮 -->
-      <button id="btn-edit-profile" class="inline-flex items-center gap-2 bg-surface-container text-on-surface px-4 py-2 text-sm font-medium tracking-wide hover:bg-surface-container-high active:scale-[0.98] transition-all">
-        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>编辑资料
-      </button>
-    </section>
 
-    <!-- 用户详情：联系方式 -->
-    <section id="profile-contacts" class="mb-12">
-      <div class="flex flex-wrap items-center gap-x-8 gap-y-3">
-        <!-- 联系方式-邮箱 -->
-        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
+      <!-- 信息内容 -->
+      <div class="flex-1 min-w-0">
+        <h1 id="profile-name" class="text-3xl font-serif font-bold text-on-surface mb-3">陈墨白</h1>
+        <p id="profile-bio" class="text-sm text-on-surface-variant leading-relaxed mb-4 max-w-xl">
+          独立开发者与设计爱好者，专注于前端工程化与用户体验设计。喜欢探索技术与美学的交叉点，在代码与像素之间寻找平衡。日常记录学习笔记与创作心得。
+        </p>
+
+        <!-- 联系邮箱 -->
+        <div class="flex items-center gap-2 text-sm text-on-surface-variant mb-4">
           <i data-lucide="mail" class="w-4 h-4"></i>
-          <span id="contact-email">sun.dianzhang@example.com</span>
+          <span id="profile-email">chen.mobai@example.com</span>
         </div>
-        <!-- 联系方式-GitHub -->
-        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
-          <i data-lucide="github" class="w-4 h-4"></i>
-          <a id="contact-github" href="https://github.com/sundianzhang" target="_blank" class="hover:text-on-surface transition-colors">github.com/sundianzhang</a>
+
+        <!-- 社交链接 -->
+        <div class="flex items-center gap-4 mb-6">
+          <a href="https://github.com" id="link-github" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-on-surface transition-colors">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            <span>GitHub</span>
+          </a>
+          <a href="https://example.com" id="link-website" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-on-surface transition-colors">
+            <i data-lucide="globe" class="w-4 h-4"></i>
+            <span>个人网站</span>
+          </a>
+          <a href="https://linkedin.com" id="link-linkedin" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-on-surface transition-colors">
+            <i data-lucide="linkedin" class="w-4 h-4"></i>
+            <span>LinkedIn</span>
+          </a>
         </div>
-        <!-- 联系方式-网站 -->
-        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
-          <i data-lucide="globe" class="w-4 h-4"></i>
-          <a id="contact-website" href="https://sundianzhang.dev" target="_blank" class="hover:text-on-surface transition-colors">sundianzhang.dev</a>
-        </div>
-        <!-- 联系方式-LinkedIn -->
-        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
-          <i data-lucide="linkedin" class="w-4 h-4"></i>
-          <a id="contact-linkedin" href="https://linkedin.com/in/sundianzhang" target="_blank" class="hover:text-on-surface transition-colors">孙典章</a>
-        </div>
+
+        <!-- 编辑资料按钮 -->
+        <button id="btn-edit-profile"
+                class="bg-primary text-on-primary px-4 py-2 text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+          编辑资料
+        </button>
       </div>
     </section>
 
-    <!-- 分隔线 -->
-    <div class="border-t border-outline-variant/20 mb-12"></div>
+    <!-- 左右分栏区 -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-    <!-- 左右分栏内容区 -->
-    <section id="profile-columns" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-      <!-- 左栏：公开笔记 -->
-      <div>
-        <h2 class="font-serif text-xl font-semibold tracking-tight text-on-surface mb-5">公开笔记</h2>
-        <div id="notes-marquee" class="marquee-container h-[400px] overflow-hidden relative">
-          <!-- 顶部渐隐遮罩 -->
-          <div class="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none"></div>
-          <!-- 底部渐隐遮罩 -->
-          <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none"></div>
-          <div class="marquee-track">
+      <!-- 左侧：公开笔记 -->
+      <div class="flex flex-col">
+        <div class="flex items-center gap-2 mb-4">
+          <i data-lucide="file-text" class="w-5 h-5 text-on-surface"></i>
+          <h2 class="text-lg font-semibold text-on-surface">公开笔记</h2>
+        </div>
+        <div class="bg-surface border border-outline-variant/20 overflow-hidden" style="height: 400px;">
+          <div class="scroll-animate">
             <!-- 列表-笔记1 -->
-            <div class="note-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">React 19 新特性深度解析</h3>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">React</span>
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">前端</span>
-                </div>
-                <span class="text-xs text-on-surface-variant">2024-12-15</span>
+            <a href="notes.html?id=note-1" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">React 并发模式深度解析</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">前端</span>
+                <span>2024-03-15</span>
               </div>
-            </div>
+            </a>
             <!-- 列表-笔记2 -->
-            <div class="note-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">从零搭建设计系统的完整思路</h3>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-on-surface">设计</span>
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">工程化</span>
-                </div>
-                <span class="text-xs text-on-surface-variant">2024-11-28</span>
+            <a href="notes.html?id=note-2" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">设计系统的 Token 架构实践</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">设计</span>
+                <span>2024-02-28</span>
               </div>
-            </div>
+            </a>
             <!-- 列表-笔记3 -->
-            <div class="note-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">Rust 异步编程模型实战笔记</h3>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">后端</span>
-                </div>
-                <span class="text-xs text-on-surface-variant">2024-10-09</span>
+            <a href="notes.html?id=note-3" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">Node.js 性能调优备忘录</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">后端</span>
+                <span>2024-02-10</span>
               </div>
-            </div>
-            <!-- 重复内容用于无缝循环 -->
-            <!-- 列表-笔记1（重复） -->
-            <div class="note-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">React 19 新特性深度解析</h3>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">React</span>
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">前端</span>
-                </div>
-                <span class="text-xs text-on-surface-variant">2024-12-15</span>
+            </a>
+            <!-- 列表-笔记4 -->
+            <a href="notes.html?id=note-4" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">TypeScript 高级类型体操指南</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">前端</span>
+                <span>2024-01-22</span>
               </div>
-            </div>
-            <!-- 列表-笔记2（重复） -->
-            <div class="note-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">从零搭建设计系统的完整思路</h3>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-on-surface">设计</span>
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">工程化</span>
-                </div>
-                <span class="text-xs text-on-surface-variant">2024-11-28</span>
+            </a>
+            <!-- 列表-笔记5 -->
+            <a href="notes.html?id=note-5" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">CSS 容器查询实战技巧</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">前端</span>
+                <span>2024-01-08</span>
               </div>
-            </div>
-            <!-- 列表-笔记3（重复） -->
-            <div class="note-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">Rust 异步编程模型实战笔记</h3>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">后端</span>
-                </div>
-                <span class="text-xs text-on-surface-variant">2024-10-09</span>
+            </a>
+            <!-- 复制：列表-笔记1 -->
+            <a href="notes.html?id=note-1" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">React 并发模式深度解析</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">前端</span>
+                <span>2024-03-15</span>
               </div>
-            </div>
+            </a>
+            <!-- 复制：列表-笔记2 -->
+            <a href="notes.html?id=note-2" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">设计系统的 Token 架构实践</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">设计</span>
+                <span>2024-02-28</span>
+              </div>
+            </a>
+            <!-- 复制：列表-笔记3 -->
+            <a href="notes.html?id=note-3" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">Node.js 性能调优备忘录</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">后端</span>
+                <span>2024-02-10</span>
+              </div>
+            </a>
+            <!-- 复制：列表-笔记4 -->
+            <a href="notes.html?id=note-4" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">TypeScript 高级类型体操指南</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">前端</span>
+                <span>2024-01-22</span>
+              </div>
+            </a>
+            <!-- 复制：列表-笔记5 -->
+            <a href="notes.html?id=note-5" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <h3 class="text-sm font-semibold text-on-surface mb-1">CSS 容器查询实战技巧</h3>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">前端</span>
+                <span>2024-01-08</span>
+              </div>
+            </a>
           </div>
         </div>
       </div>
 
-      <!-- 右栏：作品展示 -->
-      <div>
-        <h2 class="font-serif text-xl font-semibold tracking-tight text-on-surface mb-5">作品展示</h2>
-        <div id="works-marquee" class="marquee-container h-[400px] overflow-hidden relative">
-          <!-- 顶部渐隐遮罩 -->
-          <div class="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none"></div>
-          <!-- 底部渐隐遮罩 -->
-          <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none"></div>
-          <div class="marquee-track">
+      <!-- 右侧：公开作品 -->
+      <div class="flex flex-col">
+        <div class="flex items-center gap-2 mb-4">
+          <i data-lucide="briefcase" class="w-5 h-5 text-on-surface"></i>
+          <h2 class="text-lg font-semibold text-on-surface">公开作品</h2>
+        </div>
+        <div class="bg-surface border border-outline-variant/20 overflow-hidden" style="height: 400px;">
+          <div class="scroll-animate" style="animation-duration: 28s;">
             <!-- 列表-作品1 -->
-            <div class="work-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">NoteFlow 协作笔记平台</h3>
-              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">支持实时协作的 Markdown 笔记应用，集成知识图谱与全文搜索，服务超过两千名活跃用户。</p>
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">React</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">WebSocket</span>
+            <a href="works.html?id=work-1" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <div class="flex gap-3">
+                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=120&h=90&fit=crop"
+                     alt="数据仪表盘项目封面" data-category="商业科技"
+                     class="w-24 h-16 object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-on-surface mb-1 truncate">数据可视化仪表盘</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">Web应用</span>
+                </div>
               </div>
-            </div>
+            </a>
             <!-- 列表-作品2 -->
-            <div class="work-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">DesignKit 组件库</h3>
-              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">面向设计系统的前端组件库，涵盖 60+ 可组合组件，支持主题定制与无障碍访问。</p>
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">TypeScript</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-on-surface">Storybook</span>
+            <a href="works.html?id=work-2" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <div class="flex gap-3">
+                <img src="https://images.unsplash.com/photo-1555421689-d68471e189f2?w=120&h=90&fit=crop"
+                     alt="设计系统组件库封面" data-category="设计"
+                     class="w-24 h-16 object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-on-surface mb-1 truncate">杂志风设计系统</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">设计系统</span>
+                </div>
               </div>
-            </div>
+            </a>
             <!-- 列表-作品3 -->
-            <div class="work-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">PixelPress 静态站点生成器</h3>
-              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">极简的静态站点生成工具，支持 MDX 内容编写与增量构建，构建速度比同类工具快 3 倍。</p>
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">MDX</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">CLI</span>
+            <a href="works.html?id=work-3" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <div class="flex gap-3">
+                <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=120&h=90&fit=crop"
+                     alt="移动端应用界面封面" data-category="商业科技"
+                     class="w-24 h-16 object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-on-surface mb-1 truncate">读书笔记移动应用</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">移动应用</span>
+                </div>
               </div>
-            </div>
-            <!-- 重复内容用于无缝循环 -->
-            <!-- 列表-作品1（重复） -->
-            <div class="work-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">NoteFlow 协作笔记平台</h3>
-              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">支持实时协作的 Markdown 笔记应用，集成知识图谱与全文搜索，服务超过两千名活跃用户。</p>
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">React</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">WebSocket</span>
+            </a>
+            <!-- 列表-作品4 -->
+            <a href="works.html?id=work-4" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <div class="flex gap-3">
+                <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=120&h=90&fit=crop"
+                     alt="代码编辑器插件封面" data-category="商业科技"
+                     class="w-24 h-16 object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-on-surface mb-1 truncate">VS Code 主题插件</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">开发工具</span>
+                </div>
               </div>
-            </div>
-            <!-- 列表-作品2（重复） -->
-            <div class="work-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">DesignKit 组件库</h3>
-              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">面向设计系统的前端组件库，涵盖 60+ 可组合组件，支持主题定制与无障碍访问。</p>
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">TypeScript</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-on-surface">Storybook</span>
+            </a>
+            <!-- 复制：列表-作品1 -->
+            <a href="works.html?id=work-1" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <div class="flex gap-3">
+                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=120&h=90&fit=crop"
+                     alt="数据仪表盘项目封面" data-category="商业科技"
+                     class="w-24 h-16 object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-on-surface mb-1 truncate">数据可视化仪表盘</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">Web应用</span>
+                </div>
               </div>
-            </div>
-            <!-- 列表-作品3（重复） -->
-            <div class="work-item bg-surface-container/60 p-5 mb-4">
-              <h3 class="text-base font-semibold text-on-surface mb-2">PixelPress 静态站点生成器</h3>
-              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">极简的静态站点生成工具，支持 MDX 内容编写与增量构建，构建速度比同类工具快 3 倍。</p>
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">MDX</span>
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">CLI</span>
+            </a>
+            <!-- 复制：列表-作品2 -->
+            <a href="works.html?id=work-2" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <div class="flex gap-3">
+                <img src="https://images.unsplash.com/photo-1555421689-d68471e189f2?w=120&h=90&fit=crop"
+                     alt="设计系统组件库封面" data-category="设计"
+                     class="w-24 h-16 object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-on-surface mb-1 truncate">杂志风设计系统</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">设计系统</span>
+                </div>
               </div>
-            </div>
+            </a>
+            <!-- 复制：列表-作品3 -->
+            <a href="works.html?id=work-3" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <div class="flex gap-3">
+                <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=120&h=90&fit=crop"
+                     alt="移动端应用界面封面" data-category="商业科技"
+                     class="w-24 h-16 object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-on-surface mb-1 truncate">读书笔记移动应用</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">移动应用</span>
+                </div>
+              </div>
+            </a>
+            <!-- 复制：列表-作品4 -->
+            <a href="works.html?id=work-4" class="block p-4 border-b border-outline-variant/20 hover:bg-surface-container/50 transition-colors">
+              <div class="flex gap-3">
+                <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=120&h=90&fit=crop"
+                     alt="代码编辑器插件封面" data-category="商业科技"
+                     class="w-24 h-16 object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-on-surface mb-1 truncate">VS Code 主题插件</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary">开发工具</span>
+                </div>
+              </div>
+            </a>
           </div>
         </div>
       </div>
 
     </section>
 
-    <!-- 编辑资料弹窗 -->
-    <div id="modal-edit-profile" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 hidden">
-      <div class="bg-surface shadow-dialog max-w-lg w-full max-h-[90vh] overflow-y-auto p-8">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="font-serif text-xl font-semibold tracking-tight text-on-surface">编辑资料</h2>
-          <button id="btn-modal-close" class="text-on-surface-variant hover:text-on-surface transition-colors">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
+  </main>
+  <!-- @main-content:end -->
 
-        <!-- 头像上传 -->
-        <div class="mb-6">
+  <!-- 编辑资料弹窗 -->
+  <div id="modal-edit-profile" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-surface max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-dialog">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-serif font-bold text-on-surface">编辑资料</h2>
+        <button id="btn-close-modal" class="text-on-surface-variant hover:text-on-surface transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-edit-profile" class="space-y-5">
+        <!-- 方形头像上传区 -->
+        <div>
           <label class="block text-sm font-medium text-on-surface mb-2">头像</label>
-          <div id="avatar-upload-area" class="w-[120px] h-[120px] bg-surface-container border-none flex items-center justify-center cursor-pointer hover:bg-surface-container-high transition-colors overflow-hidden relative">
-            <img id="avatar-preview" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=faces" alt="头像预览" data-category="人物" class="w-full h-full object-cover" />
-            <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-              <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+          <div class="flex items-center gap-4">
+            <img id="modal-avatar-preview"
+                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"
+                 alt="头像预览" data-category="人物"
+                 class="w-20 h-20 object-cover border-none" />
+            <div>
+              <input type="file" id="input-avatar" accept="image/*" class="hidden" />
+              <button type="button" id="btn-upload-avatar"
+                      class="bg-surface-container text-on-surface border-none px-4 py-2 text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all inline-flex items-center gap-2">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                选择文件
+              </button>
+              <p class="text-xs text-on-surface-variant mt-1">支持 JPG、PNG 格式，建议正方形图片</p>
             </div>
-            <input type="file" id="input-avatar" accept="image/*" class="hidden" />
           </div>
         </div>
 
         <!-- 姓名 -->
-        <div class="mb-5">
+        <div>
           <label for="input-name" class="block text-sm font-medium text-on-surface mb-1.5">姓名</label>
-          <input id="input-name" type="text" value="孙典章" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+          <input type="text" id="input-name" value="陈墨白"
+                 class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
         </div>
 
         <!-- 简介 -->
-        <div class="mb-5">
-          <label for="input-bio" class="block text-sm font-medium text-on-surface mb-1.5">个人简介</label>
-          <textarea id="input-bio" rows="3" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors resize-none">热爱技术，乐于分享</textarea>
+        <div>
+          <label for="input-bio" class="block text-sm font-medium text-on-surface mb-1.5">简介</label>
+          <textarea id="input-bio" rows="3"
+                    class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors resize-none">独立开发者与设计爱好者，专注于前端工程化与用户体验设计。喜欢探索技术与美学的交叉点，在代码与像素之间寻找平衡。日常记录学习笔记与创作心得。</textarea>
         </div>
 
-        <!-- 邮箱 -->
-        <div class="mb-5">
-          <label for="input-email" class="block text-sm font-medium text-on-surface mb-1.5">邮箱</label>
-          <input id="input-email" type="email" value="sun.dianzhang@example.com" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        <!-- 联系邮箱 -->
+        <div>
+          <label for="input-email" class="block text-sm font-medium text-on-surface mb-1.5">联系邮箱</label>
+          <input type="email" id="input-email" value="chen.mobai@example.com"
+                 class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
         </div>
 
-        <!-- GitHub -->
-        <div class="mb-5">
-          <label for="input-github" class="block text-sm font-medium text-on-surface mb-1.5">GitHub</label>
-          <input id="input-github" type="url" value="https://github.com/sundianzhang" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        <!-- GitHub URL -->
+        <div>
+          <label for="input-github" class="block text-sm font-medium text-on-surface mb-1.5">GitHub URL</label>
+          <input type="url" id="input-github" value="https://github.com"
+                 class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
         </div>
 
-        <!-- 网站 -->
-        <div class="mb-5">
-          <label for="input-website" class="block text-sm font-medium text-on-surface mb-1.5">网站</label>
-          <input id="input-website" type="url" value="https://sundianzhang.dev" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        <!-- 个人网站 URL -->
+        <div>
+          <label for="input-website" class="block text-sm font-medium text-on-surface mb-1.5">个人网站 URL</label>
+          <input type="url" id="input-website" value="https://example.com"
+                 class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
         </div>
 
-        <!-- LinkedIn -->
-        <div class="mb-8">
-          <label for="input-linkedin" class="block text-sm font-medium text-on-surface mb-1.5">LinkedIn</label>
-          <input id="input-linkedin" type="url" value="https://linkedin.com/in/sundianzhang" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        <!-- LinkedIn URL -->
+        <div>
+          <label for="input-linkedin" class="block text-sm font-medium text-on-surface mb-1.5">LinkedIn URL</label>
+          <input type="url" id="input-linkedin" value="https://linkedin.com"
+                 class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
         </div>
 
         <!-- 操作按钮 -->
-        <div class="flex items-center justify-end gap-3">
-          <button id="btn-cancel-edit" class="bg-surface-container text-on-surface px-4 py-2 text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">取消</button>
-          <button id="btn-save-edit" class="bg-primary text-on-primary px-4 py-2 text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all">保存</button>
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" id="btn-cancel-edit"
+                  class="bg-surface-container text-on-surface border-none px-4 py-2 text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">
+            取消
+          </button>
+          <button type="submit" id="btn-save-profile"
+                  class="bg-primary text-on-primary px-4 py-2 text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            保存
+          </button>
         </div>
-      </div>
+      </form>
     </div>
-
-    <!-- @main-content:end -->
-  </main>
+  </div>
 
   <script>
     $(function() {
-
-      // === 编辑弹窗交互 ===
-
-      // 打开编辑弹窗
+      // 打开编辑资料弹窗
       $('#btn-edit-profile').on('click', function() {
         $('#modal-edit-profile').removeClass('hidden');
-        // 将当前页面内容回填到弹窗表单中（硬编码页面，回填固定值）
-        $('#input-name').val($('#profile-name').text().trim());
-        $('#input-bio').val($('#profile-bio').text().trim());
       });
 
-      // 关闭编辑弹窗
-      $('#btn-modal-close').on('click', function() {
+      // 关闭弹窗
+      $('#btn-close-modal, #btn-cancel-edit').on('click', function() {
         $('#modal-edit-profile').addClass('hidden');
       });
 
-      // 取消按钮关闭弹窗
-      $('#btn-cancel-edit').on('click', function() {
-        $('#modal-edit-profile').addClass('hidden');
-      });
-
-      // 点击遮罩层关闭弹窗
+      // 点击弹窗遮罩关闭
       $('#modal-edit-profile').on('click', function(e) {
-        if ($(e.target).is('#modal-edit-profile')) {
+        if (e.target === this) {
           $('#modal-edit-profile').addClass('hidden');
         }
       });
 
-      // 保存按钮
-      // 后续应实现的完整行为步骤：
-      // 1. 收集表单所有字段值（姓名、简介、邮箱、GitHub、网站、LinkedIn）
-      // 2. 前端校验：姓名不能为空，邮箱格式校验，URL格式校验
-      // 3. 调用后端 API 提交修改（POST /api/profile/update）
-      // 4. 成功后更新页面中对应的显示内容（#profile-name、#profile-bio、联系方式等）
-      // 5. 如果头像有变更，更新 #profile-avatar 的 src
-      // 6. 显示保存成功提示（toast）
-      // 7. 关闭弹窗
-      // 8. 失败时显示错误提示，保持弹窗不关闭
-      $('#btn-save-edit').on('click', function() {
-        console.log('保存资料：需要调用后端API提交修改');
-        // 简易原型：直接更新页面文字并关闭弹窗
-        var newName = $('#input-name').val().trim();
-        var newBio = $('#input-bio').val().trim();
-        if (newName) {
-          $('#profile-name').text(newName);
-        }
-        if (newBio) {
-          $('#profile-bio').text(newBio);
-        }
-        $('#modal-edit-profile').addClass('hidden');
-      });
-
-      // === 头像上传交互 ===
-
-      // 点击头像区域触发文件选择
-      $('#avatar-upload-area').on('click', function() {
+      // 头像上传按钮触发文件选择
+      $('#btn-upload-avatar').on('click', function() {
         $('#input-avatar').trigger('click');
       });
 
-      // 选择文件后显示预览
-      // 后续应实现的完整行为步骤：
-      // 1. 使用 FileReader 读取选中的图片文件
-      // 2. 将读取的 DataURL 设置为 #avatar-preview 的 src
-      // 3. 记录文件对象，在保存时随表单一起上传到服务器
-      // 4. 校验文件大小（不超过 2MB）和类型（仅 jpg/png/webp）
-      // 5. 超出限制时显示提示信息
-      $('#input-avatar').on('change', function(e) {
-        console.log('头像文件已选择，需要实现预览和上传逻辑');
+      // 文件选择后正方形预览
+      // 1. 读取用户选择的文件
+      // 2. 使用 FileReader 读取为 Data URL
+      // 3. 将预览图设置为正方形裁剪模式（object-cover）
+      // 4. 在实际实现中，应将文件上传至服务器并保存返回的 URL
+      $('#input-avatar').on('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          $('#modal-avatar-preview').attr('src', e.target.result);
+        };
+        reader.readAsDataURL(file);
       });
 
+      // 保存资料表单
+      // 1. 收集表单中所有字段的值
+      // 2. 如有新头像文件，先上传头像获取 URL
+      // 3. 调用 /api/profile PUT 接口更新用户资料
+      // 4. 更新成功后，同步更新页面上的显示内容
+      // 5. 关闭弹窗并显示成功提示
+      $('#form-edit-profile').on('submit', function(e) {
+        e.preventDefault();
+        console.log('保存资料：', {
+          name: $('#input-name').val(),
+          bio: $('#input-bio').val(),
+          email: $('#input-email').val(),
+          github: $('#input-github').val(),
+          website: $('#input-website').val(),
+          linkedin: $('#input-linkedin').val()
+        });
+        $('#modal-edit-profile').addClass('hidden');
+      });
     });
   </script>
 

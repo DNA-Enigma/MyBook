@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary:              #111111;
+      --color-primary-container:    #EAE6DD;
+      --color-on-primary:           #F4F1EA;
+      --color-background:           #F4F1EA;
+      --color-surface-container-lowest: #FAF9F6;
+      --color-surface:              #F4F1EA;
+      --color-surface-container:    #EAE6DD;
+      --color-surface-container-high: #E2DDD3;
+      --color-surface-container-highest: #D8D1C4;
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      --color-success:  #2D5A3D;
+      --color-error:    #8B3A3A;
+      --color-warning:  #7A5C2E;
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #EAE6DD;
+      --radius-sm:   0rem;
+      --radius-md:   0rem;
+      --radius-lg:   0rem;
+      --radius-xl:   0rem;
+      --radius-2xl:  0rem;
+      --radius-full: 9999px;
+      --shadow-card:   0 1px 2px rgba(0,0,0,0.04);
+      --shadow-float:  0 4px 8px rgba(0,0,0,0.04);
+      --shadow-dialog: 0 8px 16px rgba(0,0,0,0.06);
+      --font-sans: "Noto Serif SC", Georgia, "Songti SC", serif;
+      --font-serif: "Playfair Display", Georgia, serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23EAE6DD"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%236B665E" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans antialiased">
+
+  <!-- @nav:start 导航组件 -->
+  <header class="sticky top-0 z-40 border-b border-outline/20 bg-background/95 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
+      <a href="home.html" class="flex items-center gap-2">
+        <span class="font-serif text-xl font-bold tracking-tight text-on-surface">个人门户</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-1">
+        <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">首页</a>
+        <a href="blogs.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 rounded-md" aria-current="page">博客</a>
+        <a href="notes.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">笔记</a>
+        <a href="works.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">作品</a>
+        <a href="resources.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">资源库</a>
+        <a href="about.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">关于站长</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="profile.html" class="text-sm text-on-surface-variant hover:text-on-surface transition-colors">个人主页</a>
+        <a href="login.html" class="text-sm px-4 py-2 bg-primary text-on-primary hover:opacity-90 transition-opacity">登录</a>
+      </div>
+    </div>
+  </header>
+  <!-- @nav:end 导航组件 -->
+
+  <main class="max-w-7xl mx-auto w-full">
+    <!-- @main-content:start -->
+    <article class="max-w-4xl mx-auto px-6 py-12 md:py-16">
+      <!-- 博客标题区 -->
+      <header class="mb-12 md:mb-16">
+        <h1 class="font-serif text-4xl md:text-5xl font-bold text-on-surface leading-tight mb-6">
+          从零搭建现代前端工程化体系：一位全栈开发者的实践笔记
+        </h1>
+        <div class="flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
+          <div class="flex items-center gap-2">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" alt="作者陈明哲头像" data-category="人物" class="w-8 h-8 rounded-none object-cover">
+            <span class="font-medium text-on-surface">陈明哲</span>
+          </div>
+          <span class="text-on-surface-variant/40">·</span>
+          <span>2024年12月15日</span>
+          <span class="text-on-surface-variant/40">·</span>
+          <span class="inline-flex items-center px-2 py-0.5 bg-primary/10 text-primary text-xs font-medium">前端工程化</span>
+          <span class="text-on-surface-variant/40">·</span>
+          <div class="flex items-center gap-1">
+            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+            <span>12 分钟阅读</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 正文区 -->
+      <div class="text-lg leading-[1.8] text-on-surface space-y-6 mb-16 md:mb-20">
+        <p>在前端开发领域，工程化早已不是可选项，而是每个成熟项目的必经之路。回想起五年前刚开始接触 Web 开发时，一个项目往往只是简单的 HTML、CSS 和几段 jQuery 代码的拼凑。而如今，现代前端工程化体系已经发展成为一门复杂的艺术，涵盖了代码规范、构建工具、测试框架、CI/CD 流水线等多个维度。</p>
+
+        <p>本文将基于我过去三年在多个大型项目中的实践经验，系统地梳理如何从零开始搭建一套完整的前端工程化体系。这不是一份简单的工具清单，而是一套经过生产环境验证的方法论。</p>
+
+        <h2 class="font-serif text-2xl md:text-3xl font-bold text-on-surface mt-10 mb-4">工程化的核心目标</h2>
+
+        <p>在深入具体技术选型之前，我们需要先明确工程化的核心目标。在我看来，前端工程化主要解决三个层面的问题：</p>
+
+        <p>首先是<strong>开发效率</strong>。通过合理的工具链和自动化流程，减少开发者在重复性工作上的时间投入。这包括代码生成、热更新、自动化测试等环节。一个优秀的工程化体系应该让开发者能够专注于业务逻辑本身，而非被环境配置所困扰。</p>
+
+        <p>其次是<strong>代码质量</strong>。通过静态类型检查、代码规范、自动化测试等手段，在代码提交之前尽可能地发现潜在问题。这不仅能降低线上故障率，更能提升团队协作时的代码可读性和可维护性。</p>
+
+        <blockquote class="border-l-2 border-primary/40 pl-6 py-2 italic font-serif text-on-surface-variant my-8">
+          "好的工程化不是增加开发负担，而是在正确的时机用正确的方式约束开发者，让团队能够以一致的节奏高质量地交付产品。"
+        </blockquote>
+
+        <p>最后是<strong>交付效率</strong>。从代码合并到生产环境部署，整个流程应该尽可能自动化和透明化。持续集成和持续部署（CI/CD）是现代工程化体系中不可或缺的一环。</p>
+
+        <p>接下来，让我们看看具体的实践方案。以下是一个典型的现代前端项目构建配置示例：</p>
+
+        <pre class="bg-[#1e1e1e] text-[#d4d4d4] p-5 overflow-x-auto text-sm leading-relaxed my-8 font-mono"><code>// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-select'],
+        },
+      },
+    },
+  },
+})</code></pre>
+
+        <p>这段配置展示了几个关键点：路径别名让导入语句更加简洁，手动代码分割确保核心依赖被合理拆分，而插件系统则提供了极大的扩展性。</p>
+
+        <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=600&fit=crop" alt="程序员在电脑前编写代码的工作场景" data-category="商业科技" class="w-full h-auto my-8">
+
+        <p>在实际项目中，我们还需要考虑更多的维度。例如，如何处理环境变量的安全注入？如何配置不同环境的 API 代理？如何优化构建产物的体积？这些都是工程化实践中常见但又容易被忽视的问题。</p>
+
+        <p>总结来说，前端工程化是一个持续演进的过程。没有放之四海而皆准的最佳方案，只有最适合当前团队和项目现状的合理选择。希望本文的分享能为你的工程化实践提供一些有价值的参考。</p>
+      </div>
+
+      <!-- 评论区 -->
+      <section class="border-t border-outline/20 pt-10 mb-16 md:mb-20">
+        <h3 class="text-xl font-bold text-on-surface mb-8 flex items-center gap-2">
+          <i data-lucide="message-circle" class="w-5 h-5"></i>
+          3 条评论
+        </h3>
+
+        <!-- 发表评论框 -->
+        <div class="bg-surface-container p-5 mb-8">
+          <textarea id="comment-input" class="w-full bg-surface border-none px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors resize-none" rows="4" placeholder="写下你的想法..."></textarea>
+          <div class="flex justify-end mt-3">
+            <button id="btn-submit-comment" class="bg-primary text-on-primary px-5 py-2 text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>发表评论
+            </button>
+          </div>
+        </div>
+
+        <!-- 评论列表 -->
+        <div id="comment-list" class="space-y-8">
+          <!-- 列表-评论1 -->
+          <div class="comment-item" data-id="c1">
+            <div class="flex gap-3">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" alt="评论者李博文头像" data-category="人物" class="w-10 h-10 rounded-none object-cover shrink-0">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-on-surface">李博文</span>
+                  <span class="text-xs text-on-surface-variant">2024年12月16日</span>
+                </div>
+                <p class="text-sm text-on-surface leading-relaxed mb-2">非常实用的文章！关于 Vite 的 manualChunks 配置，我想补充一点：在实际项目中，如果 vendor 包体积过大，还可以考虑进一步拆分成 react、react-dom 等独立的 chunk，这样可以更好地利用浏览器缓存。</p>
+                <button class="reply-btn text-xs text-primary font-medium hover:underline" data-parent="c1" id="btn-reply-c1">回复</button>
+
+                <!-- 楼中楼回复 -->
+                <div class="mt-4 ml-4 pl-4 border-l-2 border-outline-variant/30 space-y-4">
+                  <!-- 列表-回复1-1 -->
+                  <div class="reply-item">
+                    <div class="flex gap-3">
+                      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" alt="回复者陈明哲头像" data-category="人物" class="w-8 h-8 rounded-none object-cover shrink-0">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="text-sm font-medium text-on-surface">陈明哲</span>
+                          <span class="text-xs text-primary bg-primary/10 px-1.5 py-0.5">作者</span>
+                          <span class="text-xs text-on-surface-variant">2024年12月16日</span>
+                        </div>
+                        <p class="text-sm text-on-surface leading-relaxed">感谢补充！你说得很对，我们在最新项目里已经采用了更细粒度的拆分策略，效果确实更好。</p>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 列表-回复1-2 -->
+                  <div class="reply-item">
+                    <div class="flex gap-3">
+                      <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" alt="回复者张雨萱头像" data-category="人物" class="w-8 h-8 rounded-none object-cover shrink-0">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="text-sm font-medium text-on-surface">张雨萱</span>
+                          <span class="text-xs text-on-surface-variant">2024年12月17日</span>
+                        </div>
+                        <p class="text-sm text-on-surface leading-relaxed">同意楼上，另外如果使用了路由懒加载，配合 dynamic import 的魔法注释可以实现更智能的代码分割。</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 列表-评论2 -->
+          <div class="comment-item" data-id="c2">
+            <div class="flex gap-3">
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face" alt="评论者王小雅头像" data-category="人物" class="w-10 h-10 rounded-none object-cover shrink-0">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-on-surface">王小雅</span>
+                  <span class="text-xs text-on-surface-variant">2024年12月18日</span>
+                </div>
+                <p class="text-sm text-on-surface leading-relaxed mb-2">文章写得很系统，尤其是关于 CI/CD 的部分，能否再展开讲讲 GitHub Actions 的具体配置？我们团队正在迁移到这套方案。</p>
+                <button class="reply-btn text-xs text-primary font-medium hover:underline" data-parent="c2" id="btn-reply-c2">回复</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 列表-评论3 -->
+          <div class="comment-item" data-id="c3">
+            <div class="flex gap-3">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face" alt="评论者赵志远头像" data-category="人物" class="w-10 h-10 rounded-none object-cover shrink-0">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-on-surface">赵志远</span>
+                  <span class="text-xs text-on-surface-variant">2024年12月19日</span>
+                </div>
+                <p class="text-sm text-on-surface leading-relaxed mb-2">作为一名后端开发者，这篇文章让我对前端工程化有了全新的认识。原来前端也有这么多门道，准备按照文中的思路重构我们内部的管理后台了。</p>
+                <button class="reply-btn text-xs text-primary font-medium hover:underline" data-parent="c3" id="btn-reply-c3">回复</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 底部相关推荐 -->
+      <section class="border-t border-outline/20 pt-10">
+        <h3 class="text-xl font-bold text-on-surface mb-6">相关推荐</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- 列表-推荐1 -->
+          <a href="blog-detail.html?id=rec1" class="group block bg-surface shadow-card hover:shadow-float transition-all">
+            <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=200&fit=crop" alt="代码编辑器屏幕" data-category="商业科技" class="w-full h-40 object-cover">
+            <div class="p-4">
+              <h4 class="text-base font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors line-clamp-2">TypeScript 高级类型体操：从入门到实战</h4>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span>林晓峰</span>
+                <span class="text-on-surface-variant/40">·</span>
+                <span>2024年12月10日</span>
+              </div>
+            </div>
+          </a>
+          <!-- 列表-推荐2 -->
+          <a href="blog-detail.html?id=rec2" class="group block bg-surface shadow-card hover:shadow-float transition-all">
+            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=200&fit=crop" alt="笔记本电脑工作桌面" data-category="商业科技" class="w-full h-40 object-cover">
+            <div class="p-4">
+              <h4 class="text-base font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors line-clamp-2">React Server Components 深度解析</h4>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span>周雨涵</span>
+                <span class="text-on-surface-variant/40">·</span>
+                <span>2024年12月8日</span>
+              </div>
+            </div>
+          </a>
+          <!-- 列表-推荐3 -->
+          <a href="blog-detail.html?id=rec3" class="group block bg-surface shadow-card hover:shadow-float transition-all">
+            <img src="https://images.unsplash.com/photo-1551033406-611cf9a28f67?w=400&h=200&fit=crop" alt="屏幕上显示代码" data-category="商业科技" class="w-full h-40 object-cover">
+            <div class="p-4">
+              <h4 class="text-base font-semibold text-on-surface mb-2 group-hover:text-primary transition-colors line-clamp-2">微前端架构下的模块联邦实践指南</h4>
+              <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                <span>孙浩然</span>
+                <span class="text-on-surface-variant/40">·</span>
+                <span>2024年12月5日</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+    </article>
+    <!-- @main-content:end -->
+  </main>
+
+  <script>lucide.createIcons();</script>
+  <script>
+    $(function() {
+      // 发表评论按钮 - 点击提交评论
+      // 实际应实现：
+      // 1. 校验内容非空，若为空则提示用户
+      // 2. 调用 API POST /api/comments 提交评论（参数 blog_id, content）
+      // 3. 成功后清空输入框，将新评论插入列表顶部
+      // 4. 更新评论数量统计（如 "3 条评论" → "4 条评论"）
+      $('#btn-submit-comment').on('click', function() {
+        const content = $('#comment-input').val().trim();
+        if (!content) {
+          alert('请输入评论内容');
+          return;
+        }
+        console.log('提交评论:', content);
+        alert('评论提交成功（演示模式）');
+        $('#comment-input').val('');
+      });
+
+      // 回复按钮 - 点击展开回复输入框
+      // 实际应实现：
+      // 1. 在对应评论（.comment-item）下方动态插入一个回复输入区域（textarea + 取消/提交按钮）
+      // 2. 输入框自动聚焦，且点击取消时移除该区域
+      // 3. 点击提交后调用 API POST /api/comments 并传入 parent_id
+      // 4. 成功后将回复插入到对应楼中楼列表末尾，并移除输入区域
+      $('#comment-list').on('click', '.reply-btn', function() {
+        const parentId = $(this).data('parent');
+        console.log('回复评论:', parentId);
+        alert('回复功能演示：将展开回复输入框（实际项目中会展开内联编辑器）');
+      });
+    });
+  </script>
+</body>
+
+</html>

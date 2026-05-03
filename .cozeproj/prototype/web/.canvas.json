@@ -3,14 +3,6 @@
     {
       "type": "html",
       "options": {
-        "path": ".cozeproj/prototype/web/home.html"
-      },
-      "title": "首页",
-      "size": "web"
-    },
-    {
-      "type": "html",
-      "options": {
         "path": ".cozeproj/prototype/web/profile.html"
       },
       "title": "个人主页",
@@ -19,17 +11,17 @@
     {
       "type": "html",
       "options": {
-        "path": ".cozeproj/prototype/web/resources.html"
+        "path": ".cozeproj/prototype/web/blogs.html"
       },
-      "title": "资源库",
+      "title": "博客列表",
       "size": "web"
     },
     {
       "type": "html",
       "options": {
-        "path": ".cozeproj/prototype/web/about.html"
+        "path": ".cozeproj/prototype/web/blog-detail.html"
       },
-      "title": "关于站长",
+      "title": "博客详情",
       "size": "web"
     }
   ]
