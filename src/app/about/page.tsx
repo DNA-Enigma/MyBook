@@ -1,31 +1,39 @@
 import { db } from "@/lib/db";
 import { profiles, notes, works, resources } from "@/storage/database/shared/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Github, Globe, Mail, Linkedin, FileText, ImageIcon, FolderOpen, Calendar } from "lucide-react";
+import { ArrowLeft, Github, Globe, Mail, Linkedin, FileText, ImageIcon, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 async function getOwnerProfile() {
-  const profile = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.role, "admin"))
-    .limit(1);
-  return profile[0] || null;
+  try {
+    const profile = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.role, "admin"))
+      .limit(1);
+    return profile[0] || null;
+  } catch {
+    return null;
+  }
 }
 
 async function getStats() {
-  const [noteCount, workCount, resourceCount] = await Promise.all([
-    db.select({ count: sql<number>`count(*)` }).from(notes).where(eq(notes.is_public, true)),
-    db.select({ count: sql<number>`count(*)` }).from(works),
-    db.select({ count: sql<number>`count(*)` }).from(resources).where(eq(resources.is_public, true)),
-  ]);
-  return {
-    notes: noteCount[0]?.count || 0,
-    works: workCount[0]?.count || 0,
-    resources: resourceCount[0]?.count || 0,
-  };
+  try {
+    const [noteCount, workCount, resourceCount] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(notes).where(eq(notes.is_public, true)),
+      db.select({ count: sql<number>`count(*)` }).from(works),
+      db.select({ count: sql<number>`count(*)` }).from(resources).where(eq(resources.is_public, true)),
+    ]);
+    return {
+      notes: noteCount[0]?.count || 0,
+      works: workCount[0]?.count || 0,
+      resources: resourceCount[0]?.count || 0,
+    };
+  } catch {
+    return { notes: 0, works: 0, resources: 0 };
+  }
 }
 
 export default async function AboutPage() {
