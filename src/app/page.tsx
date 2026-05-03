@@ -3,6 +3,9 @@ import Image from "next/image";
 import { db } from "@/lib/db";
 import { notes, works, resources, profiles } from "@/storage/database/shared/schema";
 import { eq, desc, sql, count } from "drizzle-orm";
+
+// 强制动态渲染，避免构建时数据库不可用导致统计数据为0
+export const dynamic = "force-dynamic";
 import {
   FileText,
   ImageIcon,

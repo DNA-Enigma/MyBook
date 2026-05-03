@@ -5,6 +5,9 @@ import { notes, profiles } from "@/storage/database/shared/schema";
 import { desc, eq, and, sql } from "drizzle-orm";
 import { ArrowLeft, BookOpen, Calendar, Mail, Globe } from "lucide-react";
 
+// 动态路由页面，强制动态渲染
+export const dynamic = "force-dynamic";
+
 interface BlogPageProps {
   params: Promise<{ id: string }>;
 }

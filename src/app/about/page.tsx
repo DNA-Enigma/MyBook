@@ -6,6 +6,9 @@ import Link from "next/link";
 import { ArrowLeft, Github, Globe, Mail, Linkedin, FileText, ImageIcon, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// 强制动态渲染，避免构建时数据库不可用导致数据为空
+export const dynamic = "force-dynamic";
+
 async function getOwnerProfile() {
   try {
     const profile = await db
