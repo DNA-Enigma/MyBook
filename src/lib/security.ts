@@ -108,7 +108,7 @@ const ALLOWED_EXTENSIONS = [
   ".ppt", ".pptx", ".csv",
 ];
 
-const MAX_FILE_SIZE = 3 * 1024 * 1024 * 1024; // 3GB
+const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10GB
 
 export function validateUploadFile(file: File): {
   valid: boolean;
