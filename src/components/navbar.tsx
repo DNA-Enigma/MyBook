@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { FileText, Image, FolderOpen, User, LogOut, LogIn, Menu, X } from "lucide-react";
+import { FileText, Image, FolderOpen, User, LogOut, LogIn, Menu, X, Info } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
   { href: "/notes", label: "博客", icon: FileText },
   { href: "/works", label: "作品", icon: Image },
   { href: "/resources", label: "资源库", icon: FolderOpen },
-  { href: "/profile", label: "个人中心", icon: User },
+  { href: "/about", label: "关于", icon: Info },
 ];
 
 export function Navbar() {
