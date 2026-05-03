@@ -9,13 +9,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
     const storageType = searchParams.get("storage_type") || "supabase";
+    const fileUrl = searchParams.get("file_url");
 
-    if (!key) {
-      return NextResponse.json({ error: "缺少文件 key" }, { status: 400 });
+    if (!key && !fileUrl) {
+      return NextResponse.json({ error: "缺少文件 key 或 file_url" }, { status: 400 });
     }
 
     // 防止路径遍历攻击
-    if (key.includes("..") || key.startsWith("/") || key.includes("\\")) {
+    if (key && (key.includes("..") || key.startsWith("/") || key.includes("\\"))) {
       return NextResponse.json({ error: "非法的文件路径" }, { status: 400 });
     }
 
@@ -46,10 +47,19 @@ export async function GET(request: NextRequest) {
 
     if (storageType === "s3") {
       // S3 对象存储：生成预签名 URL
-      url = await s3Storage.generatePresignedUrl({ key, expireTime: 300 });
+      url = await s3Storage.generatePresignedUrl({ key: key!, expireTime: 300 });
     } else {
-      // Supabase Storage：生成签名下载链接
-      url = await getSignedDownloadUrl(key, 300);
+      // Supabase Storage：尝试生成签名下载链接，失败则回退到公开 URL
+      try {
+        url = await getSignedDownloadUrl(key!, 300);
+      } catch {
+        // 签名 URL 生成失败（文件可能不存在于当前 bucket），尝试使用公开 URL
+        if (fileUrl) {
+          url = fileUrl;
+        } else {
+          throw new Error("无法生成下载链接，文件可能已被移动或删除");
+        }
+      }
     }
 
     return NextResponse.json({ url });

@@ -71,18 +71,27 @@ export default function ResourcesPage() {
       alert("资源文件不存在");
       return;
     }
-    const storageType = resource.storage_type || "supabase";
-    const res = await fetch(`/api/download?key=${encodeURIComponent(key)}&name=${encodeURIComponent(resource.name)}&storage_type=${storageType}`);
-    if (res.ok) {
-      const { url } = await res.json();
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = resource.name;
-      link.click();
-      window.URL.revokeObjectURL(blobUrl);
+    try {
+      const storageType = resource.storage_type || "supabase";
+      const params = new URLSearchParams({
+        key,
+        storage_type: storageType,
+      });
+      // 传入 file_url 作为签名URL失败时的回退
+      if (resource.file_url) {
+        params.set("file_url", resource.file_url);
+      }
+      const res = await fetch(`/api/download?${params.toString()}`);
+      if (res.ok) {
+        const { url } = await res.json();
+        // 直接打开新标签页下载，避免 CORS 问题
+        window.open(url, "_blank", "noopener,noreferrer");
+      } else {
+        const data = await res.json();
+        alert(data.error || "下载失败");
+      }
+    } catch {
+      alert("下载出错，请重试");
     }
   };
 

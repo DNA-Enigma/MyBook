@@ -69,16 +69,19 @@ export default async function AboutPage() {
             {/* Avatar */}
             <div className="relative shrink-0">
               <div className="h-32 w-32 overflow-hidden border-4 border-background shadow-lg md:h-40 md:w-40">
-                <Image
-                  src={profile.avatar_url || "/default-avatar.png"}
-                  alt={profile.name || profile.email}
-                  width={160}
-                  height={160}
-                  className="h-full w-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/default-avatar.png";
-                  }}
-                />
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.name || profile.email}
+                    width={160}
+                    height={160}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-muted text-4xl font-bold text-muted-foreground">
+                    {(profile.name || profile.email || "U")[0].toUpperCase()}
+                  </div>
+                )}
               </div>
             </div>
 
