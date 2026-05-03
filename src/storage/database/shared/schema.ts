@@ -75,6 +75,54 @@ export const works = pgTable(
   ]
 );
 
+export const blogs = pgTable(
+  "blogs",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    title: varchar("title", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }),
+    summary: text("summary"),
+    content: text("content").notNull(),
+    cover_image_url: text("cover_image_url"),
+    category: varchar("category", { length: 50 }).notNull().default("技术分享"),
+    tags: jsonb("tags"),
+    author_id: varchar("author_id", { length: 36 }).notNull(),
+    view_count: integer("view_count").notNull().default(0),
+    like_count: integer("like_count").notNull().default(0),
+    is_public: boolean("is_public").notNull().default(true),
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("blogs_author_id_idx").on(table.author_id),
+    index("blogs_category_idx").on(table.category),
+    index("blogs_is_public_idx").on(table.is_public),
+    index("blogs_created_at_idx").on(table.created_at),
+    index("blogs_slug_idx").on(table.slug),
+  ]
+);
+
+export const comments = pgTable(
+  "comments",
+  {
+    id: varchar("id", { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+    blog_id: varchar("blog_id", { length: 36 }).notNull(),
+    parent_id: varchar("parent_id", { length: 36 }),
+    author_id: varchar("author_id", { length: 36 }).notNull(),
+    author_name: varchar("author_name", { length: 128 }),
+    author_avatar: text("author_avatar"),
+    content: text("content").notNull(),
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("comments_blog_id_idx").on(table.blog_id),
+    index("comments_parent_id_idx").on(table.parent_id),
+    index("comments_author_id_idx").on(table.author_id),
+    index("comments_created_at_idx").on(table.created_at),
+  ]
+);
+
 export const resourceTypes = pgTable(
   "resource_types",
   {

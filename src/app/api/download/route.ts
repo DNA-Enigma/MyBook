@@ -6,17 +6,6 @@ import { checkRateLimit } from "@/lib/security";
 
 export async function GET(request: NextRequest) {
   try {
-    // 下载需要登录验证
-    const accessToken = request.cookies.get("sb-access-token")?.value;
-    if (!accessToken) {
-      return NextResponse.json({ error: "未登录，请先登录后下载" }, { status: 401 });
-    }
-
-    const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
-    if (!userData.user) {
-      return NextResponse.json({ error: "登录已过期" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
     const storageType = searchParams.get("storage_type") || "supabase";
@@ -30,9 +19,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "非法的文件路径" }, { status: 400 });
     }
 
-    // 速率限制：每个用户每分钟最多 20 次下载请求
-    const rateKey = `download:${userData.user.id}`;
-    const rateCheck = checkRateLimit(rateKey, 20, 60000);
+    // 尝试获取用户ID用于速率限制（未登录也允许下载，但使用IP限流）
+    const accessToken = request.cookies.get("sb-access-token")?.value;
+    let userId: string | null = null;
+    if (accessToken) {
+      try {
+        const { data: userData } = await getSupabaseAdmin().auth.getUser(accessToken);
+        if (userData.user) userId = userData.user.id;
+      } catch {
+        // ignore auth error for public download
+      }
+    }
+
+    // 速率限制：每个用户/IP 每分钟最多 30 次下载请求
+    const clientIp = request.headers.get("x-forwarded-for") || "unknown";
+    const rateKey = userId ? `download:${userId}` : `download:ip:${clientIp}`;
+    const rateCheck = checkRateLimit(rateKey, 30, 60000);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: `下载过于频繁，请${rateCheck.retryAfter}秒后重试` },

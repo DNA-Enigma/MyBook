@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { checkRateLimit } from "@/lib/security";
 import { db } from "@/lib/db";
 import { works, profiles } from "@/storage/database/shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 10000;
@@ -14,8 +14,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
+    const authorId = searchParams.get("author");
 
-    const query = db
+    let query = db
       .select({
         id: works.id,
         title: works.title,
@@ -36,7 +37,11 @@ export async function GET(request: NextRequest) {
       .leftJoin(profiles, eq(works.author_id, profiles.id))
       .orderBy(desc(works.created_at));
 
-    const rows = category && category !== "all" ? await query.where(eq(works.category, category)) : await query;
+    const conditions = [];
+    if (category && category !== "all") conditions.push(eq(works.category, category));
+    if (authorId) conditions.push(eq(works.author_id, authorId));
+
+    const rows = conditions.length > 0 ? await query.where(and(...conditions)) : await query;
 
     const formatted = rows.map((r) => ({
       ...r,

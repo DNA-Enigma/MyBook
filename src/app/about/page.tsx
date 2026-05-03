@@ -68,13 +68,16 @@ export default async function AboutPage() {
           <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">
             {/* Avatar */}
             <div className="relative shrink-0">
-              <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-background shadow-lg md:h-40 md:w-40">
+              <div className="h-32 w-32 overflow-hidden border-4 border-background shadow-lg md:h-40 md:w-40">
                 <Image
                   src={profile.avatar_url || "/default-avatar.png"}
                   alt={profile.name || profile.email}
                   width={160}
                   height={160}
                   className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/default-avatar.png";
+                  }}
                 />
               </div>
             </div>

@@ -8,7 +8,8 @@ import { FileText, Image, FolderOpen, User, LogOut, LogIn, Menu, X, Info } from 
 import { useState } from "react";
 
 const navItems = [
-  { href: "/notes", label: "博客", icon: FileText },
+  { href: "/blogs", label: "博客", icon: FileText },
+  { href: "/notes", label: "笔记", icon: FileText },
   { href: "/works", label: "作品", icon: Image },
   { href: "/resources", label: "资源库", icon: FolderOpen },
   { href: "/about", label: "关于", icon: Info },
