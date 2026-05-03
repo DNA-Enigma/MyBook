@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #111111;
+      --color-primary-container:    #EAE6DD;
+      --color-on-primary:           #F4F1EA;
+      /* === 背景 / 表面 === */
+      --color-background:                 #F4F1EA;
+      --color-surface-container-lowest:   #FFFFFF;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #EAE6DD;
+      --color-surface-container-high:     #DEDAD0;
+      --color-surface-container-highest:  #D8D1C4;
+      /* === 文字 === */
+      --color-on-surface:           #111111;
+      --color-on-surface-variant:   #6B665E;
+      /* === 功能色 === */
+      --color-success:  #5A8A5E;
+      --color-error:    #A63D3D;
+      --color-warning:  #8A6D3B;
+      /* === 边框 === */
+      --color-outline:          #D8D1C4;
+      --color-outline-variant:  #E5E0D6;
+      /* === 圆角 === */
+      --radius-sm:   0.0625rem;
+      --radius-md:   0.0625rem;
+      --radius-lg:   0.0625rem;
+      --radius-xl:   0.0625rem;
+      --radius-2xl:  0.0625rem;
+      --radius-full: 9999px;
+      /* === 阴影（杂志风禁止使用阴影，保留极淡的层级区分） === */
+      --shadow-card:   0 1px 2px rgba(0,0,0,0.03);
+      --shadow-float:  0 2px 4px rgba(0,0,0,0.04);
+      --shadow-dialog: 0 4px 12px rgba(0,0,0,0.06);
+      /* === 字体 === */
+      --font-serif: "Playfair Display", "Noto Serif SC", Georgia, serif;
+      --font-sans: "Noto Serif SC", Georgia, "Times New Roman", serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23EAE6DD"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%236B665E" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- @nav:start 导航组件 -->
+  <header class="border-b border-outline-variant/20 bg-background">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="home.html" class="font-serif text-xl font-semibold tracking-tight text-on-surface">个人门户</a>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="home.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">首页</a>
+        <a href="resources.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">资源库</a>
+        <a href="about.html" class="text-sm tracking-wide text-on-surface pb-0.5 border-b-2 border-primary" aria-current="page">关于</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <a href="profile.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors">个人主页</a>
+        <button class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors">退出</button>
+      </div>
+    </div>
+  </header>
+  <!-- @nav:end 导航组件 -->
+
+  <!-- @main-content:start -->
+  <main class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- 页面标题 -->
+    <div class="mb-16">
+      <h1 class="font-serif text-3xl font-semibold tracking-tight text-on-surface">关于站长</h1>
+      <div class="w-12 h-px bg-on-surface/20 mt-4"></div>
+    </div>
+
+    <!-- 站长信息区 -->
+    <section id="author-section" class="mb-16">
+      <div class="flex flex-col md:flex-row gap-10 items-start">
+        <!-- 头像 -->
+        <div class="shrink-0">
+          <img
+            id="author-avatar"
+            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=faces"
+            alt="站长孙典章的方形头像"
+            data-category="人物"
+            class="w-[120px] h-[120px] object-cover shadow-card"
+          />
+        </div>
+        <!-- 姓名 / 角色 / 简介 -->
+        <div class="flex-1 min-w-0">
+          <h2 id="author-name" class="font-serif text-2xl font-semibold text-on-surface tracking-tight">孙典章</h2>
+          <p id="author-role" class="text-sm tracking-wide text-on-surface-variant mt-1">站长</p>
+          <div class="mt-5 space-y-4 text-sm leading-7 text-on-surface">
+            <p>热爱技术，乐于分享。专注于网络安全与系统运维领域。</p>
+            <p>多年互联网基础设施运维经验，曾参与多家企业的网络安全体系建设。擅长从攻击者视角审视系统安全，推动安全左移实践，将安全能力嵌入研发与运维全流程。</p>
+            <p>日常工作涉及 Linux 服务器集群管理、安全策略制定与漏洞应急响应，同时热衷于用 Python 编写自动化工具，提升团队效率。坚信技术的价值在于分享，持续在个人网站输出安全研究笔记与运维实践心得。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 技能标签 -->
+    <section id="skills-section" class="mb-16">
+      <h3 class="font-serif text-lg font-semibold text-on-surface mb-5 tracking-tight">技能标签</h3>
+      <div id="skills-list" class="flex flex-wrap gap-3">
+        <!-- 技能标签-Python -->
+        <span class="inline-flex items-center px-4 py-1.5 text-sm tracking-wide bg-surface-container text-on-surface shadow-card">Python</span>
+        <!-- 技能标签-Linux -->
+        <span class="inline-flex items-center px-4 py-1.5 text-sm tracking-wide bg-surface-container text-on-surface shadow-card">Linux</span>
+        <!-- 技能标签-网络安全 -->
+        <span class="inline-flex items-center px-4 py-1.5 text-sm tracking-wide bg-surface-container text-on-surface shadow-card">网络安全</span>
+        <!-- 技能标签-系统运维 -->
+        <span class="inline-flex items-center px-4 py-1.5 text-sm tracking-wide bg-surface-container text-on-surface shadow-card">系统运维</span>
+        <!-- 技能标签-MongoDB -->
+        <span class="inline-flex items-center px-4 py-1.5 text-sm tracking-wide bg-surface-container text-on-surface shadow-card">MongoDB</span>
+      </div>
+    </section>
+
+    <!-- 联系方式 -->
+    <section id="contact-section" class="mb-16">
+      <h3 class="font-serif text-lg font-semibold text-on-surface mb-5 tracking-tight">联系方式</h3>
+      <div id="contact-list" class="space-y-4">
+        <!-- 联系方式-邮箱 -->
+        <a id="contact-email" href="mailto:sundianzhang@example.com" class="flex items-center gap-4 group">
+          <span class="w-9 h-9 flex items-center justify-center bg-surface-container shadow-card shrink-0">
+            <i data-lucide="mail" class="w-4 h-4 text-on-surface-variant"></i>
+          </span>
+          <span class="text-sm tracking-wide text-on-surface group-hover:text-primary transition-colors">sundianzhang@example.com</span>
+        </a>
+        <!-- 联系方式-GitHub -->
+        <a id="contact-github" href="https://github.com/sundianzhang" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 group">
+          <span class="w-9 h-9 flex items-center justify-center bg-surface-container shadow-card shrink-0">
+            <i data-lucide="github" class="w-4 h-4 text-on-surface-variant"></i>
+          </span>
+          <span class="text-sm tracking-wide text-on-surface group-hover:text-primary transition-colors">github.com/sundianzhang</span>
+        </a>
+        <!-- 联系方式-网站 -->
+        <a id="contact-website" href="https://sundianzhang.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 group">
+          <span class="w-9 h-9 flex items-center justify-center bg-surface-container shadow-card shrink-0">
+            <i data-lucide="globe" class="w-4 h-4 text-on-surface-variant"></i>
+          </span>
+          <span class="text-sm tracking-wide text-on-surface group-hover:text-primary transition-colors">sundianzhang.com</span>
+        </a>
+        <!-- 联系方式-LinkedIn -->
+        <a id="contact-linkedin" href="https://linkedin.com/in/sundianzhang" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 group">
+          <span class="w-9 h-9 flex items-center justify-center bg-surface-container shadow-card shrink-0">
+            <i data-lucide="linkedin" class="w-4 h-4 text-on-surface-variant"></i>
+          </span>
+          <span class="text-sm tracking-wide text-on-surface group-hover:text-primary transition-colors">linkedin.com/in/sundianzhang</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 网站统计 -->
+    <section id="stats-section" class="mb-16">
+      <h3 class="font-serif text-lg font-semibold text-on-surface mb-5 tracking-tight">网站统计</h3>
+      <div id="stats-grid" class="grid grid-cols-3 gap-6">
+        <!-- 统计-笔记数 -->
+        <div class="bg-surface shadow-card p-6 text-center">
+          <p id="stat-notes-count" class="font-serif text-3xl font-semibold text-on-surface">42</p>
+          <p class="text-xs tracking-wide text-on-surface-variant mt-2">笔记</p>
+        </div>
+        <!-- 统计-作品数 -->
+        <div class="bg-surface shadow-card p-6 text-center">
+          <p id="stat-works-count" class="font-serif text-3xl font-semibold text-on-surface">12</p>
+          <p class="text-xs tracking-wide text-on-surface-variant mt-2">作品</p>
+        </div>
+        <!-- 统计-资源数 -->
+        <div class="bg-surface shadow-card p-6 text-center">
+          <p id="stat-resources-count" class="font-serif text-3xl font-semibold text-on-surface">28</p>
+          <p class="text-xs tracking-wide text-on-surface-variant mt-2">资源</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 底部信息 -->
+    <footer id="site-footer" class="border-t border-outline-variant/20 pt-8">
+      <p id="footer-created" class="text-xs tracking-wide text-on-surface-variant">网站创建于 2023 年 6 月</p>
+      <p id="footer-copyright" class="text-xs tracking-wide text-on-surface-variant mt-1">&copy; 2023–2025 孙典章. 保留所有权利.</p>
+    </footer>
+
+  </main>
+  <!-- @main-content:end -->
+
+  <script>
+    $(function () {
+      // 统计数字入场动画 - 页面加载后数字从0递增到目标值
+      var $statItems = $('#stats-grid [id^="stat-"]');
+      $statItems.each(function () {
+        var $el = $(this);
+        var target = parseInt($el.text(), 10);
+        if (isNaN(target)) return;
+        $el.text('0');
+        $({ val: 0 }).animate({ val: target }, {
+          duration: 800,
+          easing: 'swing',
+          step: function () {
+            $el.text(Math.floor(this.val));
+          },
+          complete: function () {
+            $el.text(target);
+          }
+        });
+      });
+    });
+  </script>
+
+  <script>lucide.createIcons();</script>
+</body>
+
+</html>

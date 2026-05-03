@@ -5,50 +5,49 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- 字体 -->
-  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet"/>
 
   <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
-  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide.1.11.0.min.js"></script>
   <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
 
   <style type="text/tailwindcss">
     @theme {
       /* === 品牌色 === */
       --color-primary:              #111111;
-      --color-primary-container:    #E8E4DC;
-      --color-on-primary:           #FFFFFF;
+      --color-primary-container:    #EAE6DD;
+      --color-on-primary:           #F4F1EA;
       /* === 背景 / 表面 === */
       --color-background:                 #F4F1EA;
-      --color-surface-container-lowest:   #EFEBE2;
+      --color-surface-container-lowest:   #FFFFFF;
       --color-surface:                    #FFFFFF;
-      --color-surface-container:          #E8E4DC;
-      --color-surface-container-high:     #D8D1C4;
-      --color-surface-container-highest:  #CFC8BA;
+      --color-surface-container:          #EAE6DD;
+      --color-surface-container-high:     #DEDAD0;
+      --color-surface-container-highest:  #D8D1C4;
       /* === 文字 === */
       --color-on-surface:           #111111;
       --color-on-surface-variant:   #6B665E;
       /* === 功能色 === */
-      --color-success:  #22c55e;
-      --color-error:    #ef4444;
-      --color-warning:  #f59e0b;
+      --color-success:  #5A8A5E;
+      --color-error:    #A63D3D;
+      --color-warning:  #8A6D3B;
       /* === 边框 === */
       --color-outline:          #D8D1C4;
-      --color-outline-variant:  #D8D1C4;
+      --color-outline-variant:  #E5E0D6;
       /* === 圆角 === */
-      --radius-sm:   0.25rem;
-      --radius-md:   0.375rem;
-      --radius-lg:   0.5rem;
-      --radius-xl:   0.75rem;
-      --radius-2xl:  1rem;
+      --radius-sm:   0.0625rem;
+      --radius-md:   0.0625rem;
+      --radius-lg:   0.0625rem;
+      --radius-xl:   0.0625rem;
+      --radius-2xl:  0.0625rem;
       --radius-full: 9999px;
-      /* === 阴影 === */
-      --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
-      --shadow-float:  0 10px 25px rgba(0,0,0,0.10);
-      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
+      /* === 阴影（杂志风禁止使用阴影，保留极淡的层级区分） === */
+      --shadow-card:   0 1px 2px rgba(0,0,0,0.03);
+      --shadow-float:  0 2px 4px rgba(0,0,0,0.04);
+      --shadow-dialog: 0 4px 12px rgba(0,0,0,0.06);
       /* === 字体 === */
-      --font-sans: "Noto Sans SC", "Noto Serif SC", system-ui, sans-serif;
-      --font-serif: "Playfair Display", "Georgia", "Noto Serif SC", serif;
+      --font-serif: "Playfair Display", "Noto Serif SC", Georgia, serif;
+      --font-sans: "Noto Serif SC", Georgia, "Times New Roman", serif;
     }
   </style>
 
@@ -65,146 +64,406 @@
       const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
       const icon = icons[cat] || '🖼';
       const w = img.width || 400, h = img.height || 300;
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23EAE6DD"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%236B665E" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
       img.src = 'data:image/svg+xml,' + svg;
     }, true);
   </script>
+
+  <style>
+    /* Marquee 自动垂直滚动动画 */
+    @keyframes marquee-scroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+    .marquee-track {
+      animation: marquee-scroll 20s linear infinite;
+    }
+    .marquee-container:hover .marquee-track {
+      animation-play-state: paused;
+    }
+  </style>
 </head>
 
-<body class="bg-background text-on-surface font-sans min-h-screen">
+<body class="bg-background text-on-surface font-sans">
 
-  <!-- @nav:start 导航组件，不需要的页面则不要复制此段 -->
-  <header class="bg-surface sticky top-0 z-40 border-b border-outline/20">
-    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
-      <div class="flex items-center gap-2">
-        <i data-lucide="hexagon" class="text-primary w-5 h-5"></i>
-        <span class="font-serif font-bold text-lg tracking-tight">个人门户</span>
-      </div>
-      <nav class="flex items-center gap-1">
-        <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">首页</a>
-        <a href="notes.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">笔记</a>
-        <a href="works.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">作品</a>
-        <a href="resources.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">资源库</a>
-        <a href="profile.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 rounded-md" aria-current="page">关于我</a>
+  <!-- @nav:start 导航组件 -->
+  <header class="border-b border-outline-variant/20 bg-background">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="home.html" class="font-serif text-xl font-semibold tracking-tight text-on-surface">个人门户</a>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="home.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">首页</a>
+        <a href="blog.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">博客</a>
+        <a href="works.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">作品</a>
+        <a href="resources.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">资源库</a>
+        <a href="about.html" class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors pb-0.5">关于</a>
       </nav>
-      <div class="flex items-center gap-3">
-        <a href="login.html" class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">登录</a>
-        <a href="register.html" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity">注册</a>
+      <div class="flex items-center gap-4">
+        <a href="profile.html" class="text-sm tracking-wide text-on-surface hover:text-on-surface transition-colors font-semibold" aria-current="page">个人主页</a>
+        <button class="text-sm tracking-wide text-on-surface-variant hover:text-on-surface transition-colors">退出</button>
       </div>
     </div>
   </header>
-  <!-- @nav:end 导航组件，不需要的页面则不要复制此段 -->
+  <!-- @nav:end 导航组件 -->
 
-  <main class="max-w-7xl mx-auto w-full">
+  <main class="max-w-6xl mx-auto px-6 py-12">
     <!-- @main-content:start -->
-    <div class="max-w-4xl mx-auto px-6 py-16 md:py-24">
 
-      <!-- 个人头部区 -->
-      <section id="profile-header" class="text-center">
-        <img id="profile-avatar"
-             src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face&q=80"
-             alt="年轻男性正面肖像"
-             data-category="人物"
-             class="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover mx-auto shadow-float">
-        <h1 id="profile-name" class="font-serif text-4xl md:text-5xl font-bold text-on-surface mt-8 tracking-tight">小初</h1>
-        <p id="profile-title" class="text-lg text-on-surface-variant mt-3 font-medium">全栈工程师 / 视觉设计师</p>
-      </section>
-
-      <!-- 分隔线 -->
-      <div class="border-t border-outline/20 my-12 md:my-16"></div>
-
-      <!-- 个人简介 -->
-      <section id="profile-bio">
-        <h2 class="font-serif text-2xl font-semibold text-on-surface mb-6">关于我</h2>
-        <div class="space-y-5 text-base text-on-surface-variant leading-relaxed">
-          <p>你好，我是小初，一名热爱技术与设计的全栈开发者。过去五年里，我一直在探索代码与美学之间的边界，致力于构建既功能强大又赏心悦目的数字产品。</p>
-          <p>我的技术栈涵盖前端工程化、后端架构以及用户界面设计。除了写代码，我也是一名摄影爱好者，喜欢用镜头记录城市的光影与自然的静谧。我相信好的设计源于对生活的观察，而优秀的代码则是对逻辑的尊重。</p>
-          <p>目前我正专注于开源社区贡献与个人知识管理工具的研发，期待与更多志同道合的朋友交流学习。</p>
+    <!-- 顶部用户信息区 -->
+    <section id="profile-header" class="flex items-start justify-between gap-8 mb-10">
+      <!-- 左侧：头像 + 基本信息 -->
+      <div class="flex items-start gap-6">
+        <!-- 方形头像 120x120 -->
+        <div id="avatar-wrapper" class="w-[120px] h-[120px] shrink-0 overflow-hidden bg-surface-container">
+          <img
+            id="profile-avatar"
+            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=faces"
+            alt="孙典章的头像照片"
+            data-category="人物"
+            class="w-full h-full object-cover"
+          />
         </div>
-      </section>
-
-      <!-- 分隔线 -->
-      <div class="border-t border-outline/20 my-12 md:my-16"></div>
-
-      <!-- 技能标签云 -->
-      <section id="profile-skills">
-        <h2 class="font-serif text-2xl font-semibold text-on-surface mb-6">技能专长</h2>
-        <div class="flex flex-wrap gap-3">
-          <!-- 列表-技能1 -->
-          <span class="skill-tag inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors cursor-default">React</span>
-          <!-- 列表-技能2 -->
-          <span class="skill-tag inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors cursor-default">TypeScript</span>
-          <!-- 列表-技能3 -->
-          <span class="skill-tag inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors cursor-default">Node.js</span>
-          <!-- 列表-技能4 -->
-          <span class="skill-tag inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors cursor-default">Next.js</span>
-          <!-- 列表-技能5 -->
-          <span class="skill-tag inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors cursor-default">UI 设计</span>
-          <!-- 列表-技能6 -->
-          <span class="skill-tag inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors cursor-default">摄影</span>
-          <!-- 列表-技能7 -->
-          <span class="skill-tag inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors cursor-default">Tailwind CSS</span>
-          <!-- 列表-技能8 -->
-          <span class="skill-tag inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors cursor-default">PostgreSQL</span>
+        <div class="flex flex-col gap-2 pt-1">
+          <h1 id="profile-name" class="font-serif text-3xl font-semibold tracking-tight text-on-surface">孙典章</h1>
+          <span id="profile-role" class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium tracking-wide bg-primary text-on-primary w-fit">管理员</span>
+          <p id="profile-bio" class="text-sm text-on-surface-variant leading-relaxed mt-1">热爱技术，乐于分享</p>
         </div>
-      </section>
+      </div>
+      <!-- 右侧：编辑按钮 -->
+      <button id="btn-edit-profile" class="inline-flex items-center gap-2 bg-surface-container text-on-surface px-4 py-2 text-sm font-medium tracking-wide hover:bg-surface-container-high active:scale-[0.98] transition-all">
+        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>编辑资料
+      </button>
+    </section>
 
-      <!-- 分隔线 -->
-      <div class="border-t border-outline/20 my-12 md:my-16"></div>
-
-      <!-- 联系方式 -->
-      <section id="profile-contact">
-        <h2 class="font-serif text-2xl font-semibold text-on-surface mb-6">联系方式</h2>
-        <div class="space-y-4">
-          <!-- 联系方式-邮箱 -->
-          <a id="contact-email" href="mailto:hello@xiaochu.dev" class="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors group">
-            <i data-lucide="mail" class="w-5 h-5"></i>
-            <span class="text-base group-hover:underline">hello@xiaochu.dev</span>
-          </a>
-          <!-- 联系方式-GitHub -->
-          <a id="contact-github" href="https://github.com/xiaochu" target="_blank" class="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors group">
-            <i data-lucide="github" class="w-5 h-5"></i>
-            <span class="text-base group-hover:underline">github.com/xiaochu</span>
-          </a>
-          <!-- 联系方式-个人网站 -->
-          <a id="contact-website" href="https://xiaochu.dev" target="_blank" class="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors group">
-            <i data-lucide="globe" class="w-5 h-5"></i>
-            <span class="text-base group-hover:underline">xiaochu.dev</span>
-          </a>
-          <!-- 联系方式-LinkedIn -->
-          <a id="contact-linkedin" href="https://linkedin.com/in/xiaochu" target="_blank" class="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors group">
-            <i data-lucide="linkedin" class="w-5 h-5"></i>
-            <span class="text-base group-hover:underline">linkedin.com/in/xiaochu</span>
-          </a>
+    <!-- 用户详情：联系方式 -->
+    <section id="profile-contacts" class="mb-12">
+      <div class="flex flex-wrap items-center gap-x-8 gap-y-3">
+        <!-- 联系方式-邮箱 -->
+        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
+          <i data-lucide="mail" class="w-4 h-4"></i>
+          <span id="contact-email">sun.dianzhang@example.com</span>
         </div>
-      </section>
+        <!-- 联系方式-GitHub -->
+        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
+          <i data-lucide="github" class="w-4 h-4"></i>
+          <a id="contact-github" href="https://github.com/sundianzhang" target="_blank" class="hover:text-on-surface transition-colors">github.com/sundianzhang</a>
+        </div>
+        <!-- 联系方式-网站 -->
+        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
+          <i data-lucide="globe" class="w-4 h-4"></i>
+          <a id="contact-website" href="https://sundianzhang.dev" target="_blank" class="hover:text-on-surface transition-colors">sundianzhang.dev</a>
+        </div>
+        <!-- 联系方式-LinkedIn -->
+        <div class="flex items-center gap-2 text-sm text-on-surface-variant">
+          <i data-lucide="linkedin" class="w-4 h-4"></i>
+          <a id="contact-linkedin" href="https://linkedin.com/in/sundianzhang" target="_blank" class="hover:text-on-surface transition-colors">孙典章</a>
+        </div>
+      </div>
+    </section>
 
-      <!-- 编辑按钮（仅管理员可见） -->
-      <div class="mt-16 text-center">
-        <button id="btn-edit-profile" class="bg-primary text-on-primary px-6 py-2.5 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
-          <i data-lucide="pencil" class="w-4 h-4"></i>编辑简介
-        </button>
+    <!-- 分隔线 -->
+    <div class="border-t border-outline-variant/20 mb-12"></div>
+
+    <!-- 左右分栏内容区 -->
+    <section id="profile-columns" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+      <!-- 左栏：公开笔记 -->
+      <div>
+        <h2 class="font-serif text-xl font-semibold tracking-tight text-on-surface mb-5">公开笔记</h2>
+        <div id="notes-marquee" class="marquee-container h-[400px] overflow-hidden relative">
+          <!-- 顶部渐隐遮罩 -->
+          <div class="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none"></div>
+          <!-- 底部渐隐遮罩 -->
+          <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none"></div>
+          <div class="marquee-track">
+            <!-- 列表-笔记1 -->
+            <div class="note-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">React 19 新特性深度解析</h3>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">React</span>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">前端</span>
+                </div>
+                <span class="text-xs text-on-surface-variant">2024-12-15</span>
+              </div>
+            </div>
+            <!-- 列表-笔记2 -->
+            <div class="note-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">从零搭建设计系统的完整思路</h3>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-on-surface">设计</span>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">工程化</span>
+                </div>
+                <span class="text-xs text-on-surface-variant">2024-11-28</span>
+              </div>
+            </div>
+            <!-- 列表-笔记3 -->
+            <div class="note-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">Rust 异步编程模型实战笔记</h3>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">后端</span>
+                </div>
+                <span class="text-xs text-on-surface-variant">2024-10-09</span>
+              </div>
+            </div>
+            <!-- 重复内容用于无缝循环 -->
+            <!-- 列表-笔记1（重复） -->
+            <div class="note-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">React 19 新特性深度解析</h3>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">React</span>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">前端</span>
+                </div>
+                <span class="text-xs text-on-surface-variant">2024-12-15</span>
+              </div>
+            </div>
+            <!-- 列表-笔记2（重复） -->
+            <div class="note-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">从零搭建设计系统的完整思路</h3>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-on-surface">设计</span>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">工程化</span>
+                </div>
+                <span class="text-xs text-on-surface-variant">2024-11-28</span>
+              </div>
+            </div>
+            <!-- 列表-笔记3（重复） -->
+            <div class="note-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">Rust 异步编程模型实战笔记</h3>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">后端</span>
+                </div>
+                <span class="text-xs text-on-surface-variant">2024-10-09</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <!-- 右栏：作品展示 -->
+      <div>
+        <h2 class="font-serif text-xl font-semibold tracking-tight text-on-surface mb-5">作品展示</h2>
+        <div id="works-marquee" class="marquee-container h-[400px] overflow-hidden relative">
+          <!-- 顶部渐隐遮罩 -->
+          <div class="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none"></div>
+          <!-- 底部渐隐遮罩 -->
+          <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none"></div>
+          <div class="marquee-track">
+            <!-- 列表-作品1 -->
+            <div class="work-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">NoteFlow 协作笔记平台</h3>
+              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">支持实时协作的 Markdown 笔记应用，集成知识图谱与全文搜索，服务超过两千名活跃用户。</p>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">React</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">WebSocket</span>
+              </div>
+            </div>
+            <!-- 列表-作品2 -->
+            <div class="work-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">DesignKit 组件库</h3>
+              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">面向设计系统的前端组件库，涵盖 60+ 可组合组件，支持主题定制与无障碍访问。</p>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">TypeScript</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-on-surface">Storybook</span>
+              </div>
+            </div>
+            <!-- 列表-作品3 -->
+            <div class="work-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">PixelPress 静态站点生成器</h3>
+              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">极简的静态站点生成工具，支持 MDX 内容编写与增量构建，构建速度比同类工具快 3 倍。</p>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">MDX</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">CLI</span>
+              </div>
+            </div>
+            <!-- 重复内容用于无缝循环 -->
+            <!-- 列表-作品1（重复） -->
+            <div class="work-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">NoteFlow 协作笔记平台</h3>
+              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">支持实时协作的 Markdown 笔记应用，集成知识图谱与全文搜索，服务超过两千名活跃用户。</p>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">React</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">WebSocket</span>
+              </div>
+            </div>
+            <!-- 列表-作品2（重复） -->
+            <div class="work-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">DesignKit 组件库</h3>
+              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">面向设计系统的前端组件库，涵盖 60+ 可组合组件，支持主题定制与无障碍访问。</p>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">TypeScript</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-primary/10 text-on-surface">Storybook</span>
+              </div>
+            </div>
+            <!-- 列表-作品3（重复） -->
+            <div class="work-item bg-surface-container/60 p-5 mb-4">
+              <h3 class="text-base font-semibold text-on-surface mb-2">PixelPress 静态站点生成器</h3>
+              <p class="text-sm text-on-surface-variant leading-relaxed mb-3">极简的静态站点生成工具，支持 MDX 内容编写与增量构建，构建速度比同类工具快 3 倍。</p>
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-error/15 text-error">Rust</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">MDX</span>
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-success/15 text-success">CLI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 编辑资料弹窗 -->
+    <div id="modal-edit-profile" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 hidden">
+      <div class="bg-surface shadow-dialog max-w-lg w-full max-h-[90vh] overflow-y-auto p-8">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="font-serif text-xl font-semibold tracking-tight text-on-surface">编辑资料</h2>
+          <button id="btn-modal-close" class="text-on-surface-variant hover:text-on-surface transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- 头像上传 -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-on-surface mb-2">头像</label>
+          <div id="avatar-upload-area" class="w-[120px] h-[120px] bg-surface-container border-none flex items-center justify-center cursor-pointer hover:bg-surface-container-high transition-colors overflow-hidden relative">
+            <img id="avatar-preview" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&crop=faces" alt="头像预览" data-category="人物" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+              <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+            </div>
+            <input type="file" id="input-avatar" accept="image/*" class="hidden" />
+          </div>
+        </div>
+
+        <!-- 姓名 -->
+        <div class="mb-5">
+          <label for="input-name" class="block text-sm font-medium text-on-surface mb-1.5">姓名</label>
+          <input id="input-name" type="text" value="孙典章" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        </div>
+
+        <!-- 简介 -->
+        <div class="mb-5">
+          <label for="input-bio" class="block text-sm font-medium text-on-surface mb-1.5">个人简介</label>
+          <textarea id="input-bio" rows="3" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors resize-none">热爱技术，乐于分享</textarea>
+        </div>
+
+        <!-- 邮箱 -->
+        <div class="mb-5">
+          <label for="input-email" class="block text-sm font-medium text-on-surface mb-1.5">邮箱</label>
+          <input id="input-email" type="email" value="sun.dianzhang@example.com" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        </div>
+
+        <!-- GitHub -->
+        <div class="mb-5">
+          <label for="input-github" class="block text-sm font-medium text-on-surface mb-1.5">GitHub</label>
+          <input id="input-github" type="url" value="https://github.com/sundianzhang" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        </div>
+
+        <!-- 网站 -->
+        <div class="mb-5">
+          <label for="input-website" class="block text-sm font-medium text-on-surface mb-1.5">网站</label>
+          <input id="input-website" type="url" value="https://sundianzhang.dev" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        </div>
+
+        <!-- LinkedIn -->
+        <div class="mb-8">
+          <label for="input-linkedin" class="block text-sm font-medium text-on-surface mb-1.5">LinkedIn</label>
+          <input id="input-linkedin" type="url" value="https://linkedin.com/in/sundianzhang" class="w-full bg-surface-container border-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex items-center justify-end gap-3">
+          <button id="btn-cancel-edit" class="bg-surface-container text-on-surface px-4 py-2 text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">取消</button>
+          <button id="btn-save-edit" class="bg-primary text-on-primary px-4 py-2 text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all">保存</button>
+        </div>
+      </div>
     </div>
+
     <!-- @main-content:end -->
   </main>
 
   <script>
     $(function() {
-      // 编辑按钮 - 点击后应进入个人简介编辑模式：
-      // 1. 将个人简介区域的段落文字替换为 textarea 输入框，自动聚焦并保留原有内容
-      // 2. 将姓名、职业头衔替换为 input 输入框，保留原有值
-      // 3. 将技能标签区域替换为标签编辑界面：显示当前标签 + 可输入新标签的 input 和添加按钮，每个标签旁有删除按钮
-      // 4. 将联系方式替换为可编辑的 input 列表（类型、值、链接）
-      // 5. 隐藏编辑按钮，显示保存和取消按钮
-      // 6. 点击保存后，收集所有表单数据，调用后端 API 更新个人简介，成功后刷新页面展示更新后的内容
-      // 7. 点击取消后，恢复所有区域为原始展示状态，不保存任何修改
+
+      // === 编辑弹窗交互 ===
+
+      // 打开编辑弹窗
       $('#btn-edit-profile').on('click', function() {
-        console.log('进入个人简介编辑模式');
+        $('#modal-edit-profile').removeClass('hidden');
+        // 将当前页面内容回填到弹窗表单中（硬编码页面，回填固定值）
+        $('#input-name').val($('#profile-name').text().trim());
+        $('#input-bio').val($('#profile-bio').text().trim());
       });
+
+      // 关闭编辑弹窗
+      $('#btn-modal-close').on('click', function() {
+        $('#modal-edit-profile').addClass('hidden');
+      });
+
+      // 取消按钮关闭弹窗
+      $('#btn-cancel-edit').on('click', function() {
+        $('#modal-edit-profile').addClass('hidden');
+      });
+
+      // 点击遮罩层关闭弹窗
+      $('#modal-edit-profile').on('click', function(e) {
+        if ($(e.target).is('#modal-edit-profile')) {
+          $('#modal-edit-profile').addClass('hidden');
+        }
+      });
+
+      // 保存按钮
+      // 后续应实现的完整行为步骤：
+      // 1. 收集表单所有字段值（姓名、简介、邮箱、GitHub、网站、LinkedIn）
+      // 2. 前端校验：姓名不能为空，邮箱格式校验，URL格式校验
+      // 3. 调用后端 API 提交修改（POST /api/profile/update）
+      // 4. 成功后更新页面中对应的显示内容（#profile-name、#profile-bio、联系方式等）
+      // 5. 如果头像有变更，更新 #profile-avatar 的 src
+      // 6. 显示保存成功提示（toast）
+      // 7. 关闭弹窗
+      // 8. 失败时显示错误提示，保持弹窗不关闭
+      $('#btn-save-edit').on('click', function() {
+        console.log('保存资料：需要调用后端API提交修改');
+        // 简易原型：直接更新页面文字并关闭弹窗
+        var newName = $('#input-name').val().trim();
+        var newBio = $('#input-bio').val().trim();
+        if (newName) {
+          $('#profile-name').text(newName);
+        }
+        if (newBio) {
+          $('#profile-bio').text(newBio);
+        }
+        $('#modal-edit-profile').addClass('hidden');
+      });
+
+      // === 头像上传交互 ===
+
+      // 点击头像区域触发文件选择
+      $('#avatar-upload-area').on('click', function() {
+        $('#input-avatar').trigger('click');
+      });
+
+      // 选择文件后显示预览
+      // 后续应实现的完整行为步骤：
+      // 1. 使用 FileReader 读取选中的图片文件
+      // 2. 将读取的 DataURL 设置为 #avatar-preview 的 src
+      // 3. 记录文件对象，在保存时随表单一起上传到服务器
+      // 4. 校验文件大小（不超过 2MB）和类型（仅 jpg/png/webp）
+      // 5. 超出限制时显示提示信息
+      $('#input-avatar').on('change', function(e) {
+        console.log('头像文件已选择，需要实现预览和上传逻辑');
+      });
+
     });
   </script>
+
   <script>lucide.createIcons();</script>
 </body>
 
