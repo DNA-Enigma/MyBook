@@ -121,35 +121,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "无效的分类" }, { status: 400 });
     }
 
-    const resourceType = body.resource_type || "file";
-
-    const insertData: Record<string, unknown> = {
-      name,
-      description,
-      category,
-      author_id: userData.user.id,
-      status: isAdmin ? "approved" : "pending",
-      docker_pull_cmd: body.docker_pull_cmd || null,
-      is_public: body.is_public ?? true,
-      storage_type: body.storage_type || "supabase",
-      resource_type: resourceType,
-    };
-
-    if (resourceType === "link") {
-      insertData.file_url = body.url || null;
-      insertData.file_key = body.url || null;
-      insertData.file_type = "link";
-      insertData.file_size = 0;
-    } else {
-      insertData.file_url = body.file_url || null;
-      insertData.file_key = body.file_key || null;
-      insertData.file_type = body.file_type || null;
-      insertData.file_size = body.file_size || null;
-    }
-
     const { data, error } = await getSupabaseAdmin()
       .from("resources")
-      .insert(insertData)
+      .insert({
+        name,
+        description,
+        file_url: body.file_url || null,
+        file_key: body.file_key || null,
+        file_type: body.file_type || null,
+        file_size: body.file_size || null,
+        category,
+        author_id: userData.user.id,
+        status: isAdmin ? "approved" : "pending",
+        docker_pull_cmd: body.docker_pull_cmd || null,
+        is_public: body.is_public ?? true,
+        storage_type: body.storage_type || "supabase",
+      })
       .select()
       .single();
 

@@ -102,9 +102,9 @@ export default async function HomePage() {
               },
               {
                 icon: User,
-                title: "了解站长",
-                desc: "了解站长的技能、经历与联系方式",
-                href: "/about-admin",
+                title: "个人中心",
+                desc: "管理笔记资料，了解技能与经历",
+                href: "/profile",
               },
             ].map((item) => (
               <Link

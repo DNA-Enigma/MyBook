@@ -3,9 +3,65 @@
     {
       "type": "html",
       "options": {
-        "path": ".cozeproj/prototype/web/about-admin.html"
+        "path": ".cozeproj/prototype/web/home.html"
       },
-      "title": "了解站长",
+      "title": "首页",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/login.html"
+      },
+      "title": "登录",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/register.html"
+      },
+      "title": "注册",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/notes.html"
+      },
+      "title": "笔记列表",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/note-detail.html"
+      },
+      "title": "笔记详情",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/note-edit.html"
+      },
+      "title": "笔记编辑",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/works.html"
+      },
+      "title": "作品展示",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/work-detail.html"
+      },
+      "title": "作品详情",
       "size": "web"
     },
     {
@@ -14,6 +70,14 @@
         "path": ".cozeproj/prototype/web/resources.html"
       },
       "title": "资源库",
+      "size": "web"
+    },
+    {
+      "type": "html",
+      "options": {
+        "path": ".cozeproj/prototype/web/profile.html"
+      },
+      "title": "关于我",
       "size": "web"
     }
   ]

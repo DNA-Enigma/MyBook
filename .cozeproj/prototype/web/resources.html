@@ -5,38 +5,50 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- 字体 -->
+  <link href="https://lf-code-agent.coze.cn/obj/x-ai-cn/fonts/google/google-all-fonts.css" rel="stylesheet"/>
+
   <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
   <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
   <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
 
   <style type="text/tailwindcss">
     @theme {
-      --color-primary:              #6B4226;
-      --color-primary_container:    #E8E4DC;
+      /* === 品牌色 === */
+      --color-primary:              #111111;
+      --color-primary-container:    #E8E4DC;
       --color-on-primary:           #FFFFFF;
-      --color-background:           #F4F1EA;
-      --color-surface-container-lowest: #FFFFFF;
-      --color-surface:              #FFFFFF;
-      --color-surface-container:    #E8E4DC;
-      --color-surface-container-high:   #D8D1C4;
-      --color-surface-container-highest: #CFC8BA;
+      /* === 背景 / 表面 === */
+      --color-background:                 #F4F1EA;
+      --color-surface-container-lowest:   #EFEBE2;
+      --color-surface:                    #FFFFFF;
+      --color-surface-container:          #E8E4DC;
+      --color-surface-container-high:     #D8D1C4;
+      --color-surface-container-highest:  #CFC8BA;
+      /* === 文字 === */
       --color-on-surface:           #111111;
       --color-on-surface-variant:   #6B665E;
+      /* === 功能色 === */
       --color-success:  #22c55e;
-      --color-error:    #B3403A;
+      --color-error:    #ef4444;
       --color-warning:  #f59e0b;
+      /* === 边框 === */
       --color-outline:          #D8D1C4;
       --color-outline-variant:  #D8D1C4;
+      /* === 圆角 === */
       --radius-sm:   0.25rem;
       --radius-md:   0.375rem;
       --radius-lg:   0.5rem;
       --radius-xl:   0.75rem;
       --radius-2xl:  1rem;
       --radius-full: 9999px;
+      /* === 阴影 === */
       --shadow-card:   0 2px 8px rgba(0,0,0,0.08);
       --shadow-float:  0 10px 25px rgba(0,0,0,0.10);
       --shadow-dialog: 0 25px 50px rgba(0,0,0,0.15);
-      --font-sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+      /* === 字体 === */
+      --font-sans: "Noto Sans SC", "Noto Serif SC", system-ui, sans-serif;
+      --font-serif: "Playfair Display", "Georgia", "Noto Serif SC", serif;
     }
   </style>
 
@@ -59,344 +71,305 @@
   </script>
 </head>
 
-<body class="bg-background text-on-surface font-sans">
+<body class="bg-background text-on-surface font-sans min-h-screen">
 
-  <!-- @nav:start -->
-  <header class="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <a href="home.html" class="flex items-center gap-2.5">
-          <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-            <i data-lucide="bookmark" class="w-5 h-5 text-on-primary"></i>
-          </div>
-          <span class="font-semibold text-lg text-primary tracking-tight">Enigma 空间站</span>
-        </a>
-        <nav class="hidden md:flex items-center gap-1">
-          <a href="home.html" class="px-4 py-2 text-sm font-medium text-on-surface-variant rounded-lg hover:bg-surface-container transition-colors">首页</a>
-          <a href="notes.html" class="px-4 py-2 text-sm font-medium text-on-surface-variant rounded-lg hover:bg-surface-container transition-colors">博客</a>
-          <a href="works.html" class="px-4 py-2 text-sm font-medium text-on-surface-variant rounded-lg hover:bg-surface-container transition-colors">作品</a>
-          <a href="resources.html" class="px-4 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg" aria-current="page">资源库</a>
-          <a href="profile.html" class="px-4 py-2 text-sm font-medium text-on-surface-variant rounded-lg hover:bg-surface-container transition-colors">个人中心</a>
-        </nav>
+  <!-- @nav:start 导航组件，不需要的页面则不要复制此段 -->
+  <header class="bg-surface sticky top-0 z-40 border-b border-outline/20">
+    <div class="max-w-7xl mx-auto h-16 flex items-center justify-between px-6">
+      <div class="flex items-center gap-2">
+        <i data-lucide="hexagon" class="text-primary w-5 h-5"></i>
+        <span class="font-serif font-bold text-lg tracking-tight">个人门户</span>
+      </div>
+      <nav class="flex items-center gap-1">
+        <a href="home.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">首页</a>
+        <a href="notes.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">笔记</a>
+        <a href="works.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">作品</a>
+        <a href="resources.html" class="px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 rounded-md transition-colors" aria-current="page">资源库</a>
+        <a href="profile.html" class="px-3 py-1.5 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md transition-colors">关于我</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="login.html" class="text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">登录</a>
+        <a href="register.html" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition-opacity">注册</a>
       </div>
     </div>
   </header>
-  <!-- @nav:end -->
+  <!-- @nav:end 导航组件，不需要的页面则不要复制此段 -->
 
   <!-- @main-content:start -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="max-w-7xl mx-auto w-full px-6 py-12">
+
     <!-- 页面标题区 -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-on-surface">资源库</h1>
-        <p class="text-sm text-on-surface-variant mt-1">管理和分享文件资源与网站链接</p>
-      </div>
-      <button id="btn-upload" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
-        <i data-lucide="upload" class="w-4 h-4"></i>上传资源
-      </button>
-    </div>
-
-    <!-- 分类筛选标签 -->
-    <div id="filter-tabs" class="flex gap-2 mb-6 overflow-x-auto pb-1">
-      <button id="filter-all" class="filter-tab px-4 py-2 text-sm font-medium rounded-md bg-primary text-on-primary whitespace-nowrap" data-filter="all">全部</button>
-      <button id="filter-software" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="软件">软件</button>
-      <button id="filter-doc" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="文档">文档</button>
-      <button id="filter-image" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="图片媒体">图片媒体</button>
-      <button id="filter-docker" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="Docker镜像">Docker镜像</button>
-      <button id="filter-package" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="安装包">安装包</button>
-      <button id="filter-archive" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="压缩包">压缩包</button>
-      <button id="filter-source" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="源码">源码</button>
-      <button id="filter-link" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="网站链接">网站链接</button>
-      <button id="filter-other" class="filter-tab px-4 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap" data-filter="其他">其他</button>
-    </div>
-
-    <!-- 资源卡片网格 -->
-    <div id="resource-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- 卡片-资源1：VS Code -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="软件">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="code-2" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">VS Code 安装包</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">软件</span>
-            </div>
-          </div>
+    <div class="mb-10">
+      <div class="flex items-start justify-between gap-6">
+        <div>
+          <h1 class="font-serif text-4xl font-bold text-on-surface tracking-tight">资源库</h1>
+          <p class="text-on-surface-variant mt-3 text-base leading-relaxed max-w-xl">
+            汇集常用软件、文档资料、媒体素材及 Docker 镜像，一站式获取开发与设计所需资源
+          </p>
         </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">Visual Studio Code 最新稳定版编辑器安装包，支持 Windows、macOS 和 Linux 平台。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>85.2 MB</span>
-            <span class="flex items-center gap-1"><i data-lucide="download" class="w-3.5 h-3.5"></i>328</span>
-          </div>
-          <span>2024-01-15</span>
-        </div>
-      </div>
-
-      <!-- 卡片-资源2：项目部署手册 -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="文档">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="file-text" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">项目部署手册</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">文档</span>
-            </div>
-          </div>
-        </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">Enigma 空间站项目的完整部署指南，包含环境配置、依赖安装和启动步骤说明。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>2.4 MB</span>
-            <span class="flex items-center gap-1"><i data-lucide="download" class="w-3.5 h-3.5"></i>156</span>
-          </div>
-          <span>2024-01-12</span>
-        </div>
-      </div>
-
-      <!-- 卡片-资源3：个人头像素材 -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="图片媒体">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="image" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">个人头像素材</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">图片媒体</span>
-            </div>
-          </div>
-          <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-error/15 text-error">私密</span>
-        </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">站长个人使用的头像素材合集，包含多种尺寸和风格版本，仅供管理员使用。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>12.8 MB</span>
-            <span class="flex items-center gap-1"><i data-lucide="download" class="w-3.5 h-3.5"></i>12</span>
-          </div>
-          <span>2024-01-10</span>
-        </div>
-      </div>
-
-      <!-- 卡片-资源4：Docker Compose 配置 -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="Docker镜像">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="container" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">Docker Compose 配置</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">Docker镜像</span>
-            </div>
-          </div>
-        </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">项目所需的 Docker Compose 配置文件，一键启动 PostgreSQL、Redis 和 Nginx 服务。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>4.1 KB</span>
-            <span class="flex items-center gap-1"><i data-lucide="download" class="w-3.5 h-3.5"></i>89</span>
-          </div>
-          <span>2024-01-08</span>
-        </div>
-      </div>
-
-      <!-- 卡片-资源5：Node.js 安装包 -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="安装包">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="box" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">Node.js LTS 安装包</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">安装包</span>
-            </div>
-          </div>
-        </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">Node.js 20.x LTS 长期支持版安装包，包含 npm 包管理器，适用于服务器环境部署。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>32.5 MB</span>
-            <span class="flex items-center gap-1"><i data-lucide="download" class="w-3.5 h-3.5"></i>512</span>
-          </div>
-          <span>2024-01-05</span>
-        </div>
-      </div>
-
-      <!-- 卡片-资源6：个人博客源码 -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="网站链接">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="external-link" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">个人博客源码</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">网站链接</span>
-            </div>
-          </div>
-          <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-error/15 text-error">私密</span>
-        </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">基于 Next.js 开发的个人博客开源项目源码仓库，包含完整的前后端代码和主题配置。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="link" class="w-3.5 h-3.5"></i>链接</span>
-            <span class="flex items-center gap-1"><i data-lucide="eye" class="w-3.5 h-3.5"></i>67</span>
-          </div>
-          <span>2024-01-03</span>
-        </div>
-      </div>
-
-      <!-- 卡片-资源7：前端工具集压缩包 -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="压缩包">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="archive" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">前端工具集</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">压缩包</span>
-            </div>
-          </div>
-        </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">常用的前端开发工具脚本和配置模板合集，包含 ESLint、Prettier、Webpack 配置文件。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>8.6 MB</span>
-            <span class="flex items-center gap-1"><i data-lucide="download" class="w-3.5 h-3.5"></i>203</span>
-          </div>
-          <span>2023-12-28</span>
-        </div>
-      </div>
-
-      <!-- 卡片-资源8：设计规范文档 -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="文档">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="file-text" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">设计规范文档</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">文档</span>
-            </div>
-          </div>
-        </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">Enigma 空间站产品的 UI 设计规范文档，包含色彩系统、字体规范、组件使用指南。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>15.3 MB</span>
-            <span class="flex items-center gap-1"><i data-lucide="download" class="w-3.5 h-3.5"></i>78</span>
-          </div>
-          <span>2023-12-20</span>
-        </div>
-      </div>
-
-      <!-- 卡片-资源9：Figma 插件推荐 -->
-      <div class="resource-card bg-surface rounded-lg shadow-card p-5 relative" data-category="网站链接">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-              <i data-lucide="external-link" class="w-5 h-5 text-primary"></i>
-            </div>
-            <div class="min-w-0">
-              <h3 class="text-base font-semibold text-on-surface truncate">Figma 插件推荐</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary mt-1">网站链接</span>
-            </div>
-          </div>
-        </div>
-        <p class="text-sm text-on-surface-variant mb-4 line-clamp-2">精选的 Figma 设计效率插件清单，包含自动布局、图标库、配色工具等实用插件链接。</p>
-        <div class="flex items-center justify-between text-xs text-on-surface-variant pt-3 border-t border-outline-variant/20">
-          <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1"><i data-lucide="link" class="w-3.5 h-3.5"></i>链接</span>
-            <span class="flex items-center gap-1"><i data-lucide="eye" class="w-3.5 h-3.5"></i>145</span>
-          </div>
-          <span>2023-12-15</span>
-        </div>
+        <button id="btn-upload" class="shrink-0 mt-1 bg-primary text-on-primary px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i>上传资源
+        </button>
       </div>
     </div>
+
+    <!-- 分类标签 + 搜索栏 -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-8">
+      <div class="flex items-center gap-2 flex-wrap" id="category-tabs">
+        <button id="tab-all" data-category="all" class="px-4 py-1.5 text-sm font-medium rounded-md bg-primary text-on-primary transition-all" aria-current="true">全部</button>
+        <button id="tab-software" data-category="software" class="px-4 py-1.5 text-sm font-medium rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">软件</button>
+        <button id="tab-document" data-category="document" class="px-4 py-1.5 text-sm font-medium rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">文档</button>
+        <button id="tab-media" data-category="media" class="px-4 py-1.5 text-sm font-medium rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">图片媒体</button>
+        <button id="tab-docker" data-category="docker" class="px-4 py-1.5 text-sm font-medium rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">Docker镜像</button>
+      </div>
+      <div class="relative w-full lg:w-80">
+        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/50"></i>
+        <input id="search-input" class="w-full bg-surface-container border-none rounded-md pl-9 pr-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" placeholder="搜索资源名称..."/>
+      </div>
+    </div>
+
+    <!-- 资源列表 -->
+    <div class="bg-surface rounded-xl shadow-card overflow-hidden">
+      <!-- 表头 -->
+      <div class="hidden md:grid grid-cols-[1fr_110px_100px_100px_130px_110px] px-6 py-3.5 bg-surface-container text-xs font-semibold text-on-surface-variant uppercase tracking-wider gap-4 items-center">
+        <span>资源名称</span>
+        <span>分类</span>
+        <span>文件大小</span>
+        <span>下载次数</span>
+        <span>上传时间</span>
+        <span>操作</span>
+      </div>
+
+      <!-- 移动端表头 -->
+      <div class="md:hidden px-6 py-3.5 bg-surface-container text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+        资源列表
+      </div>
+
+      <div class="divide-y divide-outline-variant/50" id="resource-list">
+
+        <!-- 列表-资源1：VS Code -->
+        <div class="resource-item group grid grid-cols-1 md:grid-cols-[1fr_110px_100px_100px_130px_110px] gap-2 md:gap-4 px-6 py-4 hover:bg-surface-container/40 transition-colors items-center" data-category="software" data-name="Visual Studio Code">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <i data-lucide="code-2" class="w-4 h-4 text-on-surface-variant"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">Visual Studio Code</p>
+              <p class="text-xs text-on-surface-variant/70 truncate">Microsoft 出品的轻量级代码编辑器</p>
+            </div>
+          </div>
+          <span class="badge-category inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary w-fit">软件</span>
+          <span class="text-sm text-on-surface-variant">89.2 MB</span>
+          <span class="text-sm text-on-surface-variant">1,280</span>
+          <span class="text-sm text-on-surface-variant">2024/01/15</span>
+          <button class="btn-download text-primary text-sm font-medium hover:underline w-fit inline-flex items-center gap-1" data-id="1">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>下载
+          </button>
+        </div>
+
+        <!-- 列表-资源2：Node.js -->
+        <div class="resource-item group grid grid-cols-1 md:grid-cols-[1fr_110px_100px_100px_130px_110px] gap-2 md:gap-4 px-6 py-4 hover:bg-surface-container/40 transition-colors items-center" data-category="software" data-name="Node.js LTS">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <i data-lucide="hexagon" class="w-4 h-4 text-on-surface-variant"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">Node.js LTS v20.11</p>
+              <p class="text-xs text-on-surface-variant/70 truncate">JavaScript 运行时环境</p>
+            </div>
+          </div>
+          <span class="badge-category inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary w-fit">软件</span>
+          <span class="text-sm text-on-surface-variant">68.5 MB</span>
+          <span class="text-sm text-on-surface-variant">956</span>
+          <span class="text-sm text-on-surface-variant">2024/02/20</span>
+          <button class="btn-download text-primary text-sm font-medium hover:underline w-fit inline-flex items-center gap-1" data-id="2">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>下载
+          </button>
+        </div>
+
+        <!-- 列表-资源3：前端规范文档 -->
+        <div class="resource-item group grid grid-cols-1 md:grid-cols-[1fr_110px_100px_100px_130px_110px] gap-2 md:gap-4 px-6 py-4 hover:bg-surface-container/40 transition-colors items-center" data-category="document" data-name="前端开发规范">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <i data-lucide="file-text" class="w-4 h-4 text-on-surface-variant"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">前端开发规范 v2.0</p>
+              <p class="text-xs text-on-surface-variant/70 truncate">团队统一编码规范与最佳实践指南</p>
+            </div>
+          </div>
+          <span class="badge-category inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-warning/15 text-warning w-fit">文档</span>
+          <span class="text-sm text-on-surface-variant">2.4 MB</span>
+          <span class="text-sm text-on-surface-variant">432</span>
+          <span class="text-sm text-on-surface-variant">2024/03/01</span>
+          <button class="btn-download text-primary text-sm font-medium hover:underline w-fit inline-flex items-center gap-1" data-id="3">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>下载
+          </button>
+        </div>
+
+        <!-- 列表-资源4：Docker指南 -->
+        <div class="resource-item group grid grid-cols-1 md:grid-cols-[1fr_110px_100px_100px_130px_110px] gap-2 md:gap-4 px-6 py-4 hover:bg-surface-container/40 transition-colors items-center" data-category="document" data-name="Docker 最佳实践指南">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <i data-lucide="file-text" class="w-4 h-4 text-on-surface-variant"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">Docker 最佳实践指南</p>
+              <p class="text-xs text-on-surface-variant/70 truncate">容器化部署与运维实战手册</p>
+            </div>
+          </div>
+          <span class="badge-category inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-warning/15 text-warning w-fit">文档</span>
+          <span class="text-sm text-on-surface-variant">5.1 MB</span>
+          <span class="text-sm text-on-surface-variant">678</span>
+          <span class="text-sm text-on-surface-variant">2024/03/10</span>
+          <button class="btn-download text-primary text-sm font-medium hover:underline w-fit inline-flex items-center gap-1" data-id="4">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>下载
+          </button>
+        </div>
+
+        <!-- 列表-资源5：风景摄影素材 -->
+        <div class="resource-item group grid grid-cols-1 md:grid-cols-[1fr_110px_100px_100px_130px_110px] gap-2 md:gap-4 px-6 py-4 hover:bg-surface-container/40 transition-colors items-center" data-category="media" data-name="风景摄影素材集">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <i data-lucide="image" class="w-4 h-4 text-on-surface-variant"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">风景摄影素材集</p>
+              <p class="text-xs text-on-surface-variant/70 truncate">50 张高清自然风光图片，含 RAW 格式</p>
+            </div>
+          </div>
+          <span class="badge-category inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-success/15 text-success w-fit">图片媒体</span>
+          <span class="text-sm text-on-surface-variant">156 MB</span>
+          <span class="text-sm text-on-surface-variant">234</span>
+          <span class="text-sm text-on-surface-variant">2024/01/28</span>
+          <button class="btn-download text-primary text-sm font-medium hover:underline w-fit inline-flex items-center gap-1" data-id="5">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>下载
+          </button>
+        </div>
+
+        <!-- 列表-资源6：UI 图标库 -->
+        <div class="resource-item group grid grid-cols-1 md:grid-cols-[1fr_110px_100px_100px_130px_110px] gap-2 md:gap-4 px-6 py-4 hover:bg-surface-container/40 transition-colors items-center" data-category="media" data-name="UI 图标库 Sketch 源文件">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <i data-lucide="image" class="w-4 h-4 text-on-surface-variant"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">UI 图标库 Sketch 源文件</p>
+              <p class="text-xs text-on-surface-variant/70 truncate">500+ 矢量图标，支持多平台导出</p>
+            </div>
+          </div>
+          <span class="badge-category inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-success/15 text-success w-fit">图片媒体</span>
+          <span class="text-sm text-on-surface-variant">48 MB</span>
+          <span class="text-sm text-on-surface-variant">567</span>
+          <span class="text-sm text-on-surface-variant">2024/02/15</span>
+          <button class="btn-download text-primary text-sm font-medium hover:underline w-fit inline-flex items-center gap-1" data-id="6">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>下载
+          </button>
+        </div>
+
+        <!-- 列表-资源7：nginx Docker镜像 -->
+        <div class="resource-item group grid grid-cols-1 md:grid-cols-[1fr_110px_100px_100px_130px_110px] gap-2 md:gap-4 px-6 py-4 hover:bg-surface-container/40 transition-colors items-center" data-category="docker" data-name="nginx:alpine">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <i data-lucide="container" class="w-4 h-4 text-on-surface-variant"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">nginx:alpine</p>
+              <p class="text-xs text-on-surface-variant/70 truncate font-mono">docker pull nginx:alpine</p>
+            </div>
+          </div>
+          <span class="badge-category inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary w-fit">Docker镜像</span>
+          <span class="text-sm text-on-surface-variant">—</span>
+          <span class="text-sm text-on-surface-variant">3,421</span>
+          <span class="text-sm text-on-surface-variant">2024/03/05</span>
+          <button class="btn-copy-cmd text-primary text-sm font-medium hover:underline w-fit inline-flex items-center gap-1" data-cmd="docker pull nginx:alpine">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>复制
+          </button>
+        </div>
+
+        <!-- 列表-资源8：mysql Docker镜像 -->
+        <div class="resource-item group grid grid-cols-1 md:grid-cols-[1fr_110px_100px_100px_130px_110px] gap-2 md:gap-4 px-6 py-4 hover:bg-surface-container/40 transition-colors items-center" data-category="docker" data-name="mysql:8.0">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+              <i data-lucide="container" class="w-4 h-4 text-on-surface-variant"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-on-surface truncate">mysql:8.0</p>
+              <p class="text-xs text-on-surface-variant/70 truncate font-mono">docker pull mysql:8.0</p>
+            </div>
+          </div>
+          <span class="badge-category inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary w-fit">Docker镜像</span>
+          <span class="text-sm text-on-surface-variant">—</span>
+          <span class="text-sm text-on-surface-variant">2,890</span>
+          <span class="text-sm text-on-surface-variant">2024/03/12</span>
+          <button class="btn-copy-cmd text-primary text-sm font-medium hover:underline w-fit inline-flex items-center gap-1" data-cmd="docker pull mysql:8.0">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>复制
+          </button>
+        </div>
+
+      </div>
+    </div>
+
   </main>
   <!-- @main-content:end -->
 
-  <!-- 上传弹窗 -->
+  <!-- 上传弹窗模态框 -->
   <div id="upload-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-surface rounded-xl shadow-dialog max-w-lg w-full max-h-[90vh] overflow-y-auto">
-      <!-- 弹窗标题 -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant/20">
+    <div class="bg-surface rounded-xl shadow-dialog max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+      <div class="flex items-center justify-between mb-6">
         <h2 class="text-lg font-semibold text-on-surface">上传资源</h2>
-        <button id="btn-close-modal" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-container transition-colors text-on-surface-variant">
+        <button id="btn-modal-close" class="text-on-surface-variant hover:text-on-surface transition-colors">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- 标签页切换 -->
-      <div class="flex border-b border-outline-variant/20 px-6">
-        <button id="tab-upload-file" class="tab-btn px-4 py-3 text-sm font-medium text-primary border-b-2 border-primary">上传文件</button>
-        <button id="tab-add-link" class="tab-btn px-4 py-3 text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">添加链接</button>
-      </div>
-
-      <!-- 标签页内容：上传文件 -->
-      <div id="panel-upload-file" class="p-6">
-        <!-- 文件上传区域 -->
-        <div id="dropzone" class="border-2 border-dashed border-outline-variant/40 rounded-xl p-10 flex flex-col items-center justify-center text-center hover:border-primary/40 hover:bg-surface-container/30 transition-colors cursor-pointer">
-          <div class="w-14 h-14 bg-surface-container rounded-full flex items-center justify-center mb-4">
-            <i data-lucide="upload-cloud" class="w-7 h-7 text-primary"></i>
+      <div class="space-y-5">
+        <!-- 文件选择器 -->
+        <div>
+          <label class="block text-sm font-medium text-on-surface mb-1.5">选择文件</label>
+          <div class="relative">
+            <input id="upload-file" type="file" class="w-full text-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-surface-container file:text-on-surface hover:file:bg-surface-container-high cursor-pointer"/>
           </div>
-          <p class="text-sm font-medium text-on-surface mb-1">点击或拖拽文件到此处上传</p>
-          <p class="text-xs text-on-surface-variant">支持 PDF、图片、压缩包等格式，单个文件最大 100MB</p>
         </div>
-        <!-- 文件上传为复杂交互，仅保留 UI 入口 -->
-        <!-- 后续应实现：1. 点击 dropzone 唤起文件选择器 2. 拖拽文件时高亮边框 3. 选择文件后展示文件列表和上传进度 4. 上传完成后刷新资源列表 -->
+
+        <!-- 名称输入 -->
+        <div>
+          <label class="block text-sm font-medium text-on-surface mb-1.5">资源名称</label>
+          <input id="upload-name" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" placeholder="输入资源名称"/>
+        </div>
+
+        <!-- 描述输入 -->
+        <div>
+          <label class="block text-sm font-medium text-on-surface mb-1.5">资源描述</label>
+          <textarea id="upload-desc" rows="3" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors resize-none" placeholder="简要描述资源用途和特点..."></textarea>
+        </div>
+
+        <!-- 分类选择 -->
+        <div>
+          <label class="block text-sm font-medium text-on-surface mb-1.5">分类</label>
+          <select id="upload-category" class="w-full bg-surface-container border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors cursor-pointer">
+            <option value="">请选择分类</option>
+            <option value="software">软件</option>
+            <option value="document">文档</option>
+            <option value="media">图片媒体</option>
+            <option value="docker">Docker镜像</option>
+          </select>
+        </div>
       </div>
 
-      <!-- 标签页内容：添加链接 -->
-      <div id="panel-add-link" class="p-6 hidden">
-        <form id="form-add-link" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-on-surface mb-1.5">资源名称</label>
-            <input id="input-link-name" type="text" class="w-full bg-surface-container border-none rounded-md px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" placeholder="请输入资源名称"/>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-on-surface mb-1.5">资源描述</label>
-            <textarea id="input-link-desc" rows="3" class="w-full bg-surface-container border-none rounded-md px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors resize-none" placeholder="请输入资源描述"></textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-on-surface mb-1.5">链接地址</label>
-            <div class="relative">
-              <i data-lucide="link" class="w-4 h-4 text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2"></i>
-              <input id="input-link-url" type="url" class="w-full bg-surface-container border-none rounded-md pl-9 pr-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" placeholder="https://example.com"/>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-on-surface mb-1.5">分类</label>
-            <select id="input-link-category" class="w-full bg-surface-container border-none rounded-md px-3 py-2 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors appearance-none cursor-pointer">
-              <option value="">请选择分类</option>
-              <option value="软件">软件</option>
-              <option value="文档">文档</option>
-              <option value="图片媒体">图片媒体</option>
-              <option value="Docker镜像">Docker镜像</option>
-              <option value="安装包">安装包</option>
-              <option value="压缩包">压缩包</option>
-              <option value="源码">源码</option>
-              <option value="其他">其他</option>
-              <option value="网站链接">网站链接</option>
-            </select>
-          </div>
-        </form>
-      </div>
-
-      <!-- 弹窗底部按钮 -->
-      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-outline-variant/20">
-        <button id="btn-cancel" class="bg-surface-container text-on-surface border-none px-4 py-2 rounded-md text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">取消</button>
-        <button id="btn-confirm" class="bg-primary text-on-primary px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all">确认</button>
+      <div class="flex items-center justify-end gap-3 mt-8">
+        <button id="btn-modal-cancel" class="bg-surface-container text-on-surface border-none px-5 py-2.5 rounded-md text-sm font-medium hover:bg-surface-container-high active:scale-[0.98] transition-all">取消</button>
+        <button id="btn-modal-confirm" class="bg-primary text-on-primary px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 active:scale-[0.98] transition-all inline-flex items-center gap-2">
+          <i data-lucide="upload" class="w-3.5 h-3.5"></i>确认上传
+        </button>
       </div>
     </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-surface text-on-surface px-4 py-3 rounded-lg shadow-float text-sm font-medium hidden items-center gap-2 z-50">
+    <i data-lucide="check-circle" class="w-4 h-4 text-success"></i>
+    <span id="toast-message">操作成功</span>
   </div>
 
   <script>
@@ -404,89 +377,23 @@
       // 初始化图标
       lucide.createIcons();
 
-      // 打开弹窗
-      $('#btn-upload').on('click', function() {
-        $('#upload-modal').removeClass('hidden');
-      });
+      // ==================== 分类标签切换 ====================
+      $('#category-tabs').on('click', 'button', function() {
+        const $btn = $(this);
+        const category = $btn.data('category');
 
-      // 关闭弹窗
-      $('#btn-close-modal, #btn-cancel').on('click', function() {
-        $('#upload-modal').addClass('hidden');
-        // 重置表单和标签页
-        $('#form-add-link')[0].reset();
-        switchTab('upload-file');
-      });
+        // 切换按钮样式
+        $btn.siblings().removeClass('bg-primary text-on-primary').addClass('text-on-surface-variant hover:text-on-surface hover:bg-surface-container');
+        $btn.removeClass('text-on-surface-variant hover:text-on-surface hover:bg-surface-container').addClass('bg-primary text-on-primary');
+        $btn.attr('aria-current', 'true').siblings().removeAttr('aria-current');
 
-      // 点击弹窗背景关闭
-      $('#upload-modal').on('click', function(e) {
-        if (e.target === this) {
-          $(this).addClass('hidden');
-          $('#form-add-link')[0].reset();
-          switchTab('upload-file');
-        }
-      });
-
-      // 标签页切换
-      function switchTab(tabName) {
-        if (tabName === 'upload-file') {
-          $('#tab-upload-file').addClass('text-primary border-b-2 border-primary').removeClass('text-on-surface-variant');
-          $('#tab-add-link').removeClass('text-primary border-b-2 border-primary').addClass('text-on-surface-variant');
-          $('#panel-upload-file').removeClass('hidden');
-          $('#panel-add-link').addClass('hidden');
+        // 过滤列表
+        if (category === 'all') {
+          $('.resource-item').removeClass('hidden');
         } else {
-          $('#tab-add-link').addClass('text-primary border-b-2 border-primary').removeClass('text-on-surface-variant');
-          $('#tab-upload-file').removeClass('text-primary border-b-2 border-primary').addClass('text-on-surface-variant');
-          $('#panel-add-link').removeClass('hidden');
-          $('#panel-upload-file').addClass('hidden');
-        }
-        lucide.createIcons();
-      }
-
-      $('#tab-upload-file').on('click', function() {
-        switchTab('upload-file');
-      });
-
-      $('#tab-add-link').on('click', function() {
-        switchTab('add-link');
-      });
-
-      // 确认按钮
-      $('#btn-confirm').on('click', function() {
-        const activeTab = $('#panel-add-link').hasClass('hidden') ? 'upload-file' : 'add-link';
-        if (activeTab === 'add-link') {
-          // 添加链接表单提交
-          const name = $('#input-link-name').val().trim();
-          const url = $('#input-link-url').val().trim();
-          const category = $('#input-link-category').val();
-          if (!name || !url || !category) {
-            alert('请填写完整的链接信息');
-            return;
-          }
-          console.log('添加链接资源:', { name, description: $('#input-link-desc').val(), url, category });
-          // 后续应实现：1. 调用 POST /api/resources 创建链接资源 2. 成功后关闭弹窗并刷新列表 3. 失败时显示错误提示
-          $('#upload-modal').addClass('hidden');
-          $('#form-add-link')[0].reset();
-          switchTab('upload-file');
-        } else {
-          // 上传文件确认
-          // 文件上传为复杂交互，此处仅记录日志
-          console.log('触发文件上传流程');
-          // 后续应实现：1. 获取选中的文件列表 2. 调用上传接口（如分片上传或直传）3. 展示上传进度 4. 上传完成后刷新资源列表
-        }
-      });
-
-      // 分类筛选
-      $('#filter-tabs').on('click', '.filter-tab', function() {
-        const filter = $(this).data('filter');
-        // 更新标签样式
-        $('.filter-tab').removeClass('bg-primary text-on-primary').addClass('text-on-surface-variant hover:bg-surface-container');
-        $(this).removeClass('text-on-surface-variant hover:bg-surface-container').addClass('bg-primary text-on-primary');
-        // 筛选卡片
-        if (filter === 'all') {
-          $('.resource-card').removeClass('hidden');
-        } else {
-          $('.resource-card').each(function() {
-            if ($(this).data('category') === filter) {
+          $('.resource-item').each(function() {
+            const itemCategory = $(this).data('category');
+            if (itemCategory === category) {
               $(this).removeClass('hidden');
             } else {
               $(this).addClass('hidden');
@@ -494,8 +401,103 @@
           });
         }
       });
+
+      // ==================== 搜索过滤 ====================
+      $('#search-input').on('input', function() {
+        const keyword = $(this).val().toLowerCase().trim();
+        $('.resource-item').each(function() {
+          const name = $(this).data('name').toLowerCase();
+          const $item = $(this);
+          // 同时考虑当前选中的分类
+          const activeCategory = $('#category-tabs button[aria-current="true"]').data('category');
+          const itemCategory = $item.data('category');
+          const categoryMatch = activeCategory === 'all' || itemCategory === activeCategory;
+          const nameMatch = name.includes(keyword);
+
+          if (categoryMatch && nameMatch) {
+            $item.removeClass('hidden');
+          } else {
+            $item.addClass('hidden');
+          }
+        });
+      });
+
+      // ==================== 上传模态框 ====================
+      $('#btn-upload').on('click', function() {
+        $('#upload-modal').removeClass('hidden');
+      });
+
+      $('#btn-modal-close, #btn-modal-cancel').on('click', function() {
+        $('#upload-modal').addClass('hidden');
+        // 清空表单
+        $('#upload-file').val('');
+        $('#upload-name').val('');
+        $('#upload-desc').val('');
+        $('#upload-category').val('');
+      });
+
+      // 点击遮罩关闭
+      $('#upload-modal').on('click', function(e) {
+        if (e.target === this) {
+          $('#btn-modal-cancel').trigger('click');
+        }
+      });
+
+      // 确认上传按钮
+      $('#btn-modal-confirm').on('click', function() {
+        // 上传按钮 - 点击后应实现：
+        // 1. 校验表单必填项（文件、名称、分类）
+        // 2. 显示上传进度条
+        // 3. 调用文件上传 API，将文件上传至对象存储
+        // 4. 上传成功后，将资源元数据（名称/描述/分类/文件URL/大小）写入数据库
+        // 5. 关闭弹窗，刷新资源列表，显示成功提示
+        const name = $('#upload-name').val().trim();
+        const category = $('#upload-category').val();
+        const file = $('#upload-file')[0].files[0];
+
+        if (!name || !category) {
+          showToast('请填写资源名称和分类');
+          return;
+        }
+
+        console.log('准备上传资源:', { name, category, fileName: file ? file.name : '无文件' });
+        showToast('上传功能需要接入后端 API');
+        $('#upload-modal').addClass('hidden');
+      });
+
+      // ==================== 下载按钮 ====================
+      $('#resource-list').on('click', '.btn-download', function() {
+        const resourceId = $(this).data('id');
+        // 下载按钮 - 点击后应实现：
+        // 1. 向后端请求该资源的预签名下载 URL
+        // 2. 通过隐藏的 a 标签或 window.open 触发下载
+        // 3. 下载计数 +1，更新界面显示
+        console.log('下载资源 ID:', resourceId);
+        showToast('开始下载资源');
+      });
+
+      // ==================== 复制 Docker 命令 ====================
+      $('#resource-list').on('click', '.btn-copy-cmd', function() {
+        const cmd = $(this).data('cmd');
+        // 复制命令 - 点击后应实现：
+        // 1. 调用 navigator.clipboard.writeText(cmd) 将拉取命令写入剪贴板
+        // 2. 按钮文字临时变为"已复制"，2 秒后恢复
+        // 3. 显示 Toast 提示复制成功
+        console.log('复制 Docker 命令:', cmd);
+        showToast('已复制到剪贴板: ' + cmd);
+      });
+
+      // ==================== Toast 提示 ====================
+      function showToast(message) {
+        $('#toast-message').text(message);
+        $('#toast').removeClass('hidden').addClass('flex');
+        setTimeout(function() {
+          $('#toast').addClass('hidden').removeClass('flex');
+        }, 2500);
+      }
     });
   </script>
+
   <script>lucide.createIcons();</script>
 </body>
 

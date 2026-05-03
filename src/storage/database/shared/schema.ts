@@ -102,7 +102,6 @@ export const resources = pgTable(
     download_count: integer("download_count").notNull().default(0),
     is_public: boolean("is_public").notNull().default(true),
     storage_type: varchar("storage_type", { length: 20 }).notNull().default("supabase"),
-    resource_type: varchar("resource_type", { length: 20 }).notNull().default("file"),
     created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updated_at: timestamp("updated_at", { withTimezone: true }),
   },
