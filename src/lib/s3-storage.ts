@@ -1,12 +1,6 @@
 import { S3Storage } from "coze-coding-dev-sdk";
-import { S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import {
-  CreateMultipartUploadCommand,
-  UploadPartCommand,
-  CompleteMultipartUploadCommand,
-  AbortMultipartUploadCommand,
-} from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from "stream";
 
 // S3 兼容对象存储客户端（用于大文件上传，无 50MB 限制）
 // 使用懒加载避免构建时环境变量缺失导致报错
@@ -55,8 +49,9 @@ export function getS3BucketName(): string {
 
 export { getS3BucketName as s3BucketName };
 
-// ============ S3 Multipart Upload 直传辅助 ============
-// 让浏览器通过预签名 URL 直传分片到 S3，绕过 FaaS 请求体大小限制
+// ============ S3 PutObject 流式上传 ============
+// 适用于代理不支持 Multipart Upload 的场景
+// 将分片文件按序读取后通过流式 PutObject 上传到 S3
 
 function getS3Client(): S3Client {
   const storage = initS3Storage();
@@ -64,96 +59,30 @@ function getS3Client(): S3Client {
   return client;
 }
 
-/** 创建 Multipart Upload 会话 */
-export async function createMultipartUpload(key: string, contentType: string) {
-  const client = getS3Client();
-  const bucket = getS3BucketName();
-  const cmd = new CreateMultipartUploadCommand({
-    Bucket: bucket,
-    Key: key,
-    ContentType: contentType,
-  });
-  const result = await client.send(cmd);
-  if (!result.UploadId) {
-    throw new Error("Failed to create multipart upload");
-  }
-  return { uploadId: result.UploadId, key };
-}
-
-/** 为指定分片生成预签名 PUT URL（浏览器直传） */
-export async function presignUploadPart(
+/**
+ * 流式 PutObject 上传
+ * 接收一个 Node.js Readable stream，通过 PutObject 一次性上传到 S3
+ * 适用于从 /tmp 分片文件顺序读取后流式上传的场景
+ */
+export async function putObjectStream(
   key: string,
-  uploadId: string,
-  partNumber: number,
+  body: Readable,
   contentLength: number,
-) {
+  contentType: string,
+): Promise<boolean> {
   const client = getS3Client();
   const bucket = getS3BucketName();
-  const cmd = new UploadPartCommand({
+
+  const command = new PutObjectCommand({
     Bucket: bucket,
     Key: key,
-    UploadId: uploadId,
-    PartNumber: partNumber,
+    Body: body,
+    ContentType: contentType,
     ContentLength: contentLength,
   });
-  const url = await getSignedUrl(client as any, cmd as any, { expiresIn: 3600 }); // 1小时有效
-  return url;
-}
 
-/** 完成Multipart Upload */
-export async function completeMultipartUpload(
-  key: string,
-  uploadId: string,
-  parts: { PartNumber: number; ETag: string }[],
-) {
-  const client = getS3Client();
-  const bucket = getS3BucketName();
-  const sortedParts = [...parts].sort((a, b) => a.PartNumber - b.PartNumber);
-  const cmd = new CompleteMultipartUploadCommand({
-    Bucket: bucket,
-    Key: key,
-    UploadId: uploadId,
-    MultipartUpload: { Parts: sortedParts },
-  });
-  const result = await client.send(cmd);
-  return result;
-}
-
-/** 服务端直传：将分片数据直接上传到 S3（不落盘） */
-export async function uploadPart(
-  key: string,
-  uploadId: string,
-  partNumber: number,
-  body: Buffer | Uint8Array,
-) {
-  const client = getS3Client();
-  const bucket = getS3BucketName();
-  const cmd = new UploadPartCommand({
-    Bucket: bucket,
-    Key: key,
-    UploadId: uploadId,
-    PartNumber: partNumber,
-    Body: body,
-  });
-  const result = await client.send(cmd);
-  if (!result.ETag) {
-    throw new Error(`UploadPart failed for part ${partNumber}`);
-  }
-  return { partNumber, eTag: result.ETag };
-}
-
-/** 中止Multipart Upload（出错时清理） */
-export async function abortMultipartUpload(key: string, uploadId: string) {
-  try {
-    const client = getS3Client();
-    const bucket = getS3BucketName();
-    const cmd = new AbortMultipartUploadCommand({
-      Bucket: bucket,
-      Key: key,
-      UploadId: uploadId,
-    });
-    await client.send(cmd);
-  } catch {
-    // 清理失败不影响主流程
-  }
+  // 设置较长超时（10GB 文件可能需要较长时间上传）
+  // S3Client 已在 SDK 初始化时配置了连接参数
+  await client.send(command);
+  return true;
 }

@@ -338,12 +338,13 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     if (file && category !== "Docker镜像") {
       try {
         if (file.size > SIZE_THRESHOLD) {
-          // === 大文件（>50MB）：S3 原生分片上传（服务端中转，每片直达 S3，不落盘） ===
+          // === 大文件（>50MB）：S3 分片暂存 + 流式 PutObject 上传 ===
+          // 分片暂存 /tmp，全部收完后用 PutObject stream 直传 S3（不依赖 Multipart Upload）
           storageType = "s3";
-          const PART_SIZE = 5 * 1024 * 1024; // 5MB per part（S3 multipart 最小分片）
+          const PART_SIZE = 5 * 1024 * 1024; // 5MB per part
           const totalParts = Math.ceil(file.size / PART_SIZE);
 
-          // 1. 初始化 S3 Multipart Upload
+          // 1. 初始化上传（创建 uploadId）
           setProgressText("准备上传...");
           const initRes = await fetch("/api/upload/s3-chunk-init", {
             method: "POST",
@@ -359,10 +360,9 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             const d = await initRes.json();
             throw new Error(d.error || "初始化上传失败");
           }
-          const { uploadId, key: s3Key } = await initRes.json();
+          const { uploadId } = await initRes.json();
 
-          // 2. 逐片上传到服务端 → 服务端立即 uploadPart 到 S3（不落盘）
-          const uploadedParts: { partNumber: number; eTag: string }[] = [];
+          // 2. 逐片上传到服务端 /tmp
           for (let i = 0; i < totalParts; i++) {
             if (abortRef.current) throw new Error("上传已取消");
 
@@ -372,12 +372,10 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
 
             setProgressText(`上传中 ${i + 1}/${totalParts}...`);
 
-            // 每个分片 POST 到服务端，服务端直接 uploadPart 到 S3
             const fd = new FormData();
             fd.append("chunk", partBlob);
             fd.append("uploadId", uploadId);
-            fd.append("s3Key", s3Key);
-            fd.append("partNumber", String(i + 1));
+            fd.append("partIndex", String(i));
             const chunkRes = await fetch("/api/upload/s3-chunk", {
               method: "POST",
               body: fd,
@@ -386,23 +384,20 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               const d = await chunkRes.json();
               throw new Error(d.error || `分片 ${i + 1} 上传失败`);
             }
-            const chunkData = await chunkRes.json();
-            uploadedParts.push({ partNumber: chunkData.partNumber, eTag: chunkData.eTag });
 
-            const pct = Math.round(((i + 1) / totalParts) * 95);
+            const pct = Math.round(((i + 1) / totalParts) * 80);
             setProgress(pct);
             setProgressText(`已上传 ${i + 1}/${totalParts} 片`);
           }
 
-          // 3. 完成 Multipart Upload（S3 合并所有分片）
-          setProgressText("文件拼装中...");
+          // 3. 合并上传到 S3（服务端读取 /tmp 分片流式 PutObject）
+          setProgressText("正在上传到云存储...");
           const compRes = await fetch("/api/upload/s3-chunk-complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               uploadId,
-              s3Key,
-              parts: uploadedParts,
+              totalChunks: totalParts,
               fileName: file.name,
               fileSize: file.size,
               contentType: file.type || "application/octet-stream",
@@ -410,7 +405,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
           });
           if (!compRes.ok) {
             const d = await compRes.json();
-            throw new Error(d.error || "文件拼装失败");
+            throw new Error(d.error || "文件上传失败");
           }
           const compData = await compRes.json();
           fileUrl = compData.publicUrl || "";
