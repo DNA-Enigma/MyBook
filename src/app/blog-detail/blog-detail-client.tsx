@@ -589,5 +589,6 @@ function renderMarkdown(content: string): string {
     .replace(/```([\s\S]*?)```/g, '<pre class="bg-muted p-4 rounded-lg overflow-x-auto my-4 text-sm"><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-sm">$1</code>')
     .replace(/^\> (.*$)/gim, '<blockquote class="border-l-4 border-primary/40 pl-4 italic my-4 text-muted-foreground">$1</blockquote>')
+    .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="my-4 max-w-full rounded-lg" />')
     .replace(/\n/g, "<br>");
 }

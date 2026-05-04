@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { profiles, notes, works, resources } from "@/storage/database/shared/schema";
 import { eq, sql } from "drizzle-orm";
 import Link from "next/link";
-import { ArrowLeft, Github, Globe, Mail, Linkedin, FileText, ImageIcon, FolderOpen } from "lucide-react";
+import { ArrowLeft, Github, Globe, Mail, Linkedin, FileText, ImageIcon, FolderOpen, Code2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // 强制动态渲染，避免构建时数据库不可用导致数据为空
@@ -54,20 +54,27 @@ export default async function AboutPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative border-b border-border bg-gradient-to-b from-muted/50 to-background">
-        <div className="mx-auto max-w-5xl px-6 py-16">
-          <Button variant="ghost" size="sm" asChild className="mb-6 gap-1 text-muted-foreground hover:text-foreground">
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4" />
-              返回首页
-            </Link>
-          </Button>
+      {/* Back */}
+      <div className="mx-auto max-w-5xl px-6 pt-8">
+        <Button variant="ghost" size="sm" asChild className="gap-1 text-muted-foreground hover:text-foreground">
+          <Link href="/">
+            <ArrowLeft className="h-4 w-4" />
+            返回首页
+          </Link>
+        </Button>
+      </div>
 
-          <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">
-            {/* Avatar */}
-            <div className="relative shrink-0">
-              <div className="h-32 w-32 overflow-hidden border-4 border-background shadow-lg md:h-40 md:w-40">
+      {/* Hero - Name Card Style */}
+      <section className="mx-auto max-w-5xl px-6 pb-12 pt-8">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
+          {/* Top Banner */}
+          <div className="h-32 bg-gradient-to-br from-primary/20 via-primary/10 to-muted" />
+
+          {/* Avatar + Info */}
+          <div className="relative px-8 pb-8">
+            {/* Avatar overlapping the banner */}
+            <div className="-mt-16 mb-6 flex flex-col items-center sm:flex-row sm:items-end sm:gap-6">
+              <div className="h-28 w-28 shrink-0 overflow-hidden border-4 border-card bg-muted shadow-lg sm:h-32 sm:w-32">
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
@@ -75,96 +82,136 @@ export default async function AboutPage() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-muted text-4xl font-bold text-muted-foreground">
+                  <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-muted-foreground">
                     {(profile.name || profile.email || "U")[0].toUpperCase()}
                   </div>
                 )}
               </div>
+              <div className="mt-4 text-center sm:mb-2 sm:text-left">
+                <div className="flex flex-col items-center gap-2 sm:flex-row">
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                    {profile.name || "站长"}
+                  </h1>
+                  <span className="rounded-full bg-primary/10 px-3 py-0.5 text-sm font-medium text-primary">
+                    站长
+                  </span>
+                </div>
+                {profile.bio && (
+                  <p className="mt-2 max-w-xl text-muted-foreground">
+                    {profile.bio}
+                  </p>
+                )}
+              </div>
             </div>
 
-            {/* Info */}
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-col items-center gap-3 md:flex-row md:items-center">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                  {profile.name || "站长"}
-                </h1>
-                <span className="rounded-full bg-primary/10 px-3 py-0.5 text-sm font-medium text-primary">
-                  站长
-                </span>
-              </div>
-              <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
-                {profile.bio || "热爱生活，热爱技术，在这里记录成长与思考。"}
-              </p>
-
-              {/* Stats */}
-              <div className="mt-6 flex flex-wrap justify-center gap-4 md:justify-start">
-                <div className="flex items-center gap-2 rounded-lg bg-card px-4 py-2 shadow-sm">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <span className="font-semibold">{stats.notes}</span>
-                  <span className="text-sm text-muted-foreground">篇笔记</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-lg bg-card px-4 py-2 shadow-sm">
-                  <ImageIcon className="h-4 w-4 text-primary" />
-                  <span className="font-semibold">{stats.works}</span>
-                  <span className="text-sm text-muted-foreground">个作品</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-lg bg-card px-4 py-2 shadow-sm">
-                  <FolderOpen className="h-4 w-4 text-primary" />
-                  <span className="font-semibold">{stats.resources}</span>
-                  <span className="text-sm text-muted-foreground">个资源</span>
+            {/* Stats Row */}
+            <div className="mt-2 grid grid-cols-3 gap-4">
+              <div className="rounded-xl bg-muted/50 p-4 text-center">
+                <div className="text-2xl font-bold text-foreground">{stats.notes}</div>
+                <div className="mt-1 flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                  <FileText className="h-3.5 w-3.5" />
+                  篇笔记
                 </div>
               </div>
-
-              {/* Social Links */}
-              <div className="mt-6 flex flex-wrap justify-center gap-3 md:justify-start">
-                {profile.github_url && (
-                  <Button variant="outline" size="sm" asChild className="gap-1.5">
-                    <a href={profile.github_url} target="_blank" rel="noopener noreferrer">
-                      <Github className="h-4 w-4" />
-                      GitHub
-                    </a>
-                  </Button>
-                )}
-                {profile.website_url && (
-                  <Button variant="outline" size="sm" asChild className="gap-1.5">
-                    <a href={profile.website_url} target="_blank" rel="noopener noreferrer">
-                      <Globe className="h-4 w-4" />
-                      个人网站
-                    </a>
-                  </Button>
-                )}
-                {profile.linkedin_url && (
-                  <Button variant="outline" size="sm" asChild className="gap-1.5">
-                    <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer">
-                      <Linkedin className="h-4 w-4" />
-                      LinkedIn
-                    </a>
-                  </Button>
-                )}
-                {profile.contact_email && (
-                  <Button variant="outline" size="sm" asChild className="gap-1.5">
-                    <a href={`mailto:${profile.contact_email}`}>
-                      <Mail className="h-4 w-4" />
-                      邮箱
-                    </a>
-                  </Button>
-                )}
+              <div className="rounded-xl bg-muted/50 p-4 text-center">
+                <div className="text-2xl font-bold text-foreground">{stats.works}</div>
+                <div className="mt-1 flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  个作品
+                </div>
+              </div>
+              <div className="rounded-xl bg-muted/50 p-4 text-center">
+                <div className="text-2xl font-bold text-foreground">{stats.resources}</div>
+                <div className="mt-1 flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                  <FolderOpen className="h-3.5 w-3.5" />
+                  个资源
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Quick Contact - Prominent Email & GitHub */}
+      <section className="mx-auto max-w-5xl px-6 pb-12">
+        <h2 className="mb-4 text-xl font-bold text-foreground">联系站长</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {profile.contact_email && (
+            <a
+              href={`mailto:${profile.contact_email}`}
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                <Send className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="font-semibold text-foreground">发送邮件</div>
+                <div className="mt-0.5 text-sm text-muted-foreground">{profile.contact_email}</div>
+              </div>
+            </a>
+          )}
+          {profile.github_url && (
+            <a
+              href={profile.github_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                <Github className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="font-semibold text-foreground">GitHub</div>
+                <div className="mt-0.5 text-sm text-muted-foreground">查看开源项目</div>
+              </div>
+            </a>
+          )}
+          {profile.website_url && (
+            <a
+              href={profile.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                <Globe className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="font-semibold text-foreground">个人网站</div>
+                <div className="mt-0.5 text-sm text-muted-foreground">访问个人主页</div>
+              </div>
+            </a>
+          )}
+          {profile.linkedin_url && (
+            <a
+              href={profile.linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                <Linkedin className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="font-semibold text-foreground">LinkedIn</div>
+                <div className="mt-0.5 text-sm text-muted-foreground">职业社交</div>
+              </div>
+            </a>
+          )}
+        </div>
+      </section>
+
       {/* Skills */}
       {skills.length > 0 && (
-        <section className="mx-auto max-w-5xl px-6 py-12">
-          <h2 className="text-xl font-bold text-foreground">技能标签</h2>
-          <div className="mt-4 flex flex-wrap gap-2">
+        <section className="mx-auto max-w-5xl px-6 pb-12">
+          <h2 className="mb-4 text-xl font-bold text-foreground">技能标签</h2>
+          <div className="flex flex-wrap gap-2.5">
             {skills.map((skill) => (
               <span
                 key={skill}
-                className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
               >
+                <Code2 className="h-3.5 w-3.5" />
                 {skill}
               </span>
             ))}
@@ -172,27 +219,31 @@ export default async function AboutPage() {
         </section>
       )}
 
-      {/* Contact */}
-      <section className="mx-auto max-w-5xl px-6 py-12">
+      {/* Bottom CTA */}
+      <section className="mx-auto max-w-5xl px-6 pb-16">
         <div className="rounded-2xl bg-gradient-to-br from-muted/60 to-muted/30 p-8 text-center">
-          <h2 className="text-xl font-bold text-foreground">联系我</h2>
+          <h2 className="text-xl font-bold text-foreground">想了解更多？</h2>
           <p className="mt-2 text-muted-foreground">
-            有任何问题或合作意向，欢迎通过以下方式联系我
+            浏览我的笔记、作品和资源，或直接通过邮件联系我
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button asChild className="gap-1.5">
+              <Link href="/blogs">
+                <FileText className="h-4 w-4" />
+                看博客
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="gap-1.5">
+              <Link href="/works">
+                <ImageIcon className="h-4 w-4" />
+                看作品
+              </Link>
+            </Button>
             {profile.contact_email && (
-              <Button asChild className="gap-1.5">
+              <Button variant="outline" asChild className="gap-1.5">
                 <a href={`mailto:${profile.contact_email}`}>
                   <Mail className="h-4 w-4" />
-                  发送邮件
-                </a>
-              </Button>
-            )}
-            {profile.github_url && (
-              <Button variant="outline" asChild className="gap-1.5">
-                <a href={profile.github_url} target="_blank" rel="noopener noreferrer">
-                  <Github className="h-4 w-4" />
-                  GitHub
+                  发邮件
                 </a>
               </Button>
             )}
