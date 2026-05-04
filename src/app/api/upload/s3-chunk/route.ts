@@ -20,11 +20,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
 
-    const uploadId = request.nextUrl.searchParams.get("uploadId");
-    const partNumber = request.nextUrl.searchParams.get("partNumber");
+    // 从 FormData body 中读取参数（前端用 FormData 发送 chunk + uploadId + partIndex）
+    const formData = await request.formData();
+    const uploadId = formData.get("uploadId") as string | null;
+    const partIndex = formData.get("partIndex") as string | null;
+    const chunkBlob = formData.get("chunk") as Blob | null;
 
-    if (!uploadId || !partNumber) {
-      return NextResponse.json({ error: "缺少 uploadId 或 partNumber" }, { status: 400 });
+    if (!uploadId || !partIndex) {
+      return NextResponse.json({ error: "缺少 uploadId 或 partIndex" }, { status: 400 });
+    }
+
+    if (!chunkBlob) {
+      return NextResponse.json({ error: "缺少分片数据" }, { status: 400 });
     }
 
     const tmpDir = `/tmp/upload_${uploadId}`;
@@ -33,13 +40,13 @@ export async function POST(request: NextRequest) {
     }
 
     // 将分片数据写入本地文件
-    const chunkPath = `${tmpDir}/part_${partNumber}`;
-    const buffer = Buffer.from(await request.arrayBuffer());
+    const chunkPath = `${tmpDir}/part_${partIndex}`;
+    const buffer = Buffer.from(await chunkBlob.arrayBuffer());
     fs.writeFileSync(chunkPath, buffer);
 
     return NextResponse.json({
       success: true,
-      partNumber: parseInt(partNumber, 10),
+      partNumber: parseInt(partIndex, 10),
       size: buffer.length,
     });
   } catch (error) {
