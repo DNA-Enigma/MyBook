@@ -13,11 +13,12 @@ export const maxDuration = 600;
 export async function POST(request: NextRequest) {
   try {
     // 验证登录
-    const cookie = request.headers.get("cookie") || "";
+    const accessToken = request.cookies.get("sb-access-token")?.value;
+    if (!accessToken) {
+      return NextResponse.json({ error: "未登录" }, { status: 401 });
+    }
     const { supabaseAnon } = await import("@/lib/supabase");
-    const { data: { user } } = await supabaseAnon.auth.getUser(
-      cookie.split(";").find((c) => c.trim().startsWith("access_token="))?.split("=")[1] || ""
-    );
+    const { data: { user } } = await supabaseAnon.auth.getUser(accessToken);
     if (!user) {
       return NextResponse.json({ error: "未登录" }, { status: 401 });
     }
