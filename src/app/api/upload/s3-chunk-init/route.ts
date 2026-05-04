@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createMultipartUpload } from "@/lib/s3-storage";
 
-// 大文件 S3 分片上传初始化
-// 前端将大文件切成 ≤10MB 分片上传到服务端，服务端暂存 /tmp
-// 收齐后用 S3 chunkUploadFile 上传到对象存储
+// 初始化 S3 原生分片上传（不写 /tmp，分片直达 S3）
 export async function POST(request: NextRequest) {
   try {
     // 验证登录
@@ -15,44 +14,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { fileName, fileSize, contentType, totalChunks } = body;
 
-    if (!fileName || !fileSize || !totalChunks) {
-      return NextResponse.json({ error: "缺少必要参数" }, { status: 400 });
+    if (!fileName || !fileSize || !contentType || !totalChunks) {
+      return NextResponse.json(
+        { error: "缺少必要参数（fileName, fileSize, contentType, totalChunks）" },
+        { status: 400 },
+      );
     }
 
-    // 获取用户信息
-    const { supabaseAdmin } = await import("@/lib/supabase");
-    const { data: { user } } = await supabaseAdmin.auth.getUser(tokenMatch[1]);
-    if (!user) {
-      return NextResponse.json({ error: "无效的登录凭证" }, { status: 401 });
-    }
+    // 生成 S3 key：时间戳 + 原始文件名
+    const timestamp = Date.now();
+    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const s3Key = `uploads/${timestamp}_${safeName}`;
 
-    const uploadId = `s3_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-    // 将上传会话信息存到 /tmp
-    const fs = await import("fs/promises");
-    const tmpDir = `/tmp/s3-chunks/${uploadId}`;
-    await fs.mkdir(tmpDir, { recursive: true });
-    await fs.writeFile(
-      `${tmpDir}/meta.json`,
-      JSON.stringify({
-        fileName,
-        fileSize,
-        contentType: contentType || "application/octet-stream",
-        totalChunks,
-        uploadId,
-        userId: user.id,
-      })
-    );
+    // 调用 S3 createMultipartUpload
+    const result = await createMultipartUpload(s3Key, contentType);
 
     return NextResponse.json({
-      uploadId,
+      uploadId: result.uploadId,
+      s3Key: result.key,
       totalChunks,
+      fileName,
+      fileSize,
+      contentType,
     });
   } catch (error) {
     console.error("[s3-chunk-init] Error:", error);
     return NextResponse.json(
       { error: "初始化上传失败" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

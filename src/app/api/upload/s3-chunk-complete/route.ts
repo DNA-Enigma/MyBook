@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { s3Storage } from "@/lib/s3-storage";
-import { createReadStream } from "fs";
-import { readFile, stat, unlink, readdir, rmdir } from "fs/promises";
-import { join } from "path";
+import { completeMultipartUpload, abortMultipartUpload, s3Storage } from "@/lib/s3-storage";
 
-// 合并所有分片，使用 S3 streamUploadFile 上传到对象存储
+// 完成 S3 原生分片上传：合并所有分片，生成下载 URL
 export async function POST(request: NextRequest) {
+  let s3Key = "";
+  let uploadId = "";
+
   try {
     // 验证登录
     const cookie = request.headers.get("cookie") || "";
@@ -15,90 +15,55 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { uploadId } = body;
+    s3Key = body.s3Key || "";
+    uploadId = body.uploadId || "";
+    const parts = body.parts;
+    const fileName = body.fileName || "";
+    const fileSize = body.fileSize || 0;
 
-    if (!uploadId) {
-      return NextResponse.json({ error: "缺少 uploadId" }, { status: 400 });
-    }
-
-    const tmpDir = `/tmp/s3-chunks/${uploadId}`;
-    const metaPath = join(tmpDir, "meta.json");
-
-    // 读取 meta
-    let meta: Record<string, unknown>;
-    try {
-      const metaRaw = await readFile(metaPath, "utf-8");
-      meta = JSON.parse(metaRaw);
-    } catch {
+    if (!uploadId || !s3Key || !parts || !Array.isArray(parts) || parts.length === 0) {
       return NextResponse.json(
-        { error: "上传会话不存在或已过期" },
-        { status: 404 }
+        { error: "缺少必要参数（uploadId, s3Key, parts）" },
+        { status: 400 },
       );
     }
 
-    const totalChunks = meta.totalChunks as number;
-    const fileName = meta.fileName as string;
-    const contentType = meta.contentType as string;
-    const fileSize = meta.fileSize as number;
+    // 调用 S3 completeMultipartUpload 合并分片
+    const s3Parts = parts.map(
+      (p: { partNumber: number; eTag: string }) => ({
+        PartNumber: p.partNumber,
+        ETag: p.eTag,
+      }),
+    );
 
-    // 验证所有分片
-    for (let i = 0; i < totalChunks; i++) {
-      try {
-        await stat(join(tmpDir, `done_${i}`));
-      } catch {
-        return NextResponse.json(
-          { error: `分片 ${i} 未上传` },
-          { status: 400 }
-        );
-      }
-    }
+    await completeMultipartUpload(s3Key, uploadId, s3Parts);
 
-    // 合并分片到临时文件
-    const mergedPath = join(tmpDir, "merged");
-    const { appendFile, writeFile } = await import("fs/promises");
-    await writeFile(mergedPath, Buffer.alloc(0));
-
-    for (let i = 0; i < totalChunks; i++) {
-      const chunkData = await readFile(join(tmpDir, `chunk_${i}`));
-      await appendFile(mergedPath, chunkData);
-    }
-
-    // 使用 S3 streamUploadFile 上传（支持大文件）
-    const s3Key = await s3Storage.streamUploadFile({
-      stream: createReadStream(mergedPath),
-      fileName,
-      contentType,
-    });
-
-    // 生成预签名 URL（有效期 7 天）
+    // 生成预签名下载 URL（有效期 7 天）
     const publicUrl = await s3Storage.generatePresignedUrl({
       key: s3Key,
       expireTime: 7 * 24 * 3600,
     });
 
-    // 清理临时文件
-    try {
-      const files = await readdir(tmpDir);
-      for (const f of files) {
-        await unlink(join(tmpDir, f));
-      }
-      await rmdir(tmpDir);
-    } catch {
-      // 清理失败不影响结果
-    }
-
     return NextResponse.json({
       publicUrl,
       key: s3Key,
-      fileName,
+      fileName: fileName || s3Key.split("/").pop() || "file",
       fileSize,
       storageType: "s3",
     });
   } catch (error) {
     console.error("[s3-chunk-complete] Error:", error);
+    // 出错时尝试中止上传，清理 S3 上的未完成分片
+    if (s3Key && uploadId) {
+      try {
+        await abortMultipartUpload(s3Key, uploadId);
+      } catch {
+        // 清理失败不影响错误返回
+      }
+    }
     return NextResponse.json(
-      { error: "文件拼装失败" },
-      { status: 500 }
+      { error: "文件合并失败" },
+      { status: 500 },
     );
   }
 }

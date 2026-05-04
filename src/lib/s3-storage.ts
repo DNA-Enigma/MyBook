@@ -119,6 +119,29 @@ export async function completeMultipartUpload(
   return result;
 }
 
+/** 服务端直传：将分片数据直接上传到 S3（不落盘） */
+export async function uploadPart(
+  key: string,
+  uploadId: string,
+  partNumber: number,
+  body: Buffer | Uint8Array,
+) {
+  const client = getS3Client();
+  const bucket = getS3BucketName();
+  const cmd = new UploadPartCommand({
+    Bucket: bucket,
+    Key: key,
+    UploadId: uploadId,
+    PartNumber: partNumber,
+    Body: body,
+  });
+  const result = await client.send(cmd);
+  if (!result.ETag) {
+    throw new Error(`UploadPart failed for part ${partNumber}`);
+  }
+  return { partNumber, eTag: result.ETag };
+}
+
 /** 中止Multipart Upload（出错时清理） */
 export async function abortMultipartUpload(key: string, uploadId: string) {
   try {

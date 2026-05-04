@@ -338,20 +338,21 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     if (file && category !== "Docker镜像") {
       try {
         if (file.size > SIZE_THRESHOLD) {
-          // === 大文件（>50MB）：S3 Multipart 直传 ===
-          // 浏览器通过预签名 URL 直传分片到 S3，绕过 FaaS 请求体限制
+          // === 大文件（>50MB）：S3 原生分片上传（服务端中转，每片直达 S3，不落盘） ===
           storageType = "s3";
-          const PART_SIZE = 8 * 1024 * 1024; // 8MB per part
+          const PART_SIZE = 5 * 1024 * 1024; // 5MB per part（S3 multipart 最小分片）
           const totalParts = Math.ceil(file.size / PART_SIZE);
 
-          // 1. 初始化 Multipart Upload
+          // 1. 初始化 S3 Multipart Upload
           setProgressText("准备上传...");
-          const initRes = await fetch("/api/upload/s3-multipart-init", {
+          const initRes = await fetch("/api/upload/s3-chunk-init", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               fileName: file.name,
+              fileSize: file.size,
               contentType: file.type || "application/octet-stream",
+              totalChunks: totalParts,
             }),
           });
           if (!initRes.ok) {
@@ -360,8 +361,8 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
           }
           const { uploadId, key: s3Key } = await initRes.json();
 
-          // 2. 逐片获取预签名 URL 并直传 S3
-          const uploadedParts: { PartNumber: number; ETag: string }[] = [];
+          // 2. 逐片上传到服务端 → 服务端立即 uploadPart 到 S3（不落盘）
+          const uploadedParts: { partNumber: number; eTag: string }[] = [];
           for (let i = 0; i < totalParts; i++) {
             if (abortRef.current) throw new Error("上传已取消");
 
@@ -371,51 +372,41 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
 
             setProgressText(`上传中 ${i + 1}/${totalParts}...`);
 
-            // 2a. 获取该分片的预签名 URL
-            const presignRes = await fetch("/api/upload/s3-multipart-presign", {
+            // 每个分片 POST 到服务端，服务端直接 uploadPart 到 S3
+            const fd = new FormData();
+            fd.append("chunk", partBlob);
+            fd.append("uploadId", uploadId);
+            fd.append("s3Key", s3Key);
+            fd.append("partNumber", String(i + 1));
+            const chunkRes = await fetch("/api/upload/s3-chunk", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                key: s3Key,
-                uploadId,
-                partNumber: i + 1,
-                contentLength: end - start,
-              }),
+              body: fd,
             });
-            if (!presignRes.ok) {
-              const d = await presignRes.json();
-              throw new Error(d.error || `获取分片 ${i + 1} 上传地址失败`);
+            if (!chunkRes.ok) {
+              const d = await chunkRes.json();
+              throw new Error(d.error || `分片 ${i + 1} 上传失败`);
             }
-            const { presignedUrl } = await presignRes.json();
-
-            // 2b. 浏览器直传分片到 S3
-            const uploadRes = await fetch(presignedUrl, {
-              method: "PUT",
-              body: partBlob,
-              headers: { "Content-Type": file.type || "application/octet-stream" },
-            });
-            if (!uploadRes.ok) {
-              throw new Error(`分片 ${i + 1} 上传失败 (HTTP ${uploadRes.status})`);
-            }
-
-            // S3 返回 ETag 在响应头中
-            const etag = uploadRes.headers.get("ETag");
-            if (!etag) {
-              throw new Error(`分片 ${i + 1} 未返回 ETag`);
-            }
-            uploadedParts.push({ PartNumber: i + 1, ETag: etag });
+            const chunkData = await chunkRes.json();
+            uploadedParts.push({ partNumber: chunkData.partNumber, eTag: chunkData.eTag });
 
             const pct = Math.round(((i + 1) / totalParts) * 95);
             setProgress(pct);
             setProgressText(`已上传 ${i + 1}/${totalParts} 片`);
           }
 
-          // 3. 完成Multipart Upload
+          // 3. 完成 Multipart Upload（S3 合并所有分片）
           setProgressText("文件拼装中...");
-          const compRes = await fetch("/api/upload/s3-multipart-complete", {
+          const compRes = await fetch("/api/upload/s3-chunk-complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ key: s3Key, uploadId, parts: uploadedParts }),
+            body: JSON.stringify({
+              uploadId,
+              s3Key,
+              parts: uploadedParts,
+              fileName: file.name,
+              fileSize: file.size,
+              contentType: file.type || "application/octet-stream",
+            }),
           });
           if (!compRes.ok) {
             const d = await compRes.json();

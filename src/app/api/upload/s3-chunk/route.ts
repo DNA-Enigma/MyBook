@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { uploadPart } from "@/lib/s3-storage";
 
-// 接收大文件的单个分片（≤10MB），写入 /tmp
+// 接收单个分片，立即上传到 S3（不写 /tmp，零落盘）
 export async function POST(request: NextRequest) {
   try {
     // 验证登录
@@ -11,37 +12,40 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData();
-    const uploadId = formData.get("uploadId") as string;
-    const chunkIndex = parseInt(formData.get("chunkIndex") as string, 10);
-    const chunkFile = formData.get("chunk") as File;
+    const chunk = formData.get("chunk") as File | null;
+    const uploadId = formData.get("uploadId") as string | null;
+    const s3Key = formData.get("s3Key") as string | null;
+    const partNumberStr = formData.get("partNumber") as string | null;
 
-    if (!uploadId || isNaN(chunkIndex) || !chunkFile) {
-      return NextResponse.json({ error: "缺少必要参数" }, { status: 400 });
-    }
-
-    // 检查 session
-    const fs = await import("fs/promises");
-    const metaPath = `/tmp/s3-chunks/${uploadId}/meta.json`;
-    try {
-      await fs.access(metaPath);
-    } catch {
+    if (!chunk || !uploadId || !s3Key || !partNumberStr) {
       return NextResponse.json(
-        { error: "上传会话不存在或已过期" },
-        { status: 404 }
+        { error: "缺少必要参数（chunk, uploadId, s3Key, partNumber）" },
+        { status: 400 },
       );
     }
 
-    // 写入分片文件
-    const chunkData = Buffer.from(await chunkFile.arrayBuffer());
-    await fs.writeFile(`/tmp/s3-chunks/${uploadId}/chunk_${chunkIndex}`, chunkData);
-    await fs.writeFile(`/tmp/s3-chunks/${uploadId}/done_${chunkIndex}`, "1");
+    const partNumber = parseInt(partNumberStr, 10);
+    if (isNaN(partNumber) || partNumber < 1) {
+      return NextResponse.json({ error: "partNumber 无效" }, { status: 400 });
+    }
 
-    return NextResponse.json({ success: true, chunkIndex });
+    // 读取分片数据
+    const arrayBuffer = await chunk.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 立即上传到 S3（不写 /tmp）
+    const result = await uploadPart(s3Key, uploadId, partNumber, buffer);
+
+    return NextResponse.json({
+      success: true,
+      partNumber: result.partNumber,
+      eTag: result.eTag,
+    });
   } catch (error) {
     console.error("[s3-chunk] Error:", error);
     return NextResponse.json(
       { error: "分片上传失败" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
